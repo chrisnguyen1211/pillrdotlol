@@ -1,0 +1,635 @@
+import AppKit
+import LidEffortCore
+import Combine
+import SwiftUI
+
+/// One notch per display: owns a `NotchWindowController` for each screen the
+/// scope asks for and fans every reading, session and setting out to all of
+/// them.
+///
+/// Each controller keeps its own model — hover, open state and screen size are
+/// per-display facts, and sharing one model would unfold every notch when the
+/// pointer reaches any of them. The fleet is the only thing that is shared: it
+/// remembers the latest of everything so a controller created later (a display
+/// plugged in at noon) starts with today's readings rather than empty rings.
+@MainActor
+final class NotchFleet {
+    private var controllers: [NSNumber: NotchWindowController] = [:]
+    private var cancellables = Set<AnyCancellable>()
+    /// A model with no panel: what the menu bar's menu reads. Fed everything
+    /// the displays' models are fed, so a model's line there is decorated —
+    /// speed, context, phase, today's tokens — exactly as its cell is.
+    let menuModel = NotchViewModel()
+    /// Every model a reading has to reach.
+    private var models: [NotchViewModel] { [menuModel] + controllers.values.map(\.model) }
+
+    private(set) var scope: NotchScreenScope
+    private var edge: NotchEdge
+    private var visibility: NotchVisibility = .onHover
+    private var snapshots: [ProviderSnapshot] = []
+    private(set) var thinkingModels: [String: Date] = [:]
+    /// Per source, the way the view model keeps them: the Ollama relay and
+    /// the LM Studio log each replace their own readings wholesale.
+    private var performances: [String: [String: LocalModelPerformance]] = [:]
+    private var localActivities: [String: LocalModelActivity] = [:]
+    private var ledger = LocalTokenLedger()
+    private var localMetricsEnabled = false
+
+    func setLocalMetricsEnabled(_ enabled: Bool) {
+        localMetricsEnabled = enabled
+        if !enabled { performances[NotchViewModel.ollamaSource] = nil; thinkingModels = [:] }
+        for model in models { model.setLocalMetricsEnabled(enabled) }
+    }
+    private var refreshing: Set<String> = []
+    /// Exposed read-only rather than private: completion-watching needs the
+    /// merged dict after a fan-out, the same way it read `controller.model
+    /// .sessions` before there was more than one controller.
+    private(set) var sessions: [String: [AgentSession]] = [:]
+    /// Which display a single, unassigned controller should sit on. Only
+    /// consulted by `.mainDisplay` — every controller under `.allDisplays`
+    /// already has its own `assignedScreen`, which wins over this in
+    /// `NotchWindowController.currentScreen()`.
+    private var displayPreference: DisplayPreference = .followActiveWindow
+    private var resetTimeFormat: ResetTimeFormat = .automatic
+    private var accentColor: AccentColorChoice = .system
+    /// One choice for the whole fleet, like the edge and the size: a weekly
+    /// ring on one display and not another would read as a bug.
+    private var weeklyRing: WeeklyRing = .off
+    private var showsMoveHandle = true
+    private var surfaceStyle: NotchSurfaceStyle = .glass
+    /// The ⌥-drag nudge along the current edge. One value for the whole
+    /// fleet, the same as `edge` itself — displays do not each get their own
+    /// edge, so they do not each get their own nudge either.
+    private var alongOffset: CGFloat = 0
+    /// One size for the whole fleet, for the same reason the edge is: a notch
+    /// that were larger on one display than another would read as a bug.
+    private var scale: CGFloat = 1
+
+    /// Hooked up by the app delegate; driven by the notch's own chrome.
+    var onRefresh: (() -> Void)?
+    var onToggleKeepOpen: (() -> Void)?
+    var onRefreshProvider: ((String) async -> Void)?
+    var onOpenSettings: (() -> Void)?
+    var onFocusSession: ((pid_t) -> Void)?
+    var signInItems: [(title: String, action: () -> Void)] = []
+    /// An ⌥-drag on any one panel settled at a new offset. Persisting it is
+    /// Preferences' job, same division `apply(edge:)` already keeps.
+    var onReposition: ((CGFloat) -> Void)?
+    /// A move handle carried a notch to another edge. Persisting it is
+    /// Preferences' job, the same division `onReposition` keeps.
+    var onMoveToEdge: ((NotchEdge) -> Void)?
+    /// The tooltip's bar let go on a value: provider id, index on its scale.
+    var onSetEffort: ((String, Int) -> Void)?
+    /// What a ring's own right-click menu can do — see `AgentMenuActions`.
+    var agentMenuActions = AgentMenuActions() {
+        didSet { for controller in controllers.values { controller.agentMenuActions = agentMenuActions } }
+    }
+    /// The card's bar let go on a lid level, 0 = low.
+    var onSetLidLevel: ((Int) -> Void)?
+    var onAnswerPrompt: ((UUID, PromptAnswer) -> Void)?
+    var onOpenPrompt: ((PendingPrompt) -> Void)?
+
+    /// Prompts waiting on an answer, on every panel.
+    private(set) var prompts: [PendingPrompt] = []
+
+    /// `quiet`: answered without the "Answers sent" line — see
+    /// `NotchViewModel.quietPrompts`.
+    func addPrompt(_ prompt: PendingPrompt, quiet: Bool = false) {
+        prompts.append(prompt)
+        if quiet { quietPrompts.insert(prompt.id) }
+        pushPrompts()
+    }
+
+    func removePrompt(_ id: UUID) {
+        guard prompts.contains(where: { $0.id == id }) else { return }
+        prompts.removeAll { $0.id == id }
+        pushPrompts()
+    }
+
+    private var quietPrompts: Set<UUID> = []
+
+    private func pushPrompts() {
+        // Kept past the prompt itself: the answer arrives after the prompt
+        // has been taken down. Only a quiet prompt's own answer reads it.
+        for controller in controllers.values {
+            controller.model.quietPrompts = quietPrompts
+            withAnimation(NotchMotion.contents) { controller.model.prompts = prompts }
+            controller.promptsChanged()
+        }
+    }
+
+    /// What the fleet settled on, for tests that need to see panels come and
+    /// go rather than take our word for it.
+    var controllersForTesting: [NotchWindowController] { Array(controllers.values) }
+
+    init(scope: NotchScreenScope, edge: NotchEdge) {
+        self.scope = scope
+        self.edge = edge
+    }
+
+    /// Guards `apply(scope:)`/`apply(displayPreference:)` from reconciling
+    /// before `show()` ever has: either one can otherwise build the fleet's
+    /// first (and, for `.mainDisplay`, only) controller using whatever the
+    /// app delegate has assigned to `onOpenSettings`/`onRefreshProvider`/etc.
+    /// *so far* — nil, if either is called before that wiring runs — and
+    /// `reconcile`'s own "keep the existing controller, just move it" fast
+    /// path never revisits a controller's callbacks once made. A controller
+    /// built with every action wired to nothing looks, from the screen,
+    /// identical to a working one: it still opens, its rings still draw, and
+    /// nothing about it says why every click does nothing.
+    private var hasShown = false
+
+    func show() {
+        hasShown = true
+        reconcile(screens: NSScreen.screens)
+        NotificationCenter.default.publisher(
+            for: NSApplication.didChangeScreenParametersNotification
+        )
+        .sink { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.reconcile(screens: NSScreen.screens)
+            }
+        }
+        .store(in: &cancellables)
+    }
+
+    func stop() {
+        cancellables.removeAll()
+        for id in controllers.keys {
+            controllers[id]?.retire()
+        }
+        controllers.removeAll()
+    }
+
+    // MARK: - Settings
+
+    func apply(scope: NotchScreenScope) {
+        self.scope = scope
+        guard hasShown else { return }
+        reconcile(screens: NSScreen.screens)
+    }
+
+    func apply(edge: NotchEdge) {
+        self.edge = edge
+        for controller in controllers.values {
+            controller.apply(edge: edge)
+        }
+    }
+
+    func apply(_ visibility: NotchVisibility) {
+        self.visibility = visibility
+        for controller in controllers.values {
+            controller.apply(visibility)
+        }
+    }
+
+    /// Only `.mainDisplay` has a single, unassigned controller for this to
+    /// mean anything to — reconciling picks it a screen using the new
+    /// preference the same way it does on a screen-parameter change.
+    func apply(displayPreference: DisplayPreference) {
+        self.displayPreference = displayPreference
+        guard hasShown else { return }
+        reconcile(screens: NSScreen.screens)
+    }
+
+    func apply(resetTimeFormat: ResetTimeFormat) {
+        self.resetTimeFormat = resetTimeFormat
+        for controller in controllers.values {
+            controller.model.resetTimeFormat = resetTimeFormat
+        }
+    }
+
+    func apply(showsMoveHandle: Bool) {
+        self.showsMoveHandle = showsMoveHandle
+        for controller in controllers.values {
+            controller.apply(showsMoveHandle: showsMoveHandle)
+        }
+    }
+
+    func apply(weeklyRing: WeeklyRing) {
+        self.weeklyRing = weeklyRing
+        for controller in controllers.values {
+            controller.model.weeklyRing = weeklyRing
+        }
+    }
+
+    func apply(accentColor: AccentColorChoice) {
+        self.accentColor = accentColor
+        for controller in controllers.values {
+            controller.model.accentColor = accentColor
+        }
+    }
+
+    func apply(surfaceStyle: NotchSurfaceStyle) {
+        self.surfaceStyle = surfaceStyle
+        for controller in controllers.values {
+            controller.model.surfaceStyle = surfaceStyle
+        controller.model.interfaceMode = interfaceMode
+        }
+    }
+
+    private var interfaceMode: InterfaceMode?
+    func apply(interfaceMode: InterfaceMode) {
+        self.interfaceMode = interfaceMode
+        for controller in controllers.values {
+            controller.model.interfaceMode = interfaceMode
+        }
+    }
+
+    private var sessionLimit = 6
+    private var staleIdleAfter: TimeInterval? = 6 * 3600
+    func apply(sessionLimit: Int, staleIdleAfter: TimeInterval?) {
+        self.sessionLimit = sessionLimit
+        self.staleIdleAfter = staleIdleAfter
+        for model in models {
+            model.sessionLimit = sessionLimit
+            model.staleIdleAfter = staleIdleAfter
+        }
+    }
+
+    private var pillFrost: CGFloat = 0.5
+    private var promptCardOverFullScreen = true
+    func apply(promptCardOverFullScreen: Bool) {
+        self.promptCardOverFullScreen = promptCardOverFullScreen
+        for controller in controllers.values {
+            controller.model.promptCardOverFullScreen = promptCardOverFullScreen
+        }
+    }
+    func apply(pillFrost: CGFloat) {
+        self.pillFrost = pillFrost
+        for controller in controllers.values {
+            controller.model.pillFrost = pillFrost
+        controller.model.sessionLimit = sessionLimit
+        controller.model.staleIdleAfter = staleIdleAfter
+        }
+    }
+
+    func apply(alongOffset: CGFloat) {
+        self.alongOffset = alongOffset
+        for controller in controllers.values {
+            controller.apply(alongOffset: alongOffset)
+        }
+    }
+
+    /// Through `controller.apply(size:)` rather than by setting the model
+    /// directly, because the panel has to be rebuilt around the new size —
+    /// the same division `apply(edge:)` keeps.
+    func apply(scale: CGFloat) {
+        self.scale = scale
+        for controller in controllers.values {
+            controller.apply(scale: scale)
+        }
+    }
+
+    private var connectNeeds: [String: ConnectNeed] = [:]
+    var onConnect: ((String) -> Void)?
+    func apply(connectNeeds: [String: ConnectNeed]) {
+        self.connectNeeds = connectNeeds
+        for controller in controllers.values where controller.model.connectNeeds != connectNeeds {
+            controller.model.connectNeeds = connectNeeds
+        }
+    }
+
+    private var cardScale: CGFloat = 1
+    func apply(cardScale: CGFloat) {
+        self.cardScale = cardScale
+        for controller in controllers.values {
+            controller.apply(cardScale: cardScale)
+        }
+    }
+
+    // MARK: - Readings
+
+    func setSnapshots(_ snapshots: [ProviderSnapshot]) {
+        self.snapshots = snapshots
+        // Kept, not shown, while the tour's demo is on the notch.
+        guard tourDemo == nil else { return }
+        let now = Date()
+        for model in models {
+            model.updateSnapshots(snapshots)
+            model.now = now
+        }
+    }
+
+    func setThinkingModels(_ thinking: [String: Date]) {
+        thinkingModels = thinking
+        for model in models {
+            model.thinkingModels = thinking
+        }
+    }
+
+    func setPerformances(_ measurements: [String: LocalModelPerformance],
+                         source: String = NotchViewModel.ollamaSource) {
+        performances[source] = measurements
+        for model in models {
+            model.updatePerformances(measurements, source: source)
+        }
+    }
+
+    func setLocalActivities(_ activities: [String: LocalModelActivity]) {
+        localActivities = activities
+        for model in models {
+            model.localActivities = activities
+        }
+    }
+
+    func setLedger(_ ledger: LocalTokenLedger) {
+        self.ledger = ledger
+        for model in models {
+            model.updateLedger(ledger)
+        }
+    }
+
+    /// Opens every panel for a moment, because something happened — the same
+    /// announcement on every display rather than only the one you happen to
+    /// be looking at.
+    func peek(for duration: TimeInterval, focusing pid: pid_t?) {
+        for controller in controllers.values {
+            controller.peek(for: duration, focusing: pid)
+        }
+    }
+
+    /// The tour's stand-in readings, shown instead of the real ones — which
+    /// keep arriving underneath and come back the moment it ends.
+    private var tourDemo: (snapshots: [ProviderSnapshot], sessions: [String: [AgentSession]])?
+    var isShowingTourDemo: Bool { tourDemo != nil }
+
+    func showTourDemo(snapshots demo: [ProviderSnapshot], sessions demoSessions: [String: [AgentSession]]) {
+        tourDemo = (demo, demoSessions)
+        apply(demo, demoSessions)
+    }
+
+    func endTourDemo() {
+        guard tourDemo != nil else { return }
+        tourDemo = nil
+        // Every provider the demo named, emptied, then the real ones back.
+        var real = sessions
+        for id in ["claude", "codex", "cursor"] where real[id] == nil { real[id] = [] }
+        apply(snapshots, real)
+    }
+
+    private func apply(_ cells: [ProviderSnapshot], _ lists: [String: [AgentSession]]) {
+        let now = Date()
+        for model in models {
+            model.updateSnapshots(cells)
+            model.sessions = lists
+            model.now = now
+        }
+    }
+
+    /// Set while the intro tour runs: the pill is the tour's, and real
+    /// notes, prompts and alerts wait rather than land on its demos.
+    var isTouring = false
+
+    /// Opens every notch on the tooltip of the first agent that has
+    /// readings — Claude's, usually — and holds it, lighting `focus`;
+    /// `release` lets it fold.
+    func holdTourTooltip(focus: TooltipTourFocus? = nil) {
+        for controller in controllers.values {
+            let cells = controller.model.snapshots
+            let index = cells.firstIndex { $0.localModel == nil && $0.providerID == ClaudeProfile.defaultID && !$0.windows.isEmpty }
+                ?? cells.firstIndex { $0.localModel == nil && !$0.windows.isEmpty }
+                ?? (cells.isEmpty ? nil : 0)
+            controller.holdTooltip(index: index, focus: focus)
+        }
+    }
+
+    func releaseTourTooltip() {
+        for controller in controllers.values { controller.holdTooltip(index: nil) }
+        endPeek()
+    }
+
+    /// Folds every notch that is only open for a peek.
+    func endPeek() {
+        for controller in controllers.values { controller.endPeek() }
+    }
+
+    /// Hides every notch for the intro's film, or shows them again.
+    func setTourVeil(_ veiled: Bool) {
+        for controller in controllers.values { controller.model.tourVeiled = veiled }
+    }
+
+    /// The readings as the notch has them, for the intro to settle on.
+    var tourAgents: [ProviderSnapshot] {
+        menuModel.snapshots.filter { $0.localModel == nil && $0.localRuntime == nil }
+    }
+
+    /// Where a part of the notch is on the display in front of the person —
+    /// the main screen's panel, or any — for the intro tour to point at.
+    func tourAnchor(_ anchor: NotchWindowController.TourAnchor)
+        -> (rect: CGRect, screen: NSScreen, edge: NotchEdge)? {
+        let all = Array(controllers.values)
+        guard let controller = all.first(where: { $0.screen == NSScreen.main }) ?? all.first,
+              let screen = controller.screen,
+              let rect = controller.screenRect(of: anchor) else { return nil }
+        return (rect, screen, controller.model.edge)
+    }
+
+    /// Says a session finished from every pill, without opening any notch.
+    func showDoneToast(_ event: SessionCompletionWatcher.Event, duration: TimeInterval) {
+        for controller in controllers.values {
+            controller.showDoneToast(event, duration: duration)
+        }
+    }
+
+    /// Takes every pill's done line down now.
+    func dismissDoneToast() {
+        for controller in controllers.values { controller.dismissDoneToast() }
+    }
+
+    func resolveWaiting(waitingPIDs: Set<pid_t>) {
+        for controller in controllers.values {
+            controller.resolveWaiting(waitingPIDs: waitingPIDs)
+        }
+    }
+
+    /// Shows a usage reset notification modal on every panel.
+    func showResetAlert(_ event: UsageResetEvent, duration: TimeInterval = 5.0) {
+        for controller in controllers.values {
+            controller.showResetAlert(event, duration: duration)
+        }
+    }
+
+    func setRefreshing(_ ids: Set<String>) {
+        self.refreshing = ids
+        for controller in controllers.values {
+            controller.model.refreshing = ids
+        }
+    }
+
+    /// The lid-effort module's state, kept so a controller made later (a
+    /// display plugged in) starts with it rather than blank rings.
+    private(set) var effort: EffortState?
+
+    func setEffort(_ state: EffortState?) {
+        // Equal is not news: setting a model's @Published re-renders its
+        // whole notch whether or not anything changed.
+        guard effort != state else { return }
+        effort = state
+        for controller in controllers.values {
+            withAnimation(NotchMotion.reading) {
+                controller.model.effort = state
+            }
+        }
+    }
+
+    /// The lid moving, on every panel's card.
+    func setEffortPreview(_ position: Double?, level: EffortLevel, note: String? = nil, noteIsLive: Bool = false,
+                          agent: String? = nil) {
+        for controller in controllers.values {
+            controller.showEffortPreview(position, level: level, note: note, noteIsLive: noteIsLive, agent: agent)
+        }
+    }
+
+    /// Shows the effort-change card on every panel.
+    func showEffortAlert(_ event: EffortChangeEvent, duration: TimeInterval = 2.5) {
+        for controller in controllers.values {
+            controller.showEffortAlert(event, duration: duration)
+        }
+    }
+
+    func setSessions(providerID id: String, sessions live: [AgentSession]) {
+        sessions[id] = live
+        guard tourDemo == nil else { return }
+        let now = Date()
+        menuModel.sessions[id] = live
+        menuModel.now = now
+        for controller in controllers.values {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                controller.model.sessions[id] = live
+            }
+            controller.model.now = now
+        }
+    }
+
+    // MARK: - Reconciliation
+
+    /// Which notch a screen is, stable across polls while it stays connected.
+    ///
+    /// Every real display reports an `NSScreenNumber`; the fallback derives one
+    /// from the origin so a screen without a number still gets a notch rather
+    /// than none — at worst it is re-created when it moves.
+    ///
+    /// Nonisolated: pure computation on its argument, safe to call from anywhere.
+    nonisolated static func key(for screen: NSScreen) -> NSNumber {
+        if let number = screen.deviceDescription[NSDeviceDescriptionKey("NSScreenNumber")] as? NSNumber {
+            return number
+        }
+        let origin = screen.frame.origin
+        return NSNumber(value: Int(origin.x) * 31 + Int(origin.y))
+    }
+
+    /// Pure, so the add/remove maths can be tested without any displays: which
+    /// keys to retire and which to create, in a stable order.
+    ///
+    /// Nonisolated: pure computation on its arguments, safe to call from anywhere.
+    nonisolated static func planReconciliation(
+        current: Set<NSNumber>, desired: [NSNumber]
+    ) -> (remove: [NSNumber], add: [NSNumber]) {
+        let want = Set(desired)
+        let remove = current.subtracting(want).sorted { $0.intValue < $1.intValue }
+        var seen = Set<NSNumber>()
+        let add = desired.filter { want.contains($0) && !current.contains($0) && seen.insert($0).inserted }
+        return (remove, add)
+    }
+
+    /// Exposed so a test can drive the fleet against the real screen list.
+    func reconcileForTesting() {
+        reconcile(screens: NSScreen.screens)
+    }
+
+    private func reconcile(screens: [NSScreen]) {
+        let desired: [NSScreen]
+        switch scope {
+        case .mainDisplay:
+            desired = NotchGeometry.preferredScreen(from: screens, preference: displayPreference).map { [$0] } ?? []
+        case .allDisplays:
+            desired = screens
+        }
+        let keys = desired.map(Self.key)
+        // Screen numbers are unique per display; if they ever are not, fall
+        // back to a single notch rather than keying two panels as one.
+        guard Set(keys).count == keys.count else {
+            for id in controllers.keys {
+                controllers[id]?.retire()
+            }
+            controllers.removeAll()
+            if let main = NotchGeometry.preferredScreen(from: screens, preference: displayPreference) {
+                controllers[Self.key(for: main)] = makeController(on: main)
+            }
+            return
+        }
+        // The common case — one notch following the menu-bar screen — keeps
+        // its controller and moves it, the way a single panel always did,
+        // instead of tearing a panel down and building another.
+        if scope == .mainDisplay, controllers.count == 1,
+           let screen = desired.first, let controller = controllers.values.first {
+            controller.assignedScreen = screen
+            controller.relocate()
+            return
+        }
+        let plan = Self.planReconciliation(current: Set(controllers.keys), desired: keys)
+        for id in plan.remove {
+            controllers[id]?.retire()
+            controllers[id] = nil
+        }
+        for (screen, id) in zip(desired, keys) where plan.add.contains(id) {
+            controllers[id] = makeController(on: screen)
+        }
+    }
+
+    /// A controller that starts where every other one already is: same edge,
+    /// same readings, same open state — a display plugged in at noon must not
+    /// open on empty rings.
+    private func makeController(on screen: NSScreen) -> NotchWindowController {
+        let controller = NotchWindowController()
+        controller.assignedScreen = screen
+        controller.displayPreference = displayPreference
+        controller.model.edge = edge
+        controller.model.alongOffset = alongOffset
+        // Set before `show()`, so a display plugged in later builds its panel
+        // at the current size rather than at medium and resizing a beat later.
+        controller.model.sizeScale = scale
+        controller.model.resetTimeFormat = resetTimeFormat
+        controller.model.accentColor = accentColor
+        controller.model.weeklyRing = weeklyRing
+        controller.model.showsMoveHandle = showsMoveHandle
+        controller.model.surfaceStyle = surfaceStyle
+        controller.model.pillFrost = pillFrost
+        controller.model.promptCardOverFullScreen = promptCardOverFullScreen
+        controller.model.cardScale = cardScale
+        controller.model.connectNeeds = connectNeeds
+        controller.model.onConnect = onConnect
+        controller.onRefresh = onRefresh
+        controller.onRefreshProvider = onRefreshProvider
+        controller.onOpenSettings = onOpenSettings
+        controller.agentMenuActions = agentMenuActions
+        controller.model.onOpenSettings = onOpenSettings
+        controller.model.onFocusSession = onFocusSession
+        controller.onReposition = onReposition
+        controller.onMoveToEdge = onMoveToEdge
+        controller.model.onSetEffort = onSetEffort
+        controller.model.onSetLidLevel = onSetLidLevel
+        controller.model.onAnswerPrompt = onAnswerPrompt
+        controller.model.onOpenPrompt = onOpenPrompt
+        controller.model.prompts = prompts
+        controller.model.quietPrompts = quietPrompts
+        controller.onToggleKeepOpen = onToggleKeepOpen
+        controller.signInItems = signInItems
+        controller.model.updateSnapshots(snapshots)
+        controller.model.thinkingModels = thinkingModels
+        controller.model.localActivities = localActivities
+        controller.model.setLocalMetricsEnabled(localMetricsEnabled)
+        for (source, measurements) in performances {
+            controller.model.updatePerformances(measurements, source: source)
+        }
+        controller.model.updateLedger(ledger)
+        controller.model.refreshing = refreshing
+        controller.model.sessions = sessions
+        controller.model.effort = effort
+        controller.model.now = Date()
+        controller.apply(visibility)
+        controller.show()
+        return controller
+    }
+}
