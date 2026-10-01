@@ -2,7 +2,7 @@ import AppKit
 import ApplicationServices
 import OSLog
 
-/// Types a slash command into Claude Desktop's composer, so a session that
+/// Puts a slash command into Claude Desktop's composer and sends it, so a session that
 /// has no terminal to type into can still take a live `/effort`.
 ///
 /// On unless switched off in Settings: Claude Desktop handles `/effort` in
@@ -60,18 +60,27 @@ enum ClaudeDesktopComposer {
             return .notTrusted
         }
 
-        let axApp = AXUIElementCreateApplication(app.processIdentifier)
-        // Electron builds its tree only when told an assistive client wants it.
-        AXUIElementSetAttributeValue(axApp, "AXManualAccessibility" as CFString, kCFBooleanTrue)
-        AXUIElementSetAttributeValue(axApp, "AXEnhancedUserInterface" as CFString, kCFBooleanTrue)
+        let axApp = prepare(pid: app.processIdentifier)
 
         // The composer, focused. When the focus is elsewhere in the window
         // — the transcript, a button — find the composer and put the focus
         // there, rather than asking for a click on it before every gesture.
         var focused = element(axApp, kAXFocusedUIElementAttribute)
         if focused.map({ !isComposer($0) }) ?? true {
-            guard let window = element(axApp, kAXFocusedWindowAttribute) ?? element(axApp, kAXMainWindowAttribute),
-                  let composer = findComposer(in: window) else {
+            // Electron builds the tree a moment after it is first asked
+            // for: on the first gesture after either app starts, the window
+            // is still empty. Look again for up to a second before saying
+            // there is no message box — there plainly is one on screen.
+            var found: AXUIElement?
+            for attempt in 0...Self.treeAttempts {
+                if attempt > 0 { usleep(Self.treeWait) }
+                if let window = element(axApp, kAXFocusedWindowAttribute) ?? element(axApp, kAXMainWindowAttribute),
+                   let composer = findComposer(in: window) {
+                    found = composer
+                    break
+                }
+            }
+            guard let composer = found else {
                 log.notice("composer: no message box found in Claude Desktop's window")
                 return .noComposer
             }
@@ -89,17 +98,22 @@ enum ClaudeDesktopComposer {
             return .draft
         }
 
-        for character in command.utf16 { post(character: character) }
-        // Electron updates the composer a beat after the keys land; a
-        // Return in the same instant arrived before the text did and was
-        // dropped, and the command sat in the box unsent. Typing `/` also
-        // opens the command menu, where a first Return can go to the menu
-        // instead. So: wait, press Return, and look — until the box is empty.
-        usleep(Self.settle)
+        // Put the command in, then read it back: Return is pressed only on
+        // the exact command. Keystrokes are not used for the text — an input
+        // method rewrites them (Telex makes `/effort low` into `/efort lơ`),
+        // and a mangled command was sent as a message.
+        guard insert(command, into: focused) else {
+            clear(focused, ifItHolds: command)
+            log.notice("composer: \(command, privacy: .public) could not be put in the box intact")
+            return .notSent
+        }
+        // Typing `/` opens the command menu, where a first Return can go to
+        // the menu instead. So: press Return, and look — until the box is
+        // empty.
         for attempt in 1...Self.returnAttempts {
             post(key: 36)   // Return
             usleep(Self.settle)
-            let now = (string(focused, kAXValueAttribute) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            let now = value(of: focused)
             if now.isEmpty {
                 log.notice("composer: sent \(command, privacy: .public) (return \(attempt, privacy: .public))")
                 return .sent
@@ -111,22 +125,152 @@ enum ClaudeDesktopComposer {
                 return .userTyping
             }
             // The menu took the Return and rewrote the command — `/effort `
-            // without its level, say. Put the whole command back before the
-            // next Return, so the level sent is the one meant.
-            if now != command {
-                for _ in 0..<(string(focused, kAXValueAttribute) ?? "").count { post(key: 51) }   // Delete
-                for character in command.utf16 { post(character: character) }
-                usleep(Self.settle)
+            // without its level, say. Put the whole command back, checked,
+            // before the next Return, so the level sent is the one meant.
+            if !Self.holdsExactly(now, command) {
+                deleteAll(focused)
+                guard insert(command, into: focused) else { break }
             }
         }
-        // Not sent: take back only what we typed, so no stray command is left.
-        let left = (string(focused, kAXValueAttribute) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-        if left.hasPrefix("/"), command.hasPrefix(left) || left.hasPrefix(command) {
-            for _ in 0..<(string(focused, kAXValueAttribute) ?? "").count { post(key: 51) }   // Delete
-        }
+        // Not sent: take back only what we put there, so no stray command is left.
+        clear(focused, ifItHolds: command)
         log.notice("composer: \(command, privacy: .public) was typed but not sent")
         return .notSent
     }
+
+    /// The box holds the command and nothing else — what Return may send.
+    static func holdsExactly(_ value: String, _ command: String) -> Bool {
+        value.trimmingCharacters(in: .whitespacesAndNewlines) == command
+    }
+
+    private static func value(of element: AXUIElement) -> String {
+        (string(element, kAXValueAttribute) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// The command into the empty box, without keystrokes: first through
+    /// Accessibility, inserting it where the caret is; if the box does not
+    /// take that, pasted — the clipboard put back as it was. True only when
+    /// the box then reads back exactly the command.
+    private static func insert(_ command: String, into element: AXUIElement) -> Bool {
+        AXUIElementSetAttributeValue(element, kAXSelectedTextAttribute as CFString, command as CFString)
+        usleep(Self.settle)
+        if holdsExactly(value(of: element), command) { return true }
+        // Accessibility put nothing, or something else: start from empty.
+        if !value(of: element).isEmpty {
+            guard value(of: element).hasPrefix("/") else { return false }
+            deleteAll(element)
+        }
+        paste(command)
+        usleep(Self.settle)
+        return holdsExactly(value(of: element), command)
+    }
+
+    /// ⌘V with the command on the clipboard, then the clipboard as it was.
+    /// Marked transient and concealed, the nspasteboard.org convention, so
+    /// clipboard managers leave it out of their history.
+    private static func paste(_ text: String) {
+        let board = NSPasteboard.general
+        let saved: [[(NSPasteboard.PasteboardType, Data)]] = (board.pasteboardItems ?? []).map { item in
+            item.types.compactMap { type in item.data(forType: type).map { (type, $0) } }
+        }
+        board.clearContents()
+        board.declareTypes([.string, NSPasteboard.PasteboardType("org.nspasteboard.TransientType"),
+                            NSPasteboard.PasteboardType("org.nspasteboard.ConcealedType")], owner: nil)
+        board.setString(text, forType: .string)
+        board.setString("", forType: NSPasteboard.PasteboardType("org.nspasteboard.TransientType"))
+        board.setString("", forType: NSPasteboard.PasteboardType("org.nspasteboard.ConcealedType"))
+        post(key: 9, flags: .maskCommand)   // ⌘V
+        usleep(Self.settle)
+        board.clearContents()
+        let items = saved.map { pairs -> NSPasteboardItem in
+            let item = NSPasteboardItem()
+            for (type, data) in pairs { item.setData(data, forType: type) }
+            return item
+        }
+        if !items.isEmpty { board.writeObjects(items) }
+    }
+
+    /// Deletes what is in the box only when it is (part of) our command —
+    /// never a draft of the person's.
+    private static func clear(_ element: AXUIElement, ifItHolds command: String) {
+        let left = value(of: element)
+        guard !left.isEmpty, left.hasPrefix("/"), command.hasPrefix(left) || left.hasPrefix(command) else { return }
+        deleteAll(element)
+    }
+
+    private static func deleteAll(_ element: AXUIElement) {
+        for _ in 0..<(string(element, kAXValueAttribute) ?? "").count { post(key: 51) }   // Delete
+        usleep(Self.settle)
+    }
+
+    /// What Claude Desktop's window is showing.
+    enum View: Equatable {
+        /// The window could not be read: not in front, not trusted.
+        case unknown
+        /// Something other than a Claude Code session — a chat, settings.
+        case noSession
+        /// The Claude Code session with this id (`local_…`).
+        case session(String)
+    }
+
+    /// The session on screen, read from the window rather than from
+    /// Claude Desktop's records: their "last focused" time is written late,
+    /// and named the session you had just left. The page holding a session
+    /// has its id in its address — `claude.ai/epitaxy/local_…`.
+    @MainActor
+    static func view() -> View {
+        guard let app = NSWorkspace.shared.frontmostApplication, app.bundleIdentifier == bundleID,
+              AXIsProcessTrusted() else { return .unknown }
+        let axApp = prepare(pid: app.processIdentifier)
+        guard let window = element(axApp, kAXFocusedWindowAttribute) ?? element(axApp, kAXMainWindowAttribute) else {
+            return .unknown
+        }
+        var stack = [window]
+        var visited = 0
+        var sawPage = false
+        while let node = stack.popLast(), visited < 20_000 {
+            visited += 1
+            if string(node, kAXRoleAttribute) == "AXWebArea" {
+                sawPage = true
+                var url: CFTypeRef?
+                if AXUIElementCopyAttributeValue(node, kAXURLAttribute as CFString, &url) == .success,
+                   let address = (url as? URL)?.absoluteString ?? (url as? String),
+                   let id = hostSessionID(inAddress: address) {
+                    return .session(id)
+                }
+                continue
+            }
+            var children: CFTypeRef?
+            if AXUIElementCopyAttributeValue(node, kAXChildrenAttribute as CFString, &children) == .success,
+               let list = children as? [AXUIElement] {
+                stack.append(contentsOf: list)
+            }
+        }
+        return sawPage ? .noSession : .unknown
+    }
+
+    /// `local_<uuid>` from a Claude Desktop page address, if it names one.
+    static func hostSessionID(inAddress address: String) -> String? {
+        guard let range = address.range(of: #"local_[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}"#,
+                                        options: .regularExpression) else { return nil }
+        return String(address[range])
+    }
+
+    /// Asks Claude Desktop for its accessibility tree. Electron builds one
+    /// only when told an assistive client wants it, and builds it a beat
+    /// later — so this is also called as Claude Desktop comes to the front,
+    /// well before a gesture needs the tree.
+    @discardableResult
+    static func prepare(pid: pid_t) -> AXUIElement {
+        let axApp = AXUIElementCreateApplication(pid)
+        AXUIElementSetAttributeValue(axApp, "AXManualAccessibility" as CFString, kCFBooleanTrue)
+        AXUIElementSetAttributeValue(axApp, "AXEnhancedUserInterface" as CFString, kCFBooleanTrue)
+        return axApp
+    }
+
+    /// Waiting for a tree that is still being built: 4 × 250 ms.
+    static let treeAttempts = 4
+    static let treeWait: useconds_t = 250_000
 
     /// How long Claude Desktop's composer takes to catch up with the keys.
     static let settle: useconds_t = 220_000
@@ -180,20 +324,12 @@ enum ClaudeDesktopComposer {
         return value as? String
     }
 
-    private static func post(character: UInt16) {
-        var unit = character
+    private static func post(key: CGKeyCode, flags: CGEventFlags = []) {
         let source = CGEventSource(stateID: .combinedSessionState)
         for down in [true, false] {
-            guard let event = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: down) else { continue }
-            event.keyboardSetUnicodeString(stringLength: 1, unicodeString: &unit)
+            guard let event = CGEvent(keyboardEventSource: source, virtualKey: key, keyDown: down) else { continue }
+            event.flags = flags
             event.post(tap: .cghidEventTap)
-        }
-    }
-
-    private static func post(key: CGKeyCode) {
-        let source = CGEventSource(stateID: .combinedSessionState)
-        for down in [true, false] {
-            CGEvent(keyboardEventSource: source, virtualKey: key, keyDown: down)?.post(tap: .cghidEventTap)
         }
     }
 }

@@ -32,6 +32,24 @@ enum ReleaseNotes {
     static var all: [ReleaseNote] {
         [
             ReleaseNote(
+                version: "1.0.1",
+                headline: L10n.t("Live effort in the Claude app, done right."),
+                changes: [
+                    ReleaseNote.Change(
+                        title: L10n.t("The session on screen gets the change"),
+                        detail: L10n.t("The card names the Claude app session you are looking at, and /effort goes into that one — even right after you switch.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("Works with any input method"),
+                        detail: L10n.t("The command is put in whole and checked before it is sent, so Telex or another input method can no longer change it.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("The card says why a change is waiting"),
+                        detail: L10n.t("Claude mid-reply, a draft in the message box, Codex chats that keep their level — and it comes back once the change is live.")
+                    )
+                ]
+            ),
+            ReleaseNote(
                 version: "1.0.0",
                 headline: L10n.t("Your agents' limits, status and effort — on a notch, and a lid."),
                 changes: [

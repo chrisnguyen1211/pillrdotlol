@@ -38,6 +38,11 @@ enum SessionModels {
         let lastFocusedAt: Double
         let isIdle: Bool
         let model: String?
+        /// Claude Desktop's id for it (`local_…`) — what its window shows
+        /// in the address of the page that holds the session.
+        var hostSessionID = ""
+        /// Its title in Claude Desktop's sidebar.
+        var title: String? = nil
     }
 
     /// `~/.claude/sessions/<pid>.json` says the session belongs to Claude
@@ -64,7 +69,24 @@ enum SessionModels {
         }
         let focused = (record?["lastFocusedAt"] as? NSNumber)?.doubleValue ?? 0
         let model = (record?["model"] as? String) ?? SessionModels.claude(pid: pid, home: home)
-        return DesktopSession(pid: pid, lastFocusedAt: focused, isIdle: idle, model: model)
+        return DesktopSession(pid: pid, lastFocusedAt: focused, isIdle: idle, model: model,
+                              hostSessionID: host, title: record?["title"] as? String)
+    }
+
+    /// The running Claude Desktop session with this id, found among every
+    /// session Claude Code has registered — the notch's list leaves out
+    /// sessions idle for hours, and one of those can still be on screen.
+    static func desktop(hostSessionID: String, home: URL = SessionModels.home) -> DesktopSession? {
+        let sessions = home.appendingPathComponent(".claude/sessions")
+        let files = (try? FileManager.default.contentsOfDirectory(at: sessions, includingPropertiesForKeys: nil)) ?? []
+        for file in files where file.pathExtension == "json" {
+            guard let pid = pid_t(file.deletingPathExtension().lastPathComponent), kill(pid, 0) == 0,
+                  let data = try? Data(contentsOf: file),
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  json["hostSessionId"] as? String == hostSessionID else { continue }
+            return desktop(pid: pid, home: home)
+        }
+        return nil
     }
 
     /// Claude Code: `~/.claude/sessions/<pid>.json` names the session and its

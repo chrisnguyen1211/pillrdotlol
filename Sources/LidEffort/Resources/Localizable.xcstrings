@@ -30380,6 +30380,244 @@
           }
         }
       }
+    },
+    "Live effort in the Claude app, done right." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'effort en direct dans l'app Claude, enfin comme il faut."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude アプリでのライブ effort 変更を正しく。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esforço ao vivo no app Claude, do jeito certo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Смена уровня на лету в приложении Claude — теперь как надо."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 Claude 应用中即时更改 effort，这次做对了。"
+          }
+        }
+      }
+    },
+    "The session on screen gets the change" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La session affichée reçoit le changement"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "表示中のセッションに反映"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A sessão na tela recebe a mudança"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Изменение получает сессия на экране"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "屏幕上的会话获得更改"
+          }
+        }
+      }
+    },
+    "The card names the Claude app session you are looking at, and /effort goes into that one — even right after you switch." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La carte nomme la session de l'app Claude que vous regardez, et /effort va dans celle-ci — même juste après avoir changé."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カードには見ている Claude アプリのセッション名が表示され、/effort はそのセッションに入ります。切り替えた直後でも同じです。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O cartão mostra a sessão do app Claude que você está vendo, e o /effort vai para ela — mesmo logo depois de trocar."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Карточка называет сессию приложения Claude, на которую вы смотрите, и /effort уходит именно в неё — даже сразу после переключения."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "卡片会显示你正在看的 Claude 应用会话，/effort 也会发到这个会话——即使你刚刚切换过。"
+          }
+        }
+      }
+    },
+    "Works with any input method" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fonctionne avec toutes les méthodes de saisie"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どの入力方式でも動作"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Funciona com qualquer método de entrada"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Работает с любым методом ввода"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "支持任何输入法"
+          }
+        }
+      }
+    },
+    "The command is put in whole and checked before it is sent, so Telex or another input method can no longer change it." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La commande est insérée en entier et vérifiée avant l'envoi : Telex ou une autre méthode de saisie ne peut plus la modifier."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コマンドはまとめて入力され、送信前に確認されるため、Telex などの入力方式で書き換えられることはもうありません。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O comando é inserido inteiro e conferido antes do envio, então o Telex ou outro método de entrada não consegue mais alterá-lo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Команда вставляется целиком и проверяется перед отправкой, так что Telex или другой метод ввода больше не может её исказить."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "命令会整段放入并在发送前核对，Telex 或其他输入法再也无法改动它。"
+          }
+        }
+      }
+    },
+    "The card says why a change is waiting" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La carte dit pourquoi un changement attend"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "変更が保留中の理由をカードが表示"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O cartão diz por que uma mudança está esperando"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Карточка объясняет, почему изменение ждёт"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "卡片会说明更改为何在等待"
+          }
+        }
+      }
+    },
+    "Claude mid-reply, a draft in the message box, Codex chats that keep their level — and it comes back once the change is live." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude en pleine réponse, un brouillon dans le champ de message, des conversations Codex qui gardent leur niveau — et elle revient une fois le changement appliqué."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude が応答中、入力欄に下書きがある、Codex の会話はレベルを保持する——そして変更が反映されるとカードが再表示されます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude no meio de uma resposta, um rascunho na caixa de mensagem, conversas do Codex que mantêm o nível — e ele volta quando a mudança entra em vigor."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude ещё отвечает, в поле сообщения черновик, чаты Codex сохраняют свой уровень — и карточка возвращается, когда изменение применено."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude 正在回复、输入框里有草稿、Codex 对话保留原级别——更改生效后卡片会再次出现。"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

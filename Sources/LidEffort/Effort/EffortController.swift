@@ -79,6 +79,22 @@ final class EffortController: ObservableObject {
         observers.append(center.addObserver(forName: NSWorkspace.didWakeNotification, object: nil, queue: .main) { [weak self] _ in
             Task { @MainActor in self?.didWake() }
         })
+        // Claude Desktop's accessibility tree, asked for as it comes to the
+        // front: Electron builds it a moment later, and a gesture that had
+        // to wait for it found no message box the first time.
+        observers.append(center.addObserver(forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main) { [weak self] note in
+            guard let app = note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication,
+                  app.bundleIdentifier == ClaudeDesktopComposer.bundleID else { return }
+            let pid = app.processIdentifier
+            Task { @MainActor in
+                guard let self, ClaudeDesktopComposer.isEnabled(self.defaults), AXIsProcessTrusted() else { return }
+                ClaudeDesktopComposer.prepare(pid: pid)
+            }
+        })
+        if let front = NSWorkspace.shared.frontmostApplication, front.bundleIdentifier == ClaudeDesktopComposer.bundleID,
+           ClaudeDesktopComposer.isEnabled(defaults), AXIsProcessTrusted() {
+            ClaudeDesktopComposer.prepare(pid: front.processIdentifier)
+        }
         timer = Timer(timeInterval: 0.2, repeats: true) { [weak self] _ in
             Task { @MainActor in self?.tick() }
         }
@@ -529,13 +545,22 @@ final class EffortController: ObservableObject {
                                     note: EffortNotes.delivered(to: name), noteIsLive: true, agent: agent))
     }
 
-    /// The session Claude Desktop is showing, when Desktop is in front: of
-    /// its sessions the notch knows, the one it focused last.
+    /// The session Claude Desktop is showing, when Desktop is in front: the
+    /// one its window has open, read from the window. Only when the window
+    /// cannot be read, the one Desktop's records say was focused last.
     static func desktopSessionInView(_ live: [LiveSession]) -> (info: SessionModels.DesktopSession, name: String)? {
         guard NSWorkspace.shared.frontmostApplication?.bundleIdentifier == ClaudeDesktopComposer.bundleID else { return nil }
-        return live.filter { $0.ref.tty == nil && $0.ref.hostBundleID == ClaudeDesktopComposer.bundleID }
+        let known = live.filter { $0.ref.tty == nil && $0.ref.hostBundleID == ClaudeDesktopComposer.bundleID }
             .compactMap { session in SessionModels.desktop(pid: session.ref.pid).map { ($0, session.name) } }
-            .max { $0.0.lastFocusedAt < $1.0.lastFocusedAt }
+        switch ClaudeDesktopComposer.view() {
+        case .session(let id):
+            if let match = known.first(where: { $0.0.hostSessionID == id }) { return match }
+            return SessionModels.desktop(hostSessionID: id).map { ($0, $0.title ?? "Claude Code") }
+        case .noSession:
+            return nil
+        case .unknown:
+            return known.max { $0.0.lastFocusedAt < $1.0.lastFocusedAt }
+        }
     }
 
     /// Sessions that were mid-turn when the level changed, by pid. Replaced

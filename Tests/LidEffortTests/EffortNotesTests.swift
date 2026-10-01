@@ -68,3 +68,48 @@ final class EffortNotesTests: XCTestCase {
         }
     }
 }
+
+/// Return goes only to the exact command: what an input method made of it
+/// — Telex turns `/effort low` into `/efort lơ` — is never sent.
+final class ComposerExactnessTests: XCTestCase {
+    func testOnlyTheExactCommandIsSent() {
+        XCTAssertTrue(ClaudeDesktopComposer.holdsExactly("/effort low\n", "/effort low"))
+        XCTAssertFalse(ClaudeDesktopComposer.holdsExactly("/efort lơ", "/effort low"))
+        XCTAssertFalse(ClaudeDesktopComposer.holdsExactly("/effort ", "/effort low"))
+        XCTAssertFalse(ClaudeDesktopComposer.holdsExactly("/effort lowx", "/effort low"))
+        XCTAssertFalse(ClaudeDesktopComposer.holdsExactly("", "/effort low"))
+    }
+}
+
+/// The Claude session on screen is read from Claude Desktop's window — the
+/// page's address names it — not from its records' "last focused" time,
+/// which is written late and named the session just left.
+final class ClaudeAppViewTests: XCTestCase {
+    func testTheSessionIdComesFromThePageAddress() {
+        XCTAssertEqual(ClaudeDesktopComposer.hostSessionID(inAddress: "https://claude.ai/epitaxy/local_bc18f79e-676e-417b-ac3d-a2e80f577e0e"),
+                       "local_bc18f79e-676e-417b-ac3d-a2e80f577e0e")
+        XCTAssertEqual(ClaudeDesktopComposer.hostSessionID(inAddress: "https://claude.ai/epitaxy/local_bc18f79e-676e-417b-ac3d-a2e80f577e0e?tab=diff"),
+                       "local_bc18f79e-676e-417b-ac3d-a2e80f577e0e")
+        XCTAssertNil(ClaudeDesktopComposer.hostSessionID(inAddress: "https://claude.ai/chat/0b1c2d3e-4f50-6172-8394-a5b6c7d8e9f0"))
+        XCTAssertNil(ClaudeDesktopComposer.hostSessionID(inAddress: "http://localhost:3200/login"))
+    }
+
+    func testADesktopSessionCarriesItsIdAndTitle() throws {
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent("ClaudeAppViewTests-\(UUID().uuidString)")
+        let sessions = home.appendingPathComponent(".claude/sessions")
+        let records = home.appendingPathComponent("Library/Application Support/Claude/claude-code-sessions/acct/org")
+        try FileManager.default.createDirectory(at: sessions, withIntermediateDirectories: true)
+        try FileManager.default.createDirectory(at: records, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: home) }
+        let pid = ProcessInfo.processInfo.processIdentifier
+        try #"{"pid":\#(pid),"sessionId":"s1","entrypoint":"claude-desktop","hostSessionId":"local_abc","status":"idle"}"#
+            .write(to: sessions.appendingPathComponent("\(pid).json"), atomically: true, encoding: .utf8)
+        try #"{"title":"Fix the card","lastFocusedAt":1,"model":"claude-opus-5-5"}"#
+            .write(to: records.appendingPathComponent("local_abc.json"), atomically: true, encoding: .utf8)
+        let session = try XCTUnwrap(SessionModels.desktop(hostSessionID: "local_abc", home: home))
+        XCTAssertEqual(session.pid, pid)
+        XCTAssertEqual(session.hostSessionID, "local_abc")
+        XCTAssertEqual(session.title, "Fix the card")
+        XCTAssertNil(SessionModels.desktop(hostSessionID: "local_other", home: home))
+    }
+}
