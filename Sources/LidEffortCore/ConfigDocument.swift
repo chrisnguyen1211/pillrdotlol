@@ -16,6 +16,11 @@ public enum ConfigDocument {
     /// safely (unparseable JSON, or a TOML section that doesn't exist —
     /// inventing a section is a guess we refuse to make).
     public static func writeString(key: String, section: String?, value: String, format: ConfigFormat, text: String) -> String? {
+        // One line, one quoted string: a quote, a backslash or a line break
+        // in the value would end the string early and write keys of its own.
+        guard !value.contains(where: { $0 == "\"" || $0 == "\\" || $0.isNewline || $0.asciiValue.map { $0 < 0x20 } == true }) else {
+            return nil
+        }
         switch format {
         case .json: return writeJSON(key: key, value: value, text: text)
         case .toml: return writeTOML(key: key, section: section, value: value, text: text)

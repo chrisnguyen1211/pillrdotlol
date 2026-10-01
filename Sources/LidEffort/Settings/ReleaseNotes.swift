@@ -32,6 +32,24 @@ enum ReleaseNotes {
     static var all: [ReleaseNote] {
         [
             ReleaseNote(
+                version: "1.0.2",
+                headline: L10n.t("Safer approvals, and a locked-down app."),
+                changes: [
+                    ReleaseNote.Change(
+                        title: L10n.t("Read the whole command before you allow it"),
+                        detail: L10n.t("A command longer than the card scrolls, and Allow waits until you have seen its last line. Invisible and reordering characters are shown, not hidden.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("spyx's permissions stay spyx's"),
+                        detail: L10n.t("The app now runs with macOS's hardened runtime, so no other program can load itself into spyx and use its Accessibility or Terminal access.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("Only plain effort values are written"),
+                        detail: L10n.t("A value from an agent's model list that is not a plain level is ignored — never written into a config or typed into a session.")
+                    )
+                ]
+            ),
+            ReleaseNote(
                 version: "1.0.1",
                 headline: L10n.t("Live effort in the Claude app, done right."),
                 changes: [

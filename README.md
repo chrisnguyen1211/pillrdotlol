@@ -305,6 +305,11 @@ server of ours: nothing about you or your work is sent anywhere.
   Settings → General copies them if you want to send one in an issue.
 - **Updates** — Sparkle checks the appcast on this repository's Releases,
   and installs only updates signed with spyx's key.
+- **The app itself** runs with macOS's hardened runtime: no other program
+  can load code into spyx and borrow its Accessibility or Terminal access.
+- **Approvals** show the whole command: one longer than the card scrolls,
+  and Allow waits until its last line has been seen; invisible and
+  text-reordering characters are written out (`⟨U+202E⟩`).
 
 ## License
 

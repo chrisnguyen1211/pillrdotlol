@@ -77,7 +77,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <string>spyx types /effort into the Terminal.app tab a Claude Code session is running in, so a lid gesture updates that session live.</string>
   <key>SUFeedURL</key><string>https://github.com/chrisnguyen1211/spyxdotlol/releases/latest/download/appcast.xml</string>
   <key>SUPublicEDKey</key><string>9+PPkW+iIsKvN+uBa6Ab15KmY/D2GYiWCXuAYUC2pGQ=</string>
-  <key>NSHumanReadableCopyright</key><string>© 2026 Chris. Open-source notices: Settings → General → Acknowledgements.</string>
+  <key>NSHumanReadableCopyright</key><string>© 2026 Cuong Nguyen. Open-source notices: Settings → General → Acknowledgements.</string>
 </dict></plist>
 PLIST
 

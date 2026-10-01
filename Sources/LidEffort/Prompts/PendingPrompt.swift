@@ -83,6 +83,33 @@ struct PendingPrompt: Identifiable, Equatable {
         return text
     }
 
+    /// The summary as it is shown: characters that draw nothing or reorder
+    /// the text around them — zero-width spaces, bidi overrides, control
+    /// codes — written out as `⟨U+202E⟩`, so what is read is what runs.
+    var displaySummary: String { Self.visible(summary) }
+
+    static func visible(_ text: String) -> String {
+        var out = ""
+        for scalar in text.unicodeScalars {
+            if isHidden(scalar) {
+                out += String(format: "⟨U+%04X⟩", scalar.value)
+            } else {
+                out.unicodeScalars.append(scalar)
+            }
+        }
+        return out
+    }
+
+    private static func isHidden(_ scalar: Unicode.Scalar) -> Bool {
+        switch scalar.value {
+        case 0x0A, 0x09: return false                       // line break, tab
+        case 0x00...0x1F, 0x7F...0x9F: return true          // control codes
+        case 0x200B...0x200F, 0x202A...0x202E, 0x2060...0x2064,
+             0x2066...0x2069, 0xFEFF, 0x00AD, 0x2028, 0x2029, 0x061C: return true
+        default: return false
+        }
+    }
+
     var summary: String {
         func relative(_ path: String) -> String {
             guard let cwd, path.hasPrefix(cwd + "/") else { return path }

@@ -358,7 +358,14 @@ enum PromptLayout {
     }
 
     static func codeLines(for prompt: PendingPrompt, fit: Fit = .card) -> Int {
-        lines(prompt.summary, font: codeFont, width: contentWidth(fit) - 2 * wellInset, cap: codeMaxLines)
+        lines(prompt.displaySummary, font: codeFont, width: contentWidth(fit) - 2 * wellInset, cap: codeMaxLines)
+    }
+
+    /// The command runs past the lines the well shows. Then the well scrolls,
+    /// and Allow waits until it has been read to the end: what is allowed
+    /// from the notch is never more than what was seen there.
+    static func codeIsClipped(for prompt: PendingPrompt, fit: Fit = .card) -> Bool {
+        lines(prompt.displaySummary, font: codeFont, width: contentWidth(fit) - 2 * wellInset, cap: .max) > codeMaxLines
     }
 
     /// A permission: what it wants to do, why, and the command or file in a well.
@@ -480,6 +487,8 @@ private struct PromptContent: View {
     /// drawn the moment the task starts, before it could ever arm.
     @State private var armed = Runtime.isUnderTest
     @State private var hovered: String?
+    /// The prompt whose command has been scrolled to its end.
+    @State private var readToEnd: UUID?
     @FocusState private var typing: Bool
     @Namespace private var glide
 
@@ -636,6 +645,12 @@ private struct PromptContent: View {
 
     // MARK: Approval
 
+    /// Allow and Always wait for a command too long for the well to have
+    /// been scrolled to its end.
+    private var mustReadToEnd: Bool {
+        !prompt.isQuestion && PromptLayout.codeIsClipped(for: prompt, fit: fit) && readToEnd != prompt.id
+    }
+
     private var approval: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(prompt.statusText)
@@ -655,17 +670,36 @@ private struct PromptContent: View {
                     .padding(.top, PromptLayout.purposeGap)
             }
             let codeLines = max(2, PromptLayout.codeLines(for: prompt, fit: fit))
-            Text(prompt.summary)
-                .font(Typography.code)
-                .foregroundStyle(Palette.textPrimary)
-                .lineLimit(codeLines)
-                .truncationMode(.tail)
-                .frame(maxWidth: .infinity, alignment: .topLeading)
-                .padding(PromptLayout.wellInset)
-                .frame(height: CGFloat(codeLines) * PromptLayout.lineHeight(PromptLayout.codeFont) + 2 * PromptLayout.wellInset,
-                       alignment: .topLeading)
-                .background(NotchWell())
-                .padding(.top, PromptLayout.headingGap)
+            let wellHeight = CGFloat(codeLines) * PromptLayout.lineHeight(PromptLayout.codeFont) + 2 * PromptLayout.wellInset
+            Group {
+                if PromptLayout.codeIsClipped(for: prompt, fit: fit) {
+                    ScrollView(.vertical) {
+                        Text(prompt.displaySummary)
+                            .font(Typography.code)
+                            .foregroundStyle(Palette.textPrimary)
+                            .textSelection(.enabled)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .frame(maxWidth: .infinity, alignment: .topLeading)
+                            .padding(PromptLayout.wellInset)
+                    }
+                    .scrollIndicators(.visible)
+                    .onScrollGeometryChange(for: Bool.self) { geometry in
+                        geometry.contentOffset.y + geometry.containerSize.height >= geometry.contentSize.height - 2
+                    } action: { _, atEnd in
+                        if atEnd { readToEnd = prompt.id }
+                    }
+                } else {
+                    Text(prompt.displaySummary)
+                        .font(Typography.code)
+                        .foregroundStyle(Palette.textPrimary)
+                        .lineLimit(codeLines)
+                        .frame(maxWidth: .infinity, alignment: .topLeading)
+                        .padding(PromptLayout.wellInset)
+                }
+            }
+            .frame(height: wellHeight, alignment: .topLeading)
+            .background(NotchWell())
+            .padding(.top, PromptLayout.headingGap)
         }
     }
 
@@ -686,11 +720,22 @@ private struct PromptContent: View {
                     .disabled(!draft.hasAnswer)
                     .opacity(draft.hasAnswer ? 1 : 0.4)
             } else {
+                if mustReadToEnd {
+                    Text(L10n.t("Scroll to the end to allow"))
+                        .font(Typography.detail)
+                        .foregroundStyle(Palette.textSecondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
                 NotchButton(title: L10n.t("Deny"), role: .quietDestructive) { onAnswer(.deny) }
                 if prompt.canRemember {
-                    NotchButton(title: L10n.t("Always")) { onAnswer(.allowAlways) }
+                    NotchButton(title: L10n.t("Always")) { if !mustReadToEnd { onAnswer(.allowAlways) } }
+                        .disabled(mustReadToEnd)
+                        .opacity(mustReadToEnd ? 0.4 : 1)
                 }
-                NotchButton(title: L10n.t("Allow"), role: .primary) { onAnswer(.allow) }
+                NotchButton(title: L10n.t("Allow"), role: .primary) { if !mustReadToEnd { onAnswer(.allow) } }
+                    .disabled(mustReadToEnd)
+                    .opacity(mustReadToEnd ? 0.4 : 1)
             }
         }
         .frame(height: PromptLayout.footerHeight)

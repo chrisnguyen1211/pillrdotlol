@@ -210,7 +210,8 @@ public enum TargetOverrides {
             if let enabled = override["enabled"] as? Bool { updated.enabled = enabled }
             if let bands = override["bands"] as? [String: Any] {
                 for (model, value) in bands {
-                    if let list = value as? [String], list.count == EffortLevel.allCases.count {
+                    if let list = value as? [String], list.count == EffortLevel.allCases.count,
+                       list.allSatisfy(EffortValue.isPlain) {
                         updated.bands[model] = list
                     }
                 }
@@ -223,6 +224,16 @@ public enum TargetOverrides {
 /// Codex ships a per-model catalog at ~/.codex/models_cache.json with each
 /// model's `supported_reasoning_levels`, so new models get a sensible
 /// mapping without a LidEffort update.
+/// An effort value as an agent names it: `high`, `xhigh`, `minimal`. The
+/// catalogs these come from are files other programs write, and a value
+/// goes on into a config file and onto a command line — so anything else
+/// (a quote, a newline, a space) is not a level, and is dropped.
+public enum EffortValue {
+    public static func isPlain(_ value: String) -> Bool {
+        value.range(of: #"^[a-z][a-z0-9_-]{0,31}$"#, options: .regularExpression) != nil
+    }
+}
+
 public enum CodexCatalog {
     public static func supportedLevels(json: String) -> [String: [String]] {
         guard let data = json.data(using: .utf8),
@@ -235,7 +246,7 @@ public enum CodexCatalog {
             let names = levels.compactMap { entry -> String? in
                 if let string = entry as? String { return string }
                 return (entry as? [String: Any])?["effort"] as? String
-            }
+            }.filter(EffortValue.isPlain)
             if !names.isEmpty { result[slug] = names }
         }
         return result
@@ -288,7 +299,7 @@ public enum GrokCatalog {
                 if let string = entry as? String { return string }
                 let entry = entry as? [String: Any]
                 return (entry?["value"] as? String) ?? (entry?["id"] as? String)
-            }
+            }.filter(EffortValue.isPlain)
             let sorted = names.sorted { (order.firstIndex(of: $0) ?? order.count) < (order.firstIndex(of: $1) ?? order.count) }
             if !sorted.isEmpty { result[id] = sorted }
         }

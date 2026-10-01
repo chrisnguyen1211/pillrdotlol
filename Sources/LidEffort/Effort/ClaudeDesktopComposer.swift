@@ -47,6 +47,10 @@ enum ClaudeDesktopComposer {
     /// Types the command and presses Return, or says why it did not.
     @MainActor
     static func type(command: String, askForTrust: Bool = true) -> Outcome {
+        guard EffortInjector.isEffortCommand(command) else {
+            log.error("composer: refused \(command, privacy: .public)")
+            return .notSent
+        }
         guard let app = NSWorkspace.shared.frontmostApplication,
               app.bundleIdentifier == bundleID else {
             log.notice("composer: Claude Desktop is not in front")

@@ -30618,6 +30618,278 @@
           }
         }
       }
+    },
+    "Scroll to the end to allow" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faites défiler jusqu'au bout pour autoriser"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "許可するには最後までスクロール"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Role até o fim para permitir"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Прокрутите до конца, чтобы разрешить"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "滚动到底部才能允许"
+          }
+        }
+      }
+    },
+    "Safer approvals, and a locked-down app." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Des autorisations plus sûres, et une app verrouillée."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "より安全な承認と、守りを固めたアプリ。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aprovações mais seguras e um app blindado."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Безопаснее одобрения, надёжнее само приложение."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更安全的批准，更严密的应用。"
+          }
+        }
+      }
+    },
+    "Read the whole command before you allow it" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lisez toute la commande avant de l'autoriser"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "許可する前にコマンド全体を確認"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leia o comando inteiro antes de permitir"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Прочитайте всю команду, прежде чем разрешить"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "允许之前先看完整条命令"
+          }
+        }
+      }
+    },
+    "A command longer than the card scrolls, and Allow waits until you have seen its last line. Invisible and reordering characters are shown, not hidden." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une commande plus longue que la carte défile, et Autoriser attend que vous ayez vu sa dernière ligne. Les caractères invisibles ou qui réordonnent le texte sont affichés, pas cachés."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カードに収まらないコマンドはスクロールでき、最後の行を見るまで「許可」は押せません。見えない文字や並びを入れ替える文字は隠さずに表示されます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um comando maior que o cartão rola, e Permitir só libera depois que você vê a última linha. Caracteres invisíveis ou que reordenam o texto são mostrados, não escondidos."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Команда длиннее карточки прокручивается, и «Разрешить» ждёт, пока вы не увидите последнюю строку. Невидимые и переставляющие текст символы показываются, а не скрываются."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "超出卡片的命令可以滚动，看到最后一行之前“允许”不可用。不可见字符和改变文字顺序的字符会显示出来，不再隐藏。"
+          }
+        }
+      }
+    },
+    "spyx's permissions stay spyx's" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les autorisations de spyx restent à spyx"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "spyx の権限は spyx だけのもの"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As permissões do spyx ficam com o spyx"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Разрешения spyx остаются у spyx"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "spyx 的权限只属于 spyx"
+          }
+        }
+      }
+    },
+    "The app now runs with macOS's hardened runtime, so no other program can load itself into spyx and use its Accessibility or Terminal access." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'app tourne désormais avec le runtime renforcé de macOS : aucun autre programme ne peut se charger dans spyx pour utiliser son accès Accessibilité ou Terminal."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アプリは macOS の Hardened Runtime で動作するようになり、他のプログラムが spyx に入り込んでアクセシビリティやターミナルの権限を使うことはできません。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O app agora roda com o hardened runtime do macOS, então nenhum outro programa consegue se carregar no spyx e usar o acesso de Acessibilidade ou ao Terminal."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Приложение теперь работает с усиленной средой выполнения macOS, и никакая другая программа не может загрузиться в spyx и воспользоваться его доступом к Универсальному доступу или Терминалу."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "应用现在启用 macOS 的强化运行时，其他程序无法把自己加载进 spyx 来使用它的辅助功能或终端权限。"
+          }
+        }
+      }
+    },
+    "Only plain effort values are written" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seules des valeurs d'effort simples sont écrites"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "書き込むのは単純な effort 値だけ"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Só valores de esforço simples são gravados"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Записываются только простые значения уровня"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只写入简单的 effort 值"
+          }
+        }
+      }
+    },
+    "A value from an agent's model list that is not a plain level is ignored — never written into a config or typed into a session." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une valeur de la liste de modèles d'un agent qui n'est pas un simple niveau est ignorée — jamais écrite dans une config ni tapée dans une session."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "エージェントのモデル一覧にある値が単純なレベルでない場合は無視され、設定に書き込まれたりセッションに入力されたりすることはありません。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um valor da lista de modelos de um agente que não seja um nível simples é ignorado — nunca gravado numa config nem digitado numa sessão."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Значение из списка моделей агента, которое не является простым уровнем, игнорируется — оно не записывается в конфиг и не вводится в сессию."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "智能体模型列表中不是简单级别的值会被忽略——不会写入配置，也不会输入到会话中。"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

@@ -140,8 +140,19 @@ enum EffortInjector {
         }
     }
 
+    /// `/effort <value>` and nothing else: what is typed into a session is
+    /// sent by it, so a command that is not exactly this is not typed.
+    static func isEffortCommand(_ command: String) -> Bool {
+        command.hasPrefix("/effort ") && EffortValue.isPlain(String(command.dropFirst("/effort ".count)))
+    }
+
     private static func send(_ command: String, tty: String) -> Outcome {
-        let ttyLiteral = tty.replacingOccurrences(of: "\"", with: "")
+        guard isEffortCommand(command),
+              tty.range(of: #"^ttys?[0-9]+$"#, options: .regularExpression) != nil else {
+            log.error("refused to type \(command, privacy: .public) into \(tty, privacy: .public)")
+            return .appleScriptError("refused")
+        }
+        let ttyLiteral = tty
         let script = """
         tell application "Terminal"
             set wCount to count of windows
@@ -151,7 +162,7 @@ enum EffortInjector {
                     repeat with ti from 1 to tCount
                         try
                             if (tty of tab ti of window wi) contains "\(ttyLiteral)" then
-                                do script "\(command.replacingOccurrences(of: "\"", with: ""))" in tab ti of window wi
+                                do script "\(command)" in tab ti of window wi
                                 return "sent"
                             end if
                         end try
