@@ -1002,14 +1002,19 @@ struct SessionRow: View {
     var onFocus: ((pid_t) -> Void)? = nil
     /// Reply and Stop, offered on hover where the session can take them.
     var onAction: ((SessionAction) -> Void)? = nil
+    /// Drawn as if the pointer were on it, its Reply showing — for the
+    /// tour's picture, which has no pointer and no session to reach.
+    var showsReply = false
     @Environment(\.notchAccentColor) private var accentColor
     @State private var hovering = false
 
     private var canReply: Bool {
-        onAction != nil && session.state != .busy && SessionCommander.reach(session) != .none
+        onAction != nil && session.state != .busy && (showsReply || SessionCommander.reach(session) != .none)
     }
-    private var canStop: Bool { onAction != nil && SessionCommander.canStop(session) }
-    private var canHandOff: Bool { onAction != nil && session.state != .busy && !Handoff.targets(for: session).isEmpty }
+    private var canStop: Bool { onAction != nil && !showsReply && SessionCommander.canStop(session) }
+    private var canHandOff: Bool {
+        onAction != nil && !showsReply && session.state != .busy && !Handoff.targets(for: session).isEmpty
+    }
 
     /// Small round buttons at the end of the first line, in place of the
     /// status while the pointer is on the row.
@@ -1118,7 +1123,7 @@ struct SessionRow: View {
                 .lineLimit(1)
                 .padding(.top, NotchLayout.sessionRowGap)
             } else {
-                if hovering && (canReply || canHandOff) {
+                if (hovering || showsReply) && (canReply || canHandOff) {
                     HStack(spacing: Design.px(20)) {
                         Text(session.name).foregroundStyle(Palette.textPrimary)
                         Spacer(minLength: 0)

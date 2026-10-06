@@ -29,7 +29,9 @@ struct OrbReplyView: View {
 
     private let reduced = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
     static let stage = CGSize(width: 520, height: 150)
-    private let pill = CGSize(width: 480, height: 60)
+    /// The capsule written in, in the middle of the stage.
+    static let fieldSize = CGSize(width: 480, height: 60)
+    private let pill = OrbReplyView.fieldSize
     private let card = CGSize(width: 340, height: 118)
 
     private var shapeSize: CGSize {

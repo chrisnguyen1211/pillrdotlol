@@ -115,6 +115,158 @@ final class WebAssetExportTests: XCTestCase {
         }
     }
 
+    // MARK: - The launch video's API keys and Reply scenes
+
+    /// The API keys cell's card, as the notch draws it on the right edge:
+    /// several keys, each in its own provider's mark, with its own figures —
+    /// and the key mark the cell's ring wears, white on clear.
+    func testExportAPIKeys() throws {
+        let now = Date()
+        func key(_ id: String, _ name: String, _ glyph: ProviderGlyph, _ windows: [LimitWindow]) -> ProviderSnapshot {
+            ProviderSnapshot(id: id, displayName: name, glyph: glyph, fidelity: .official, status: .ok,
+                             windows: windows, headlineID: windows.first?.id)
+        }
+        let members = [
+            key("apikey_openrouter-k00001", "OpenRouter · Work", .openrouter,
+                APIReading.several([.balance(7.5, .money("USD")), .spend(3.2, .money("USD"), .month),
+                                    .spend(41, .money("USD"), .total)])
+                    .windows(providerName: "OpenRouter", currency: nil)),
+            key("apikey_elevenlabs-k00002", "ElevenLabs · Voice", .elevenlabs,
+                [APIReading.used(41_200, of: 100_000, .characters, resetsAt: nil)
+                    .window(providerName: "ElevenLabs", currency: nil)]),
+            key("apikey_deepseek-k00003", "DeepSeek · Chat", .deepseek,
+                [APIReading.balance(86.4, .money("CNY")).window(providerName: "DeepSeek", currency: nil)]),
+            key("apikey_groq-k00004", "Groq · Key 1", .groq,
+                [APIReading.keyWorks(.requestsLeft(remaining: 998, limit: 1_000, today: true))
+                    .window(providerName: "Groq", currency: nil)]),
+        ]
+        let group = APIKeyGroup.snapshot(members: members)
+        try renderDark(TooltipCard(snapshot: group, now: now, direction: NotchEdge.right.tooltipDirection),
+                       to: dir.appendingPathComponent("ui/apikeys-tooltip.png"))
+        try renderDark(ProviderGlyphView(glyph: .apiKey, size: 100).foregroundStyle(.white),
+                       to: dir.appendingPathComponent("glyphs/apikey.png"))
+    }
+
+    /// Reply, for the video: the idle session's row as the pointer finds it
+    /// (the lift and the Reply button in place of its status), the reply
+    /// capsule typed into a character or two at a time, and the card it
+    /// becomes, its words arriving. The capsule's field is an AppKit text
+    /// field the renderer cannot draw, so the field's line is laid out here
+    /// from `OrbReplyView`'s own measures, its text as text — as
+    /// `drawsFieldsAsText` does for the prompt card. The glass is the page's.
+    func testExportReplyStates() throws {
+        let folder = dir.appendingPathComponent("ui/reply")
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let now = Date()
+        let session = AgentSession(id: "claude.demo-3", name: "write-release-notes", detail: "Desktop", state: .idle,
+                                   waitingFor: nil, since: now.addingTimeInterval(-40 * 60), processID: 990_003)
+        let pad = CGFloat(8)
+
+        // The row, as it is and as it is under the pointer.
+        try renderDark(SessionRow(session: session, now: now)
+                        .frame(width: NotchLayout.cardTextWidth).padding(pad),
+                       to: folder.appendingPathComponent("row-idle.png"))
+        let hovered = VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: Design.px(20)) {
+                Text(session.name).foregroundStyle(Palette.textPrimary)
+                Spacer(minLength: 0)
+                RowActionButton(symbol: "arrowshape.turn.up.left.fill", label: L10n.t("Reply")) {}
+            }
+            .font(Typography.cardBody)
+            .lineLimit(1)
+            SplitRow(leading: session.detail, trailing: ElapsedCopy.text(since: session.since, now: now),
+                     leadingColor: Palette.textSecondary)
+                .padding(.top, NotchLayout.sessionRowGap)
+        }
+        .frame(width: NotchLayout.cardTextWidth)
+        // HoverLiftModifier, lifted.
+        .background {
+            RoundedRectangle(cornerRadius: Design.px(18), style: .continuous)
+                .fill(Palette.textPrimary.opacity(0.09))
+                .overlay(RoundedRectangle(cornerRadius: Design.px(18), style: .continuous)
+                    .strokeBorder(Palette.textPrimary.opacity(0.1), lineWidth: 1))
+                .padding(.horizontal, -Design.px(16))
+                .padding(.vertical, -Design.px(10))
+        }
+        .padding(pad)
+        try renderDark(hovered, to: folder.appendingPathComponent("row-hover.png"))
+
+        // The capsule's line, typed into.
+        let message = L10n.t("Add a test for the empty cart, then open a PR")
+        let agent = ProviderGlyph.forSession(session)?.agentName ?? ""
+        let placeholder = L10n.t("Reply to \(agent) · \(session.name)…")
+        func field(_ typed: String, caret: Bool) -> some View {
+            let ready = SessionCommander.oneLine(typed) != nil
+            return HStack(spacing: 12) {
+                ProviderGlyphView(glyph: .claude, size: 20).foregroundStyle(.primary.opacity(0.8))
+                Group {
+                    if typed.isEmpty {
+                        Text(placeholder).foregroundStyle(Color(nsColor: .placeholderTextColor))
+                    } else {
+                        Text(typed + (caret ? "\u{258F}" : "")).foregroundStyle(.primary)
+                    }
+                }
+                .font(.system(size: 16))
+                .lineLimit(1)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                ZStack {
+                    Image(systemName: "arrow.up")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundStyle(ready ? AnyShapeStyle(.background) : AnyShapeStyle(.tertiary))
+                }
+                .frame(width: 38, height: 38)
+                .background(Circle().fill(ready ? AnyShapeStyle(.primary) : AnyShapeStyle(.quaternary)))
+            }
+            .padding(.leading, 20)
+            .padding(.trailing, 11)
+            .frame(width: 480, height: 60)
+        }
+        try renderDark(field("", caret: false), to: folder.appendingPathComponent("field-00.png"))
+        var typed = ""
+        for (i, ch) in message.enumerated() {
+            typed.append(ch)
+            guard i % 2 == 1 || i == message.count - 1 else { continue }
+            try renderDark(field(typed, caret: true), to: folder.appendingPathComponent(String(format: "field-%02d.png", typed.count)))
+        }
+        try renderDark(field(message, caret: false), to: folder.appendingPathComponent("field-done.png"))
+
+        // The card it becomes: sent, the message word by word.
+        let words = message.split(separator: " ").map(String.init)
+        for shown in 0...words.count {
+            let body = words.enumerated().reduce(Text("")) { line, item in
+                line + Text(item.element + " ").foregroundColor(.primary.opacity(item.offset < shown ? 1 : 0))
+            }
+            let card = VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    Circle().fill(Palette.ample).frame(width: 7, height: 7)
+                    ProviderGlyphView(glyph: .claude, size: 14).foregroundStyle(.secondary)
+                    Text(L10n.t("Sent to \(session.name)"))
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+                body.font(.system(size: 13.5)).lineLimit(3).frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(16)
+            .frame(width: 340, height: 118, alignment: .topLeading)
+            try renderDark(card, to: folder.appendingPathComponent(String(format: "sent-%02d.png", shown)))
+        }
+    }
+
+    /// Black, dark, at 3×, with the palette resolved for dark as well —
+    /// its colours follow the drawing appearance, not the colour scheme.
+    private func renderDark(_ view: some View, to url: URL) throws {
+        let appearance = try XCTUnwrap(NSAppearance(named: .darkAqua))
+        var image: CGImage?
+        appearance.performAsCurrentDrawingAppearance {
+            let renderer = ImageRenderer(content: view.environment(\.notchSurfaceStyle, .solid).environment(\.colorScheme, .dark))
+            renderer.scale = 3
+            image = renderer.cgImage
+        }
+        let cg = try XCTUnwrap(image, url.lastPathComponent)
+        try XCTUnwrap(NSBitmapImageRep(cgImage: cg).representation(using: .png, properties: [:])).write(to: url)
+    }
+
     private func render(_ view: some View, to url: URL) throws {
         let renderer = ImageRenderer(content: view.environment(\.notchSurfaceStyle, .solid).environment(\.colorScheme, .dark))
         renderer.scale = 3

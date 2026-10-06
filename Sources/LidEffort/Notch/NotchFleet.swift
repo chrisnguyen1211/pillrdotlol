@@ -422,12 +422,13 @@ final class NotchFleet {
     var isTouring = false
 
     /// Opens every notch on the tooltip of the first agent that has
-    /// readings — Claude's, usually — and holds it, lighting `focus`;
-    /// `release` lets it fold.
-    func holdTourTooltip(focus: TooltipTourFocus? = nil) {
+    /// readings — Claude's, usually — or of the cell with the id `cell`,
+    /// and holds it, lighting `focus`; `release` lets it fold.
+    func holdTourTooltip(cell: String? = nil, focus: TooltipTourFocus? = nil) {
         for controller in controllers.values {
             let cells = controller.model.snapshots
-            let index = cells.firstIndex { $0.localModel == nil && $0.providerID == ClaudeProfile.defaultID && !$0.windows.isEmpty }
+            let index = cell.flatMap { id in cells.firstIndex { $0.id == id } }
+                ?? cells.firstIndex { $0.localModel == nil && $0.providerID == ClaudeProfile.defaultID && !$0.windows.isEmpty }
                 ?? cells.firstIndex { $0.localModel == nil && !$0.windows.isEmpty }
                 ?? (cells.isEmpty ? nil : 0)
             controller.holdTooltip(index: index, focus: focus)

@@ -236,11 +236,6 @@ final class Preferences: ObservableObject {
         didSet { defaults.set(interfaceMode.rawValue, forKey: Keys.interfaceMode) }
     }
 
-    /// How the intro tour looks: Liquid Glass with its intro, or doodles.
-    @Published var tourStyle: TourStyle {
-        didSet { defaults.set(tourStyle.rawValue, forKey: Keys.tourStyle) }
-    }
-
     /// Whether the Liquid Glass intro plays its sound.
     @Published var tourSound: Bool {
         didSet { defaults.set(tourSound, forKey: Keys.tourSound) }
@@ -501,7 +496,6 @@ final class Preferences: ObservableObject {
         static let showsMoveHandle = "showsMoveHandle"
         static let notchSurfaceStyle = "notchSurfaceStyle"
         static let interfaceMode = "interfaceMode"
-        static let tourStyle = "tourStyle"
         static let tourSound = "tourSound"
         static let pillFrost = "pillFrost"
         static let lastSeenVersion = "lastSeenVersion"
@@ -771,7 +765,9 @@ final class Preferences: ObservableObject {
         // Absent means never switched: start from whatever the Mac is set to.
         self.interfaceMode = defaults.string(forKey: Keys.interfaceMode)
             .flatMap(InterfaceMode.init(rawValue:)) ?? .system
-        self.tourStyle = defaults.string(forKey: Keys.tourStyle).flatMap(TourStyle.init(rawValue:)) ?? .glass
+        // The doodle look is gone: the tour is glass only, and its old
+        // choice is not kept about.
+        defaults.removeObject(forKey: "tourStyle")
         self.tourSound = defaults.object(forKey: Keys.tourSound) as? Bool ?? true
         let frost = defaults.object(forKey: Keys.pillFrost) as? Double ?? Preferences.defaultPillFrost
         self.pillFrost = min(Preferences.pillFrostRange.upperBound, max(Preferences.pillFrostRange.lowerBound, frost))

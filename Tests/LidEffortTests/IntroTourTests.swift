@@ -116,6 +116,8 @@ final class IntroTourTests: XCTestCase {
                               effort: { nil })
         owned.showForTesting(.done, anchor: nil, screen: screen, edge: .right)
         owned.next()
+        XCTAssertEqual(owned.step, .reply)
+        owned.next()
         XCTAssertEqual(owned.step, .approval)
         let demo = try XCTUnwrap(fleet.prompts.last)
         XCTAssertTrue(owned.handleAnswer(demo.id, with: .allow))
@@ -153,40 +155,6 @@ final class IntroTourTests: XCTestCase {
         XCTAssertGreaterThan(half, 0.5, "eased out: more than half drawn at half time")
         XCTAssertEqual(MarkerStroke.progress(at: start.addingTimeInterval(5), since: start, delay: 0.5), 1)
         XCTAssertEqual(MarkerStroke.progress(at: Date(), since: .distantPast, delay: 0), 1, "an old step is fully drawn")
-    }
-
-    /// Every note and the doodles over the screen, written out when
-    /// EFFORT_RENDER_DIR is set.
-    func testEveryStepDraws() throws {
-        let fleet = NotchFleet(scope: .mainDisplay, edge: .right)
-        let tour = IntroTour(fleet: fleet, preferences: Preferences(defaults: UserDefaults(suiteName: "IntroTourTests.\(UUID())")!),
-                             effort: { nil })
-        let dir = ProcessInfo.processInfo.environment["EFFORT_RENDER_DIR"]
-        let pill = CGRect(x: 1402, y: 380, width: 34, height: 140)
-        let promptCard = CGRect(x: 1150, y: 330, width: 250, height: 240)
-        for step in IntroTour.Step.allCases {
-            let anchor = (step == .approval || step == .question) ? promptCard : pill
-            tour.showForTesting(step, anchor: step.isCentred ? nil : anchor, screen: screen, edge: .right,
-                                celebration: step == .approval ? "Nice! That's all it takes." : nil,
-                                result: step == .approval ? TourResult(answer: .allow, question: false, at: promptCard)
-                                    : step == .question ? TourResult(answer: .answers(["q": ["Postgres"]]), question: true, at: promptCard) : nil,
-                                visited: step == .anywhere ? [.right, .bottom] : [])
-            let card = try render(TourCard(tour: tour), size: IntroTour.cardSize)
-            let scene = try render(ZStack(alignment: .topLeading) {
-                LinearGradient(colors: [Color(white: 0.85), Color(white: 0.6)], startPoint: .top, endPoint: .bottom)
-                // A stand-in pill and card, where the real ones would be.
-                RoundedRectangle(cornerRadius: 17).fill(.black)
-                    .frame(width: pill.width, height: pill.height)
-                    .position(x: pill.midX, y: screen.maxY - pill.midY)
-                TourDoodles(tour: tour)
-                TourCard(tour: tour)
-                    .position(x: tour.cardFrame.midX, y: screen.maxY - tour.cardFrame.midY)
-            }, size: screen.size, settle: 1.2)
-            if let dir {
-                try card.write(to: URL(fileURLWithPath: dir).appendingPathComponent("tour-card-\(step).png"))
-                try scene.write(to: URL(fileURLWithPath: dir).appendingPathComponent("tour-scene-\(step).png"))
-            }
-        }
     }
 
     /// The intro's sound: as long as the film, never clipping, quiet at the
@@ -312,32 +280,191 @@ final class IntroTourTests: XCTestCase {
             if let dir { try frame.write(to: URL(fileURLWithPath: dir).appendingPathComponent("glass-intro-\(moment).png")) }
         }
         let promptCard = CGRect(x: 1150, y: 330, width: 250, height: 240)
+        let light = LinearGradient(colors: [Color(white: 0.93), Color(red: 0.8, green: 0.86, blue: 0.95)],
+                                   startPoint: .topLeading, endPoint: .bottomTrailing)
         for step in IntroTour.Step.allCases {
-            let anchor = (step == .approval || step == .question) ? promptCard : pill
+            let anchor = (step == .approval || step == .question) ? promptCard : step == .reply ? Self.replyCapsule(beside: pill) : pill
             tour.showForTesting(step, anchor: step.isCentred && step != .anywhere ? nil : anchor, screen: screen, edge: .right,
                                 celebration: step == .approval ? "Nice! That's all it takes." : nil,
                                 result: step == .approval ? TourResult(answer: .allow, question: false, at: promptCard) : nil,
-                                visited: step == .anywhere ? [.right, .bottom] : [], style: .glass)
-            let scene = try render(ZStack(alignment: .topLeading) {
-                backdrop
-                RoundedRectangle(cornerRadius: 13).fill(.black)
-                    .frame(width: pill.width, height: pill.height)
-                    .position(x: pill.midX, y: screen.maxY - pill.midY)
-                GlassTourOverlay(tour: tour)
-                GlassTourCard(tour: tour)
-                    .position(x: tour.cardFrame.midX, y: screen.maxY - tour.cardFrame.midY)
-            }, size: screen.size, settle: 1.0)
-            if let dir { try scene.write(to: URL(fileURLWithPath: dir).appendingPathComponent("glass-\(step).png")) }
+                                visited: step == .anywhere ? [.right, .bottom] : [])
+            // The new steps, and the one whose words changed, in light as well.
+            let looks: [Bool] = [.apiKeys, .reply, .anywhere].contains(step) ? [true, false] : [true]
+            for dark in looks {
+                let scene = try render(ZStack(alignment: .topLeading) {
+                    if dark { backdrop } else { light }
+                    RoundedRectangle(cornerRadius: 13).fill(.black)
+                        .frame(width: pill.width, height: pill.height)
+                        .position(x: pill.midX, y: screen.maxY - pill.midY)
+                    GlassTourOverlay(tour: tour)
+                    GlassTourCard(tour: tour)
+                        .position(x: tour.cardFrame.midX, y: screen.maxY - tour.cardFrame.midY)
+                }, size: screen.size, settle: 1.0, dark: dark)
+                let name = dark ? "glass-\(step).png" : "glass-\(step)-light.png"
+                if let dir { try scene.write(to: URL(fileURLWithPath: dir).appendingPathComponent(name)) }
+            }
         }
     }
 
-    private func render(_ view: some View, size: CGSize, settle: TimeInterval = 0.4) throws -> Data {
+    /// The steps that want you to try something say so until you have: the
+    /// prompts until one is answered, "anywhere" until Show me is pressed —
+    /// and Next is the quiet button meanwhile.
+    func testTheStepsToTryInviteYouUntilYouHave() throws {
+        let fleet = NotchFleet(scope: .mainDisplay, edge: .right)
+        let tour = IntroTour(fleet: fleet, preferences: Preferences(defaults: UserDefaults(suiteName: "IntroTourTests.\(UUID())")!),
+                             effort: { nil })
+        let card = CGRect(x: 1150, y: 330, width: 250, height: 240)
+        tour.showForTesting(.approval, anchor: card, screen: screen, edge: .right)
+        XCTAssertTrue(tour.invitesTry)
+        XCTAssertEqual(tour.tryHint, L10n.t("Try it — press Allow on the card"))
+        tour.showForTesting(.approval, anchor: card, screen: screen, edge: .right,
+                            result: TourResult(answer: .allow, question: false, at: card))
+        XCTAssertFalse(tour.invitesTry, "answered: nothing left to ask")
+        XCTAssertNil(tour.tryHint)
+        tour.showForTesting(.question, anchor: card, screen: screen, edge: .right)
+        XCTAssertEqual(tour.tryHint, L10n.t("Try it — pick an answer, then Send"))
+        tour.showForTesting(.anywhere, anchor: nil, screen: screen, edge: .right)
+        XCTAssertEqual(tour.tryHint, L10n.t("Try Show me"))
+        tour.showForTesting(.sessions, anchor: nil, screen: screen, edge: .right)
+        XCTAssertFalse(tour.invitesTry, "a step with nothing to try asks for nothing")
+
+        // Drawn, before trying: the hint over the buttons, Show me lit.
+        guard let dir = ProcessInfo.processInfo.environment["EFFORT_RENDER_DIR"] else { return }
+        let pill = CGRect(x: 1410, y: 390, width: 26, height: 120)
+        for step in [IntroTour.Step.approval, .anywhere] {
+            tour.showForTesting(step, anchor: step == .approval ? card : pill, screen: screen, edge: .right)
+            let scene = try render(ZStack(alignment: .topLeading) {
+                LinearGradient(colors: [Color(red: 0.1, green: 0.12, blue: 0.2), Color(red: 0.25, green: 0.2, blue: 0.35)],
+                               startPoint: .topLeading, endPoint: .bottomTrailing)
+                GlassTourCard(tour: tour)
+                    .position(x: tour.cardFrame.midX, y: screen.maxY - tour.cardFrame.midY)
+            }, size: screen.size, settle: 1.0, dark: true)
+            try scene.write(to: URL(fileURLWithPath: dir).appendingPathComponent("glass-\(step)-try.png"))
+        }
+    }
+
+    /// Where the reply field's capsule opens beside a pill on the right edge.
+    private static func replyCapsule(beside pill: CGRect) -> CGRect {
+        CGRect(x: pill.minX + ReplyPanelController.orbGap - OrbReplyView.stage.width
+                   + (OrbReplyView.stage.width - OrbReplyView.fieldSize.width) / 2,
+               y: pill.midY - OrbReplyView.fieldSize.height / 2,
+               width: OrbReplyView.fieldSize.width, height: OrbReplyView.fieldSize.height)
+    }
+
+    /// The new steps are where they belong: the keys straight after the
+    /// limits, a reply straight after a session finishes.
+    func testTheKeysAndTheReplyHaveTheirPlaces() {
+        let order = IntroTour.Step.allCases
+        XCTAssertEqual(order, [.hello, .apiKeys, .sessions, .done, .reply, .approval, .question, .anywhere, .lid, .finish])
+        XCTAssertTrue(IntroTour.Step.apiKeys.holdsTooltip, "the keys' card is a tooltip, held open")
+        XCTAssertFalse(IntroTour.Step.reply.holdsTooltip, "the reply field takes the tooltip's place")
+        XCTAssertFalse(IntroTour.Step.apiKeys.isCentred)
+        XCTAssertFalse(IntroTour.Step.reply.isCentred)
+
+        let (tour, _) = tour(edge: .right)
+        XCTAssertTrue(tour.steps.contains(.apiKeys) && tour.steps.contains(.reply), "shown on every Mac")
+        for step in order {
+            tour.showForTesting(step, anchor: nil, screen: screen, edge: .right)
+            XCTAssertFalse(tour.stepTitle.isEmpty, "\(step) has no title")
+            XCTAssertFalse(tour.stepText.isEmpty, "\(step) has no words")
+        }
+        tour.showForTesting(.apiKeys, anchor: nil, screen: screen, edge: .right)
+        XCTAssertTrue(tour.stepText.contains("\(APICatalog.entries.count) providers"), tour.stepText)
+        tour.showForTesting(.hello, anchor: nil, screen: screen, edge: .right)
+        tour.next()
+        XCTAssertEqual(tour.step, .apiKeys)
+        tour.next()
+        XCTAssertEqual(tour.step, .sessions)
+        tour.back()
+        XCTAssertEqual(tour.step, .apiKeys)
+    }
+
+    /// The keys step's demo is the real cell, built the way the notch builds
+    /// it, with a key for each kind of reading.
+    func testTheKeysDemoIsTheRealCell() throws {
+        let now = Date()
+        let group = TourDemo.keyGroup()
+        XCTAssertEqual(group.id, APIKeyGroup.id)
+        let keys = try XCTUnwrap(group.keyGroup)
+        XCTAssertEqual(keys.map(\.glyph), [.openrouter, .elevenlabs, .deepseek, .groq])
+        XCTAssertTrue(keys.allSatisfy { APIKeyGroup.isMember($0.id) }, "a demo key the group would not take")
+        XCTAssertTrue(keys.allSatisfy { $0.hasReading })
+        XCTAssertEqual(group.status, .ok, "no demo key is failing")
+
+        let lines = keys.map { APIKeyGroup.figures(for: $0, now: now).map(\.text) }
+        XCTAssertEqual(lines[0], ["$7.50 left", "$3.20 spent this month", "$41.00 spent in total"])
+        let elevenLabs = try XCTUnwrap(APIKeyGroup.figures(for: keys[1], now: now).first)
+        XCTAssertEqual(elevenLabs.usedFraction ?? 0, 0.64, accuracy: 0.001, "the characters draw a bar")
+        XCTAssertEqual(lines[2], ["$18.20 left"])
+        XCTAssertTrue(lines[3].first?.hasPrefix("Key works") == true, "\(lines[3])")
+        XCTAssertEqual(APIKeyGroup.ringMember(of: keys)?.glyph, .elevenlabs, "the only share is the ring's")
+
+        // On the pill after the agents — and never taken for one.
+        XCTAssertEqual(TourDemo.pill(now: now).map(\.id), ["claude", "codex", "cursor", APIKeyGroup.id])
+        let fleet = NotchFleet(scope: .mainDisplay, edge: .right)
+        fleet.showTourDemo(snapshots: TourDemo.pill(now: now), sessions: TourDemo.sessions(now: now))
+        XCTAssertEqual(fleet.tourAgents.map(\.id), ["claude", "codex", "cursor"])
+        fleet.endTourDemo()
+
+        // Every key fits the card: none cut short and counted.
+        XCTAssertEqual(NotchLayout.keyGroupPlan(keys).shown, keys.count)
+    }
+
+    /// The reply step writes to an idle session of the demo's, and its field
+    /// opens beside the pill, level with it, where the card points.
+    func testTheReplyDemoHasAnIdleSessionAndAPlace() throws {
+        let session = try XCTUnwrap(TourDemo.replySession())
+        XCTAssertEqual(session.state, .idle)
+        XCTAssertTrue(TourDemo.pids.contains(try XCTUnwrap(session.processID)), "a session with a real window")
+        guard let display = NSScreen.main else { throw XCTSkip("no display") }
+        let frame = display.visibleFrame
+        let pill = CGRect(x: frame.maxX - 30, y: frame.midY - 70, width: 30, height: 140)
+        let field = IntroTour.replyField(pill: pill, edge: .right, screen: display)
+        XCTAssertEqual(field.capsule.size, OrbReplyView.fieldSize)
+        XCTAssertLessThan(field.capsule.maxX, pill.minX, "the field covers the pill")
+        XCTAssertEqual(field.capsule.midY, pill.midY, accuracy: 1, "not level with the pill")
+        XCTAssertEqual(field.anchor.height, 0, "the pointer would move it off the card's mark")
+        let card = IntroTour.cardFrame(anchor: field.capsule, edge: .right, visible: frame, size: IntroTour.cardSize)
+        XCTAssertFalse(card.intersects(field.capsule), "the note sits on the field")
+    }
+
+    /// The reply step's picture is the real row, its Reply showing as it
+    /// does under the pointer.
+    func testTheReplyPictureShowsTheRowsReply() throws {
+        let session = try XCTUnwrap(TourDemo.replySession())
+        func row(_ showsReply: Bool) throws -> CGImage {
+            let renderer = ImageRenderer(content: SessionRow(session: session, now: Date(), onAction: { _ in },
+                                                             showsReply: showsReply)
+                .frame(width: NotchLayout.cardTextWidth).padding(10).background(Color.black)
+                .environment(\.colorScheme, .dark))
+            renderer.scale = 2
+            return try XCTUnwrap(renderer.cgImage)
+        }
+        let plain = try row(false), replying = try row(true)
+        let a = NSBitmapImageRep(cgImage: plain), b = NSBitmapImageRep(cgImage: replying)
+        XCTAssertEqual(a.pixelsWide, b.pixelsWide)
+        var differs = 0
+        for x in stride(from: 0, to: a.pixelsWide, by: 2) {
+            for y in stride(from: 0, to: min(a.pixelsHigh, b.pixelsHigh) / 2, by: 2) {
+                let ca = a.colorAt(x: x, y: y)?.brightnessComponent ?? 0, cb = b.colorAt(x: x, y: y)?.brightnessComponent ?? 0
+                if abs(ca - cb) > 0.2 { differs += 1 }
+            }
+        }
+        XCTAssertGreaterThan(differs, 20, "the Reply button did not show")
+        if let dir = ProcessInfo.processInfo.environment["EFFORT_RENDER_DIR"] {
+            let png = try XCTUnwrap(b.representation(using: .png, properties: [:]))
+            try png.write(to: URL(fileURLWithPath: dir).appendingPathComponent("tour-reply-row.png"))
+        }
+    }
+
+    private func render(_ view: some View, size: CGSize, settle: TimeInterval = 0.4, dark: Bool? = nil) throws -> Data {
         let host = NSHostingView(rootView: view.frame(width: size.width, height: size.height))
         host.frame = CGRect(origin: .zero, size: size)
         let window = NSWindow(contentRect: CGRect(x: -20000, y: -20000, width: size.width, height: size.height),
                               styleMask: [.borderless], backing: .buffered, defer: false)
         window.backgroundColor = .clear
         window.isOpaque = false
+        if let dark { window.appearance = NSAppearance(named: dark ? .darkAqua : .aqua) }
         window.contentView = host
         window.orderFrontRegardless()
         RunLoop.main.run(until: Date().addingTimeInterval(settle))
@@ -444,8 +571,8 @@ final class TourDemoTests: XCTestCase {
         XCTAssertLessThan(light(card: 2, rows: top), light(card: 0, rows: top) * 0.7, "the limits were not dimmed under the sessions")
     }
 
-    func testSessionsComeRightAfterLimits() {
-        XCTAssertEqual(IntroTour.Step.allCases.prefix(2), [.hello, .sessions])
+    func testSessionsComeRightAfterLimitsAndKeys() {
+        XCTAssertEqual(IntroTour.Step.allCases.prefix(3), [.hello, .apiKeys, .sessions])
         XCTAssertTrue(IntroTour.Step.hello.holdsTooltip)
         XCTAssertTrue(IntroTour.Step.sessions.holdsTooltip)
         XCTAssertFalse(IntroTour.Step.done.holdsTooltip)

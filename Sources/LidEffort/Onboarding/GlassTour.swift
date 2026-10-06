@@ -2,15 +2,14 @@ import AppKit
 import LidEffortCore
 import SwiftUI
 
-/// What the tour draws over the screen, in whichever look it has.
+/// What the tour draws over the screen: the film, then the glass steps.
 struct TourOverlay: View {
     @ObservedObject var tour: IntroTour
 
     var body: some View {
-        switch (tour.style, tour.phase) {
-        case (.glass, .intro): GlassIntro(tour: tour)
-        case (.glass, .steps): GlassTourOverlay(tour: tour)
-        case (.doodle, _): TourDoodles(tour: tour)
+        switch tour.phase {
+        case .intro: GlassIntro(tour: tour)
+        case .steps: GlassTourOverlay(tour: tour)
         }
     }
 }
@@ -343,7 +342,7 @@ struct GlassTourOverlay: View {
                     edgeBeams(drawn: drawn, t: t)
                 }
                 if let result = tour.result, let rect = result.rect {
-                    TourResultCard(result: result, edge: tour.edge, glass: true)
+                    TourResultCard(result: result, edge: tour.edge)
                         .frame(width: body(of: local(rect)).width, height: body(of: local(rect)).height)
                         .position(x: body(of: local(rect)).midX, y: body(of: local(rect)).midY)
                         .transition(.scale(scale: 0.92).combined(with: .opacity))
@@ -493,29 +492,115 @@ struct GlassTourCard: View {
         .animation(.spring(response: 0.35, dampingFraction: 0.75), value: tour.celebration)
     }
 
+    /// The dots and the buttons on one line where they fit; where a step
+    /// has a button of its own as well, the dots go above them rather than
+    /// every button's title being cut short.
     private var footer: some View {
-        HStack(spacing: 10) {
-            HStack(spacing: 4) {
-                ForEach(tour.steps, id: \.rawValue) { step in
-                    Capsule()
-                        .fill(step.rawValue <= tour.step.rawValue ? AnyShapeStyle(GlassTour.accent) : AnyShapeStyle(.quaternary))
-                        .frame(width: step == tour.step ? 18 : 6, height: 6)
+        VStack(alignment: .leading, spacing: 10) {
+            if let hint = tour.tryHint {
+                TryHint(text: hint)
+                    .transition(.opacity.combined(with: .scale(scale: 0.96)))
+            }
+            footerRow
+        }
+        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: tour.tryHint)
+    }
+
+    private var footerRow: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 10) {
+                dots
+                Spacer(minLength: 0)
+                buttons
+            }
+            VStack(alignment: .leading, spacing: 12) {
+                dots
+                HStack(spacing: 10) {
+                    Spacer(minLength: 0)
+                    buttons
                 }
             }
-            Spacer()
+        }
+    }
+
+    private var dots: some View {
+        HStack(spacing: 4) {
+            ForEach(tour.steps, id: \.rawValue) { step in
+                Capsule()
+                    .fill(step.rawValue <= tour.step.rawValue ? AnyShapeStyle(GlassTour.accent) : AnyShapeStyle(.quaternary))
+                    .frame(width: step == tour.step ? 18 : 6, height: 6)
+            }
+        }
+    }
+
+    private var buttons: some View {
+        HStack(spacing: 10) {
             if tour.step == .finish, let before = tour.edgeBeforeTour {
                 GlassButton(title: L10n.t("Back to \(before.title.lowercased())"), prominent: false) { tour.restoreEdge() }
             }
             if tour.step == .anywhere, !tour.hasVisitedEveryEdge || tour.isFlying {
-                GlassButton(title: tour.isFlying ? L10n.t("Flying…") : L10n.t("Show me"), prominent: false) { tour.flyRound() }
+                // The thing to try on this step, so it is the loud button
+                // until it has been pressed.
+                GlassButton(title: tour.isFlying ? L10n.t("Flying…") : L10n.t("Show me"), prominent: tour.invitesTry) { tour.flyRound() }
                     .disabled(tour.isFlying)
+                    .tourPulse(tour.invitesTry)
+            }
+            if tour.step == .reply {
+                GlassButton(title: L10n.t("Show me"), prominent: false) { tour.playReply() }
+                    .disabled(tour.isReplying)
             }
             if tour.step != .finish {
                 GlassButton(title: L10n.t("Skip tour"), prominent: false) { tour.end() }
             }
             GlassButton(title: tour.step == .finish ? (tour.leadsIntoSetup ? L10n.t("Continue to Setup") : L10n.t("Let's go")) : L10n.t("Next"),
-                        prominent: true) { tour.next() }
+                        prominent: !tour.invitesTry) { tour.next() }
         }
+        .fixedSize()
+    }
+}
+
+/// "Try it": what the step wants you to do yourself, in the accent colour,
+/// breathing gently so the eye finds it — the demo is the point of the step.
+struct TryHint: View {
+    let text: String
+    @State private var lit = false
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "hand.tap.fill")
+                .font(.system(size: 12, weight: .semibold))
+            Text(text)
+                .font(.system(size: 12.5, weight: .semibold))
+        }
+        .foregroundStyle(GlassTour.accent)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(Capsule().fill(GlassTour.accent.opacity(lit ? 0.22 : 0.12)))
+        .overlay(Capsule().strokeBorder(GlassTour.accent.opacity(lit ? 0.7 : 0.35), lineWidth: 1))
+        .fixedSize()
+        .onAppear {
+            withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) { lit = true }
+        }
+        .accessibilityElement(children: .combine)
+    }
+}
+
+extension View {
+    /// A soft glow that comes and goes round the button to press.
+    func tourPulse(_ active: Bool) -> some View { modifier(TourPulse(active: active)) }
+}
+
+private struct TourPulse: ViewModifier {
+    let active: Bool
+    @State private var lit = false
+
+    func body(content: Content) -> some View {
+        content
+            .shadow(color: GlassTour.accent.opacity(active ? (lit ? 0.75 : 0.25) : 0), radius: lit ? 12 : 5)
+            .scaleEffect(active && lit ? 1.04 : 1)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) { lit = true }
+            }
     }
 }
 
@@ -557,8 +642,10 @@ struct GlassIllustration: View {
             ZStack {
                 switch tour.step {
                 case .hello: helloScene(t)
+                case .apiKeys: apiKeysScene(t)
                 case .sessions: sessionsScene(t)
                 case .done: doneScene(t)
+                case .reply: replyScene(t)
                 case .approval: approvalScene(t)
                 case .question: questionScene(t)
                 case .anywhere: anywhereScene(t)
@@ -571,10 +658,12 @@ struct GlassIllustration: View {
     }
 
     /// The real pill, as it stands on a right edge: the reader's own
-    /// agents, drawn by the ring the notch draws them with.
-    private func pill(scale: CGFloat = 0.52) -> some View {
-        RealPill(agents: tour.pillAgents).scaleEffect(scale).frame(width: RealPill.width * scale,
-                                                                  height: RealPill.height(tour.pillAgents.count) * scale)
+    /// agents, drawn by the ring the notch draws them with — and, for the
+    /// keys, their one cell after them.
+    private func pill(scale: CGFloat = 0.52, keys: Bool = false) -> some View {
+        let cells = tour.pillAgents + (keys ? [TourDemo.keyGroup()] : [])
+        return RealPill(agents: cells).scaleEffect(scale).frame(width: RealPill.width * scale,
+                                                                height: RealPill.height(cells.count) * scale)
     }
 
     /// A real card of the notch's, drawn at its own size and scaled down.
@@ -603,24 +692,56 @@ struct GlassIllustration: View {
         }
     }
 
+    /// The API keys cell's own card — every key, every figure it reads —
+    /// beside the pill with the cell among the agents.
+    private func apiKeysScene(_ t: Double) -> some View {
+        let group = TourDemo.keyGroup()
+        let height = NotchLayout.cardHeight(windowCount: 1,
+                                            keyGroupBody: NotchLayout.keyGroupPlan(group.keyGroup ?? []).body)
+        return HStack(spacing: 4) {
+            real(CGSize(width: cardSize.width, height: height), scale: min(0.5, 146 / height)) {
+                TooltipCard(snapshot: group, now: Date(), direction: NotchEdge.right.tooltipDirection)
+            }
+            pill(scale: 0.46, keys: true)
+        }
+    }
+
     /// The notch's own session rows, as a tooltip lists them.
     private func sessionsScene(_ t: Double) -> some View {
         let lists = TourDemo.sessions()
         let rows = [lists["claude"]?[0], lists["claude"]?[1], lists["codex"]?[1]].compactMap { $0 }
         return HStack(spacing: 6) {
-            real(CGSize(width: NotchLayout.cardWidth,
-                        height: 2 * NotchLayout.cardPadding
-                            + CGFloat(rows.count) * (2 * NotchLayout.cardBodyLineHeight + NotchLayout.sessionRowGap)
-                            + CGFloat(rows.count - 1) * NotchLayout.blockSpacing),
-                 scale: 0.66) {
-                VStack(alignment: .leading, spacing: NotchLayout.blockSpacing) {
-                    ForEach(rows) { SessionRow(session: $0, now: Date()) }
-                }
-                .padding(NotchLayout.cardPadding)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .background(RoundedRectangle(cornerRadius: NotchLayout.cardCorner, style: .continuous).fill(Palette.notch))
-            }
+            sessionCard(rows)
             pill()
+        }
+    }
+
+    /// A session under the pointer, its Reply showing, above one at work.
+    private func replyScene(_ t: Double) -> some View {
+        let lists = TourDemo.sessions()
+        let rows = [lists["claude"]?[0], TourDemo.replySession()].compactMap { $0 }
+        return HStack(spacing: 6) {
+            sessionCard(rows, replyingTo: TourDemo.replySession()?.id)
+            pill()
+        }
+    }
+
+    /// Rows as the tooltip lists them, on the notch's card.
+    private func sessionCard(_ rows: [AgentSession], replyingTo: AgentSession.ID? = nil) -> some View {
+        real(CGSize(width: NotchLayout.cardWidth,
+                    height: 2 * NotchLayout.cardPadding
+                        + CGFloat(rows.count) * (2 * NotchLayout.cardBodyLineHeight + NotchLayout.sessionRowGap)
+                        + CGFloat(rows.count - 1) * NotchLayout.blockSpacing),
+             scale: 0.66) {
+            VStack(alignment: .leading, spacing: NotchLayout.blockSpacing) {
+                ForEach(rows) { row in
+                    SessionRow(session: row, now: Date(), onAction: row.id == replyingTo ? { _ in } : nil,
+                               showsReply: row.id == replyingTo)
+                }
+            }
+            .padding(NotchLayout.cardPadding)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .background(RoundedRectangle(cornerRadius: NotchLayout.cardCorner, style: .continuous).fill(Palette.notch))
         }
     }
 
@@ -771,5 +892,58 @@ struct RealPill: View {
         }
         .frame(width: Self.width, height: Self.height(agents.count))
         .environment(\.colorScheme, .dark)
+    }
+}
+
+// MARK: - The tour's own tooltip
+
+/// Where a demo prompt was, once it is answered: the notch's own card, dark
+/// and quiet, saying what was done and what it would have meant — with a
+/// note that this was the tour, so nothing went anywhere.
+struct TourResultCard: View {
+    let result: TourResult
+    let edge: NotchEdge
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                Image(systemName: result.isPositive ? "checkmark.circle.fill" : "arrow.uturn.left.circle.fill")
+                    .font(.system(size: 22))
+                    .foregroundStyle(result.isPositive ? Color.green : Color.orange)
+                Text(result.title)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(.white)
+            }
+            if let detail = result.detail, !detail.isEmpty {
+                Text(detail)
+                    .font(.system(size: 12, weight: .medium, design: .monospaced))
+                    .foregroundStyle(.white.opacity(0.9))
+                    .padding(.horizontal, 9)
+                    .padding(.vertical, 4)
+                    .background(.white.opacity(0.1), in: Capsule())
+            }
+            Text(result.meaning)
+                .font(.system(size: 12.5))
+                .foregroundStyle(.white.opacity(0.72))
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+            Label(L10n.t("Just the tour — nothing was sent"), systemImage: "sparkles")
+                .font(.system(size: 11.5, weight: .medium, design: .rounded))
+                .foregroundStyle(GlassTour.glow)
+        }
+        .padding(18)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background {
+            // Glass under a dark wash: the type is white, and glass alone
+            // over a light window left it unreadable.
+            ZStack {
+                // The glow from the card's shape, not the glass's square view.
+                RoundedRectangle(cornerRadius: 24, style: .continuous).fill(.black.opacity(0.001))
+                    .shadow(color: GlassTour.glow.opacity(0.35), radius: 18)
+                GlassSurface(shape: RoundedRectangle(cornerRadius: 24, style: .continuous))
+                RoundedRectangle(cornerRadius: 24, style: .continuous).fill(.black.opacity(0.62))
+                RoundedRectangle(cornerRadius: 24, style: .continuous).strokeBorder(.white.opacity(0.2))
+            }
+        }
     }
 }

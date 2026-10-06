@@ -6,15 +6,16 @@ import SwiftUI
 /// The intro tour: once spyx is set up, a few sticky notes walk through what
 /// the pill does — by doing it. The notes point at the real notch with
 /// marker doodles drawn over the screen, and the demos are real too: a
-/// finished session slides out of the pill, an approval and a question wait
-/// on it to be answered. Answering them sends nothing anywhere.
+/// finished session slides out of the pill, a reply is typed out beside it,
+/// an approval and a question wait on it to be answered. Answering them
+/// sends nothing anywhere.
 @MainActor
 final class IntroTour: ObservableObject {
     enum Step: Int, CaseIterable {
-        case hello, sessions, done, approval, question, anywhere, lid, finish
+        case hello, apiKeys, sessions, done, reply, approval, question, anywhere, lid, finish
 
         /// The steps shown on a ring's tooltip, held open between them.
-        var holdsTooltip: Bool { self == .hello || self == .sessions }
+        var holdsTooltip: Bool { self == .hello || self == .apiKeys || self == .sessions }
 
         /// Whether the note sits in the middle of the screen rather than
         /// beside the part of the notch it is about.
@@ -27,7 +28,6 @@ final class IntroTour: ObservableObject {
     @Published private(set) var step: Step = .hello
     @Published private(set) var phase: Phase = .steps
     /// The look, fixed for the length of a run.
-    @Published private(set) var style: TourStyle = .glass
     /// When the intro started — its every frame is worked out from this.
     @Published private(set) var introStart = Date()
     /// Where the real pill is, for the intro's pill to fly into.
@@ -78,12 +78,42 @@ final class IntroTour: ObservableObject {
     @Published private(set) var visitedEdges: Set<NotchEdge> = []
     /// While "Show me" is flying it round.
     @Published private(set) var isFlying = false
+    /// While the reply step's message is being typed out.
+    @Published private(set) var isReplying = false
     /// What the person just did with a demo prompt, said in a card where the
     /// prompt was — the tour's own tooltip, so answering is a step of the
     /// tour rather than the moment everything vanished.
     @Published private(set) var result: TourResult?
 
     var hasVisitedEveryEdge: Bool { visitedEdges.count == NotchEdge.allCases.count }
+
+    /// Showed it round already, on this visit to "anywhere".
+    @Published private(set) var hasFlown = false
+
+    /// The step is waiting for you to try it yourself — the demo prompt not
+    /// yet answered, the pill not yet sent round. The footer then makes the
+    /// trying the loud button and Next the quiet one.
+    var invitesTry: Bool {
+        switch step {
+        case .approval, .question: return result == nil
+        case .anywhere: return !hasFlown && !isFlying
+        default: return false
+        }
+    }
+
+    /// A word under the buttons while `invitesTry` holds.
+    var tryHint: String? {
+        guard invitesTry else { return nil }
+        switch step {
+        case .approval: return L10n.t("Try it — press Allow on the card")
+        case .question: return L10n.t("Try it — pick an answer, then Send")
+        case .anywhere: return L10n.t("Try Show me")
+        default: return nil
+        }
+    }
+
+    /// A second nudge, if the first one was not taken.
+    private var nudgeWork: DispatchWorkItem?
 
     /// How much of a prompt card's rect, on the pill's side, is the gap and
     /// the tail rather than the card — the result card leaves it as a tail.
@@ -116,6 +146,7 @@ final class IntroTour: ObservableObject {
     private var cancellables: Set<AnyCancellable> = []
     private var levelAtLidStep: EffortLevel?
     private var advanceWork: DispatchWorkItem?
+    private var replyWork: [DispatchWorkItem] = []
     private let samples = (approval: IntroTour.demoApproval(), question: IntroTour.demoQuestion())
     private let sound = MeditationRise()
     private let sounds = TourSounds()
@@ -150,12 +181,11 @@ final class IntroTour: ObservableObject {
         // and let it land before the first note points at it.
         let travelled = bringHome()
         edge = preferences.notchEdge
-        style = preferences.tourStyle
-        phase = style == .glass && !skippingIntro ? .intro : .steps
+        phase = skippingIntro ? .steps : .intro
         fleet?.isTouring = true
         // A first-time user has no limits used and no sessions yet: the
         // tour shows its own, and the real readings come back at the end.
-        fleet?.showTourDemo(snapshots: TourDemo.snapshots(), sessions: TourDemo.sessions())
+        fleet?.showTourDemo(snapshots: TourDemo.pill(), sessions: TourDemo.sessions())
         makePanels()
         preferences.$notchEdge
             .dropFirst()
@@ -302,6 +332,7 @@ final class IntroTour: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) { [sounds] in sounds.stop() }
         advanceWork?.cancel()
         stopFlying()
+        stopReplying()
         clearDemos()
         poll?.invalidate()
         poll = nil
@@ -320,11 +351,15 @@ final class IntroTour: ObservableObject {
     private func go(to step: Step, peekAfter delay: TimeInterval = 0) {
         Log.usage.debug("tour: \(String(describing: self.step), privacy: .public) → \(String(describing: step), privacy: .public), fleet \(self.fleet == nil ? "gone" : "here", privacy: .public)")
         advanceWork?.cancel()
+        nudgeWork?.cancel()
+        nudgeWork = nil
+        hasFlown = false
         clearDemos()
         celebration = nil
         result = nil
         drawingSince = Date()
         stopFlying()
+        stopReplying()
         // Off "anywhere", wherever it was sent: home to the right, where the
         // rest of the tour — and the person, most days — expects it.
         if self.step == .anywhere, step != .anywhere, preferences.notchEdge != Self.homeEdge {
@@ -348,21 +383,33 @@ final class IntroTour: ObservableObject {
                 guard self?.step == .hello else { return }
                 self?.fleet?.holdTourTooltip(focus: .limits)
             }
-        // These show beside the folded pill only, so fold it first — a peek
-        // still open from the step before hid them.
+        case .apiKeys:
+            // The keys' one cell, its card listing every key.
+            fleet?.holdTourTooltip(cell: APIKeyGroup.id)
         case .sessions:
             fleet?.holdTourTooltip(focus: .sessions)
+        // These show beside the folded pill only, so fold it first — a peek
+        // still open from the step before hid them.
         case .done:
             fleet?.endPeek()
             fleet?.showDoneToast(Self.demoFinished(), duration: 30)
+        case .reply:
+            fleet?.endPeek()
+            // Once the card has arrived, so the field is seen opening.
+            let work = DispatchWorkItem { [weak self] in self?.playReply() }
+            replyWork.append(work)
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8, execute: work)
         case .approval:
             fleet?.endPeek()
             show(Self.demoApproval())
+            nudge(L10n.t("Go on — press Allow. It's a demo, nothing runs."))
         case .question:
             fleet?.endPeek()
             show(Self.demoQuestion())
+            nudge(L10n.t("Go on — pick one and press Send. Nothing is sent."))
         case .anywhere:
             visitedEdges = [preferences.notchEdge]
+            nudge(L10n.t("Press Show me — watch it flow round the screen."))
         case .lid:
             levelAtLidStep = effort()?.state.level
         case .finish:
@@ -423,6 +470,53 @@ final class IntroTour: ObservableObject {
 
     func sendHome() { preferences.notchEdge = Self.homeEdge }
 
+    /// The reply step's demo, and its "Show me": the reply field opens beside
+    /// the pill and a message is typed into the idle session — the field's
+    /// own demo, which plays the whole send and sends nothing.
+    func playReply() {
+        guard isRunning, step == .reply, !isReplying, let session = TourDemo.replySession(),
+              let pill = fleet?.tourAnchor(.notch) else { return }
+        isReplying = true
+        let field = Self.replyField(pill: pill.rect, edge: pill.edge, screen: pill.screen)
+        ReplyPanelController.shared.anchor = (field.anchor, pill.screen, pill.edge)
+        let message = L10n.t("Add a test for the empty cart, then open a PR")
+        ReplyPanelController.shared.open(for: session, demoText: message)
+        // The field types 40 ms a letter, pauses, and turns into the card
+        // saying it went; it closes itself a moment after.
+        let sent = Double(message.count) * 0.04 + 0.9
+        let said = DispatchWorkItem { [weak self] in
+            guard let self, self.step == .reply else { return }
+            self.play(.answer)
+            self.cheer(L10n.t("Just the tour — nothing was sent"))
+        }
+        let done = DispatchWorkItem { [weak self] in self?.isReplying = false }
+        replyWork += [said, done]
+        DispatchQueue.main.asyncAfter(deadline: .now() + sent, execute: said)
+        DispatchQueue.main.asyncAfter(deadline: .now() + sent + 2.4, execute: done)
+    }
+
+    private func stopReplying() {
+        replyWork.forEach { $0.cancel() }
+        replyWork.removeAll()
+        if isReplying || step == .reply { ReplyPanelController.shared.close() }
+        isReplying = false
+    }
+
+    /// Where the reply step's field opens: beside the pill, level with its
+    /// middle wherever the pointer is — the anchor it is opened from is a
+    /// rect of no length along the edge — and the capsule inside its stage,
+    /// which the card points at.
+    static func replyField(pill: CGRect, edge: NotchEdge, screen: NSScreen) -> (anchor: CGRect, capsule: CGRect) {
+        let anchor = edge.isVertical ? CGRect(x: pill.minX, y: pill.midY, width: pill.width, height: 0)
+                                     : CGRect(x: pill.midX, y: pill.minY, width: 0, height: pill.height)
+        let stage = OrbReplyView.stage, field = OrbReplyView.fieldSize
+        let origin = ReplyPanelController.origin(size: stage, anchor: (anchor, screen, edge), pointer: .zero,
+                                                 gap: ReplyPanelController.orbGap)
+        let capsule = CGRect(origin: origin, size: stage)
+            .insetBy(dx: (stage.width - field.width) / 2, dy: (stage.height - field.height) / 2)
+        return (anchor, capsule)
+    }
+
     /// Round the screen from home, clockwise, and home again.
     static let round: [NotchEdge] = [.right, .bottom, .left, .top]
     static let hopInterval: TimeInterval = 2.1
@@ -433,6 +527,7 @@ final class IntroTour: ObservableObject {
     func flyRound() {
         guard !isFlying else { return }
         isFlying = true
+        hasFlown = true
         let start = Self.round.firstIndex(of: preferences.notchEdge) ?? 0
         for hop in 1...Self.round.count {
             let edge = Self.round[(start + hop) % Self.round.count]
@@ -470,6 +565,17 @@ final class IntroTour: ObservableObject {
         }
     }
 
+    /// Says it again a few seconds in, if the step is still waiting on you.
+    private func nudge(_ text: String, after delay: TimeInterval = 6) {
+        let current = step
+        let work = DispatchWorkItem { [weak self] in
+            guard let self, self.step == current, self.invitesTry, self.celebration == nil else { return }
+            self.cheer(text)
+        }
+        nudgeWork = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
+    }
+
     private func cheer(_ text: String) {
         cheeredAt = Date()
         withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) { celebration = text }
@@ -477,9 +583,8 @@ final class IntroTour: ObservableObject {
 
     /// For the render tests: a step, and where things are, without panels.
     func showForTesting(_ step: Step, anchor: CGRect?, screen: CGRect, edge: NotchEdge, celebration: String? = nil,
-                        result: TourResult? = nil, visited: Set<NotchEdge> = [], style: TourStyle = .doodle,
+                        result: TourResult? = nil, visited: Set<NotchEdge> = [],
                         phase: Phase = .steps, introAt: TimeInterval = 0) {
-        self.style = style
         self.phase = phase
         introStart = Date().addingTimeInterval(-introAt)
         pillRect = anchor
@@ -502,7 +607,7 @@ final class IntroTour: ObservableObject {
     private func follow() {
         let wanted: NotchWindowController.TourAnchor
         switch step {
-        case .hello, .sessions: wanted = .tooltip
+        case .hello, .apiKeys, .sessions: wanted = .tooltip
         case .done: wanted = .toast
         case .approval, .question: wanted = .prompt
         default: wanted = .notch
@@ -511,8 +616,11 @@ final class IntroTour: ObservableObject {
         guard let found else { return }
         // Pointing at the pill wherever it has flown on "anywhere"; at the
         // result card, once there is one, rather than at the pill behind it.
+        // At the reply field, where it opens, whether or not it is open yet.
         let rect: CGRect? = result?.rect ?? (step == .anywhere ? fleet?.tourAnchor(.notch)?.rect
-                                                                : step.isCentred ? nil : found.rect)
+                                             : step == .reply ? Self.replyField(pill: found.rect, edge: found.edge,
+                                                                                screen: found.screen).capsule
+                                             : step.isCentred ? nil : found.rect)
         if anchor != rect { anchor = rect }
         if edge != found.edge { edge = found.edge }
         if let overlayPanel, !overlayPanel.isVisible { overlayPanel.orderFrontRegardless() }
@@ -584,9 +692,7 @@ final class IntroTour: ObservableObject {
         // reached over it, Next took the click on behalf of the notch.
         card.level = NSWindow.Level(rawValue: NSWindow.Level.statusBar.rawValue + 1)
         card.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary, .ignoresCycle]
-        card.contentView = style == .glass
-            ? FirstClickHostingView(rootView: AnyView(GlassTourCard(tour: self)))
-            : FirstClickHostingView(rootView: AnyView(TourCard(tour: self)))
+        card.contentView = FirstClickHostingView(rootView: AnyView(GlassTourCard(tour: self)))
         if phase == .steps { card.orderFrontRegardless() }
         cardPanel = card
     }
@@ -644,8 +750,10 @@ extension IntroTour {
     var stepTitle: String {
         switch step {
         case .hello: return L10n.t("Every limit, at a glance")
+        case .apiKeys: return L10n.t("Every API key, one cell")
         case .sessions: return L10n.t("Many sessions, one place")
         case .done: return L10n.t("Done? I'll tell you.")
+        case .reply: return L10n.t("Reply right from here")
         case .approval: return L10n.t("Approve from right here")
         case .question: return L10n.t("Answer questions too")
         case .anywhere: return L10n.t("spyx can be anywhere!")
@@ -658,20 +766,24 @@ extension IntroTour {
         switch step {
         case .hello:
             return L10n.t("Each ring is one coding agent. Hover it for its session and weekly limits, when they reset, and every session it's running — no opening Claude, Codex or Cursor to check. Click a session to jump straight to it.")
+        case .apiKeys:
+            return L10n.t("Add keys in Settings → API — \(APICatalog.entries.count) providers, each checked before it's kept. Every key's balance, spend and limits are right here.")
         case .sessions:
             return L10n.t("Running several sessions across Claude, Codex and Cursor? Each ring lists its own — working, waiting on you, done or idle. Click one to jump straight to its window. Try it on one of these.")
         case .done:
             return L10n.t("When an agent finishes, a note slides out of the pill — even with the notch folded. Click it to jump straight to that session.")
+        case .reply:
+            return L10n.t("Hover a session and press Reply. spyx types it into that session's terminal or the Claude app — only when it's idle, never mid-task.")
         case .approval:
             return result == nil
-                ? L10n.t("Claude wants to run something? Allow or deny it without leaving what you're doing. Go on, try — this one's only a demo.")
+                ? L10n.t("Claude wants to run something? Allow or deny it without leaving what you're doing. Try it now: press Allow on the card beside the pill — it's only a demo.")
                 : L10n.t("That's the whole of it: one click, and you're back to what you were doing.")
         case .question:
             return result == nil
-                ? L10n.t("When Claude asks, pick an answer and press Send. It goes back to the right session, and Claude keeps going.")
+                ? L10n.t("When Claude asks, answer from the card. Try it now: pick an option beside the pill and press Send — it's only a demo.")
                 : L10n.t("Several sessions asking at once? Each question waits under its own session, in turn.")
         case .anywhere:
-            return L10n.t("Drag the pill to any edge, or hover it and click ↻. Show me flies it round all four sides and back home to the right.")
+            return L10n.t("Drag the pill to any edge, or hover it and click ↻. Show me flies it round all four sides and back home to the right. It follows the display you're working on, so notes land where you look.")
         case .lid:
             if !effortState.sensorAvailable {
                 return L10n.t("This Mac has no lid sensor, so set the level from the dots on any ring's tooltip instead.")

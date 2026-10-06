@@ -23,6 +23,10 @@ final class ReplyPanelController {
     /// it sits beside that tooltip on the side away from the pill's edge.
     var anchor: (rect: CGRect, screen: NSScreen, edge: NotchEdge)?
 
+    /// The orb's stage has a clear margin round the field; counted in the
+    /// gap, it sits as close to the pill as a card does.
+    static let orbGap: CGFloat = -8
+
     /// A reply is being written: the notch it hangs from stays put.
     var isOpen: Bool { panel?.isVisible ?? false }
 
@@ -109,9 +113,8 @@ final class ReplyPanelController {
             window.contentView = host
         }
 
-        // The orb's stage has a clear margin round the pill; count it in the gap.
         window.setFrameOrigin(Self.origin(size: size, anchor: anchor, pointer: NSEvent.mouseLocation,
-                                          gap: glass ? 12 : -8))
+                                          gap: glass ? 12 : Self.orbGap))
         window.makeKeyAndOrderFront(nil)
         panel = window
     }

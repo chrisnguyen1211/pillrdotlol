@@ -63,4 +63,40 @@ enum TourDemo {
     static func session(pid: pid_t) -> AgentSession? {
         sessions().values.flatMap { $0 }.first { $0.processID == pid }
     }
+
+    /// The idle session the reply step writes to: idle, so spyx would type
+    /// into it.
+    static func replySession(now: Date = Date()) -> AgentSession? {
+        sessions(now: now)["claude"]?.first { $0.state == .idle }
+    }
+
+    /// A handful of API keys, each showing off a kind of reading: what is
+    /// left and spent, characters against a limit, a balance, a key that
+    /// works and says how many requests it has left today.
+    static func keys() -> [ProviderSnapshot] {
+        func key(_ id: String, _ name: String, _ glyph: ProviderGlyph, _ reading: APIReading) -> ProviderSnapshot {
+            let windows = reading.windows(providerName: name, currency: nil)
+            return ProviderSnapshot(id: "\(ExtraKey.catalogPrefix)\(id)-k0tour", displayName: name, glyph: glyph,
+                                    fidelity: .official, status: .ok, windows: windows, headlineID: windows.first?.id)
+        }
+        return [
+            key("openrouter", "OpenRouter", .openrouter,
+                .several([.balance(7.5, .money("USD")), .spend(3.2, .money("USD"), .month),
+                          .spend(41, .money("USD"), .total)])),
+            key("elevenlabs", "ElevenLabs", .elevenlabs, .used(6_400, of: 10_000, .characters, resetsAt: nil)),
+            key("deepseek", "DeepSeek", .deepseek, .balance(18.2, .money("USD"))),
+            key("groq", "Groq", .groq, .keyWorks(.requestsLeft(remaining: 14_399, limit: 14_400, today: true))),
+        ]
+    }
+
+    /// The pill's one cell for every key, as the notch draws it.
+    static func keyGroup() -> ProviderSnapshot {
+        APIKeyGroup.snapshot(members: keys())
+    }
+
+    /// The agents and, after them, the API keys cell — what the pill
+    /// shows for the length of the tour.
+    static func pill(now: Date = Date()) -> [ProviderSnapshot] {
+        snapshots(now: now) + [keyGroup()]
+    }
 }

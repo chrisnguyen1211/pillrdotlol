@@ -19641,40 +19641,6 @@
         }
       }
     },
-    "Drag the pill to any edge, or hover it and click ↻. Show me flies it round all four sides and back home to the right." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Faites glisser la pastille sur n'importe quel bord, ou survolez-la et cliquez sur ↻. Montrez-moi lui fait faire le tour des quatre côtés puis la ramène à droite."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ピルを好きな辺へドラッグするか、ホバーして ↻ をクリックします。「見せて」を押すと 4 辺をひと回りして、右の定位置に戻ります。"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Arraste a cápsula para qualquer borda, ou passe o cursor sobre ela e clique em ↻. Mostrar a leva voando pelos quatro lados e de volta para casa, à direita."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Перетащите пилюлю к любому краю или наведите на неё и нажмите ↻. «Покажи» проведёт её по всем четырём сторонам и вернёт домой, вправо."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "把胶囊拖到任意一条边，或悬停后点 ↻。「演示给我看」会让它绕四条边飞一圈，再回到右边的家。"
-          }
-        }
-      }
-    },
     "Each agent's own default config is rewritten — the one line holding the value, nothing else — so it applies to its next session. A Claude Code session in Terminal that is in view and idle also gets /effort typed in live." : {
       "localizations" : {
         "fr" : {
@@ -52549,6 +52515,448 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%1$@ 用量需要重新登录 — 请再次登录 %2$@。"
+          }
+        }
+      }
+    },
+    "Every API key, one cell" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toutes les clés API, une seule case"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべてのAPIキーを、1 つのセルに"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todas as chaves de API, uma só célula"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Все API-ключи в одной ячейке"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所有 API 密钥，一格搞定"
+          }
+        }
+      }
+    },
+    "Add keys in Settings → API — %lld providers, each checked before it's kept. Every key's balance, spend and limits are right here." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoutez des clés dans Réglages → API — %1$lld fournisseurs, chaque clé vérifiée avant d'être gardée. Le solde, les dépenses et les limites de chacune sont ici."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定 → API でキーを追加できます — 対応プロバイダは %1$lld、保存する前にキーを確認します。各キーの残高・支出・上限はここで見られます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicione chaves em Ajustes → API — %1$lld provedores, cada chave verificada antes de ser guardada. O saldo, os gastos e os limites de cada uma ficam aqui."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавляйте ключи в Настройках → API — %1$lld провайдеров, каждый ключ проверяется перед сохранением. Баланс, расходы и лимиты каждого — прямо здесь."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 设置 → API 中添加密钥 — 支持 %1$lld 家服务商，每个密钥保存前都会先验证。每个密钥的余额、花费和额度都在这里。"
+          }
+        }
+      }
+    },
+    "Reply right from here" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Répondez d'ici même"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ここからすぐ返信"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Responda daqui mesmo"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отвечайте прямо отсюда"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "就在这里回复"
+          }
+        }
+      }
+    },
+    "Hover a session and press Reply. spyx types it into that session's terminal or the Claude app — only when it's idle, never mid-task." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Survolez une session et appuyez sur Répondre. spyx le tape dans le terminal de cette session ou dans l'app Claude — seulement quand elle est inactive, jamais en pleine tâche."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "セッションにホバーして「返信」を押します。spyx がそのセッションのターミナルか Claude アプリに入力します — アイドルのときだけで、作業中には入力しません。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passe o cursor sobre uma sessão e clique em Responder. O spyx digita no terminal dessa sessão ou no app Claude — só quando ela está ociosa, nunca no meio de uma tarefa."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Наведите на сеанс и нажмите «Ответить». spyx введёт ответ в терминал этого сеанса или в приложение Claude — только когда он бездействует, никогда посреди задачи."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "悬停在会话上，点「回复」。spyx 会把它输入到那个会话的终端或 Claude 应用 — 只在它空闲时，绝不在任务进行中。"
+          }
+        }
+      }
+    },
+    "Drag the pill to any edge, or hover it and click ↻. Show me flies it round all four sides and back home to the right. It follows the display you're working on, so notes land where you look." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faites glisser la pastille sur n'importe quel bord, ou survolez-la et cliquez sur ↻. Montrez-moi lui fait faire le tour des quatre côtés puis la ramène à droite. Elle suit l'écran sur lequel vous travaillez, pour que les notes arrivent là où vous regardez."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ピルを好きな辺へドラッグするか、ホバーして ↻ をクリックします。「見せて」を押すと 4 辺をひと回りして、右の定位置に戻ります。作業中のディスプレイについて来るので、メモは見ている場所に届きます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arraste a cápsula para qualquer borda, ou passe o cursor sobre ela e clique em ↻. Mostrar a leva voando pelos quatro lados e de volta para casa, à direita. Ela acompanha a tela em que você está trabalhando, então os avisos aparecem onde você está olhando."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Перетащите пилюлю к любому краю или наведите на неё и нажмите ↻. «Покажи» проведёт её по всем четырём сторонам и вернёт домой, вправо. Она следует за дисплеем, на котором вы работаете, — заметки появляются там, куда вы смотрите."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "把胶囊拖到任意一条边，或悬停后点 ↻。「演示给我看」会让它绕四条边飞一圈，再回到右边的家。它会跟着你正在使用的显示器走，便条总出现在你眼前。"
+          }
+        }
+      }
+    },
+    "Try it — press Allow on the card" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Essayez — appuyez sur Autoriser sur la carte"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "試してみて — カードの「許可」を押してください"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experimente — toque em Permitir no cartão"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Попробуйте — нажмите «Разрешить» на карточке"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "试试看 — 点按卡片上的“允许”"
+          }
+        }
+      }
+    },
+    "Try it — pick an answer, then Send" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Essayez — choisissez une réponse, puis Envoyer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "試してみて — 回答を選んで「送信」"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experimente — escolha uma resposta e toque em Enviar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Попробуйте — выберите ответ и нажмите «Отправить»"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "试试看 — 选一个答案，然后点“发送”"
+          }
+        }
+      }
+    },
+    "Try Show me" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Essayez « Montrez-moi »"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「見せて」を押してみて"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experimente “Mostrar”"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нажмите «Покажи»"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "试试“演示给我看”"
+          }
+        }
+      }
+    },
+    "Go on — press Allow. It's a demo, nothing runs." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allez — appuyez sur Autoriser. C’est une démo, rien ne s’exécute."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どうぞ — 「許可」を押してみて。デモなので何も実行されません。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vai — toque em Permitir. É uma demonstração, nada é executado."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Давайте — нажмите «Разрешить». Это демо, ничего не запустится."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "来吧 — 点“允许”。这只是演示，不会运行任何东西。"
+          }
+        }
+      }
+    },
+    "Go on — pick one and press Send. Nothing is sent." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allez — choisissez-en une et appuyez sur Envoyer. Rien n’est envoyé."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どうぞ — ひとつ選んで「送信」を。何も送られません。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vai — escolha uma e toque em Enviar. Nada é enviado."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Давайте — выберите вариант и нажмите «Отправить». Ничего не отправится."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "来吧 — 选一个再点“发送”。不会发送任何内容。"
+          }
+        }
+      }
+    },
+    "Press Show me — watch it flow round the screen." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appuyez sur « Montrez-moi » — regardez-le glisser tout autour de l’écran."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「見せて」を押すと、画面の周りを流れていきます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toque em “Mostrar” — veja-o fluir pela tela."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нажмите «Покажи» — посмотрите, как он обтекает экран."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "点“演示给我看” — 看它沿着屏幕流动一圈。"
+          }
+        }
+      }
+    },
+    "Claude wants to run something? Allow or deny it without leaving what you're doing. Try it now: press Allow on the card beside the pill — it's only a demo." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude veut lancer quelque chose ? Autorisez ou refusez sans quitter ce que vous faites. Essayez maintenant : appuyez sur Autoriser sur la carte à côté de la pilule — c’est juste une démo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude が何かを実行したい？ 作業を離れずに許可・拒否できます。今すぐ試して：ピルの横のカードで「許可」を押してください — デモです。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Claude quer executar algo? Permita ou negue sem sair do que está fazendo. Experimente agora: toque em Permitir no cartão ao lado da pílula — é só uma demonstração."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude хочет что-то запустить? Разрешите или запретите, не отрываясь от дела. Попробуйте сейчас: нажмите «Разрешить» на карточке рядом с пилюлей — это просто демо."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude 想运行点什么？不用离开手头的事就能允许或拒绝。现在试试：点胶囊旁卡片上的“允许” — 这只是演示。"
+          }
+        }
+      }
+    },
+    "When Claude asks, answer from the card. Try it now: pick an option beside the pill and press Send — it's only a demo." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quand Claude pose une question, répondez depuis la carte. Essayez maintenant : choisissez une option à côté de la pilule et appuyez sur Envoyer — c’est juste une démo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude に質問されたら、カードから答えられます。今すぐ試して：ピルの横で選択肢を選んで「送信」 — デモです。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quando o Claude perguntar, responda pelo cartão. Experimente agora: escolha uma opção ao lado da pílula e toque em Enviar — é só uma demonstração."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Когда Claude спрашивает, отвечайте прямо с карточки. Попробуйте сейчас: выберите вариант рядом с пилюлей и нажмите «Отправить» — это просто демо."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude 提问时，直接在卡片上回答。现在试试：在胶囊旁选一个选项再点“发送” — 这只是演示。"
           }
         }
       }
