@@ -14,7 +14,10 @@ final class SetupModel: ObservableObject {
     @Published private(set) var location: AppLocation
     @Published private(set) var accessibility: Access = AccessibilityAccess.status
     @Published private(set) var automation: [String: Access] = [:]
-    @Published private(set) var hookInstalled = ClaudeHookInstaller.isInstalled()
+    /// Every agent with a turn-finished hook, and where each one stands.
+    @Published private(set) var hookLinks: [AgentHooks.Link] = AgentHooks.links()
+    /// What the lid sets for every agent, for the last page.
+    @Published private(set) var offers: [EffortOffer] = []
     @Published private(set) var agents: [ProviderSnapshot] = []
     @Published private(set) var needs: [String: ConnectNeed] = [:]
     /// Every cloud agent spyx can read, switched on or not.
@@ -26,7 +29,8 @@ final class SetupModel: ObservableObject {
 
     let preferences: Preferences
     let terminals: [AutomationTarget]
-    let claudeCodeInstalled: Bool
+    /// Agents' desktop apps on this Mac — they have no terminal to type into.
+    let desktopApps: [DesktopAgentApp]
     private weak var store: UsageStore?
     private let effort: () -> EffortController?
     private var cancellables: Set<AnyCancellable> = []
@@ -40,11 +44,12 @@ final class SetupModel: ObservableObject {
         let location = AppLocation.current
         self.location = location
         self.terminals = AutomationTarget.installed()
-        self.claudeCodeInstalled = FileManager.default.fileExists(atPath: ClaudeHookInstaller.settingsURL.deletingLastPathComponent().path)
-        self.plan = SetupPlan(
-            needsMove: location.needsMove,
-            claudeDesktopInstalled: AutomationTarget.isInstalled(ClaudeDesktopComposer.bundleID)
-        )
+        let desktopApps = DesktopAgentApp.all.filter { AutomationTarget.isInstalled($0.bundleID) }
+        self.desktopApps = desktopApps
+        // The page is for an app spyx can reach; one it cannot is said on
+        // the Ready page's lid table instead of a page with nothing to do.
+        self.plan = SetupPlan(needsMove: location.needsMove,
+                              desktopAppInstalled: desktopApps.contains { $0.reach != nil })
 
         guard let store else { return }
         store.$notchSnapshots
@@ -52,10 +57,16 @@ final class SetupModel: ObservableObject {
             .receive(on: RunLoop.main)
             .sink { [weak self] snapshots, _, _ in
                 guard let self, let store = self.store else { return }
-                self.agents = snapshots.filter { $0.localModel == nil && $0.localRuntime == nil }
+                // GLM, MiniMax, Ollama Cloud and Apify are drawn inside the
+                // API keys cell; here they are still listed by their own ids.
+                self.agents = snapshots.flatMap { $0.keyGroup ?? [$0] }.filter {
+                    $0.localModel == nil && $0.localRuntime == nil && !APIKeyGroup.isAddedKey($0.id)
+                }
                 self.needs = store.connectNeeds()
+                // Claude among the rest — no agent gets a page of its own.
+                // Keys added under API are not agents.
                 self.catalog = store.providerSummaries.filter {
-                    $0.kind == .usage && $0.localModel == nil && !ClaudeProfile.isClaude(providerID: $0.id)
+                    $0.kind == .usage && $0.localModel == nil && !APIKeyGroup.isAddedKey($0.id)
                 }
             }
             .store(in: &cancellables)
@@ -86,7 +97,8 @@ final class SetupModel: ObservableObject {
 
     func refresh() {
         accessibility = AccessibilityAccess.status
-        hookInstalled = ClaudeHookInstaller.isInstalled()
+        hookLinks = AgentHooks.links()
+        if step == .ready { offers = EffortOffer.all() }
         let targets = terminals.filter { $0.needsPermission && !asking.contains($0.id) }
         Task.detached {
             let answers = targets.map { ($0.id, AutomationAccess.status(of: $0, ask: false)) }
@@ -102,6 +114,10 @@ final class SetupModel: ObservableObject {
     func go(to step: SetupStep) {
         self.step = step
         visited.insert(step)
+        // The page that says what the hooks are, with the switch to refuse
+        // them: from here they may go in, and its rows turn green as they do.
+        if step == .hooks { HookConsent.grant() }
+        if step == .ready { offers = EffortOffer.all() }
     }
 
     func advance() { plan.next(after: step).map(go(to:)) }
@@ -114,10 +130,13 @@ final class SetupModel: ObservableObject {
         switch step {
         case .welcome: return visited.contains(.welcome) && self.step != .welcome
         case .move: return !location.needsMove
-        case .claude: return !claudeCodeInstalled || (hookInstalled && claudeNeeds.isEmpty)
+        case .hooks:
+            let here = hookLinks.filter(\.present)
+            return here.allSatisfy { $0.doneHooked || !preferences.announceSessionEnd }
+                && here.allSatisfy { $0.approvalsHooked != false || !preferences.answerPromptsFromNotch }
         case .terminals:
             return terminals.filter(\.needsPermission).allSatisfy { automation[$0.id]?.isGranted == true }
-        case .claudeDesktop:
+        case .desktopApps:
             return !ClaudeDesktopComposer.isEnabled(.standard) || accessibility.isGranted
         case .agents: return !enabledAgents.isEmpty && enabledAgents.allSatisfy { needs[$0.id] == nil }
         case .ready: return false
@@ -149,6 +168,16 @@ final class SetupModel: ObservableObject {
 
     func isAsking(_ target: AutomationTarget) -> Bool { asking.contains(target.id) }
 
+    /// Puts the hooks in again now, for a row that did not link.
+    func relinkHooks() {
+        guard HookConsent.mayInstall(), let executable = Bundle.main.executablePath else { return }
+        if preferences.announceSessionEnd { AgentHooks.installAll(executable: executable) }
+        if preferences.answerPromptsFromNotch, AgentHooks.claudePresent {
+            try? ClaudeHookInstaller.install(executable: executable)
+        }
+        refresh()
+    }
+
     func requestAccessibility() {
         UserDefaults.standard.set(true, forKey: ClaudeDesktopComposer.defaultsKey)
         AccessibilityAccess.request()
@@ -166,9 +195,6 @@ final class SetupModel: ObservableObject {
     func connect(_ providerID: String) {
         _ = store?.connect(providerID: providerID)
     }
-
-    var claudeAgents: [ProviderSnapshot] { agents.filter { $0.id.hasPrefix("claude") } }
-    var claudeNeeds: [String: ConnectNeed] { needs.filter { $0.key.hasPrefix("claude") } }
 
     var enabledAgents: [ProviderSummary] {
         catalog.filter { !preferences.disconnectedProviders.contains($0.id) }
@@ -197,7 +223,9 @@ final class SetupModel: ObservableObject {
 
     func isFoundOnMac(_ agent: ProviderSummary) -> Bool {
         if case .openApp(let bundleID, _) = agent.signIn { return AutomationTarget.isInstalled(bundleID) }
-        return false
+        // A command-line agent: its own folder in the home directory.
+        let folder = EffortState.targetID(forProviderID: agent.id)
+        return FileManager.default.fileExists(atPath: NSHomeDirectory() + "/." + folder)
     }
 
     /// Supported terminals that aren't on this Mac, named once under the list.
@@ -205,6 +233,23 @@ final class SetupModel: ObservableObject {
         let here = Set(terminals.map(\.id))
         return AutomationTarget.all.filter { !here.contains($0.id) }.map(\.name)
     }
+}
+
+/// An agent's desktop app, and what spyx can do in it without a terminal.
+struct DesktopAgentApp: Identifiable, Equatable {
+    let bundleID: String
+    let name: String
+    /// What Accessibility lets spyx do there; nil: nothing yet.
+    let reach: String?
+
+    var id: String { bundleID }
+
+    static let all: [DesktopAgentApp] = [
+        DesktopAgentApp(bundleID: ClaudeDesktopComposer.bundleID, name: "Claude",
+                        reach: L10n.t("Types /effort and your replies into the session it shows — only when idle and its box is empty.")),
+        DesktopAgentApp(bundleID: "com.openai.codex", name: "Codex",
+                        reach: nil),
+    ]
 }
 
 /// Puts the setup assistant on screen, and takes it down.

@@ -76,6 +76,8 @@ final class SecurityHardeningTests: XCTestCase {
         XCTAssertTrue(EffortInjector.isEffortCommand("/effort high"))
         XCTAssertFalse(EffortInjector.isEffortCommand("/effort high\nrun this"))
         XCTAssertFalse(EffortInjector.isEffortCommand("/effort high; ls"))
+        XCTAssertTrue(EffortInjector.isEffortCommand("/effort ultracode"))
+        XCTAssertFalse(EffortInjector.isEffortCommand("/effort ultracode; ls"))
         XCTAssertFalse(EffortInjector.isEffortCommand("/model opus"))
     }
 }

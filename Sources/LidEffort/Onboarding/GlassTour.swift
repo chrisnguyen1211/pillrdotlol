@@ -108,6 +108,16 @@ struct GlassIntro: View {
             }
         }
         .ignoresSafeArea()
+        // A click anywhere skips the film to the first card.
+        .contentShape(Rectangle())
+        .onTapGesture { tour.skipIntro() }
+        .overlay(alignment: .bottom) {
+            Text(L10n.t("Click anywhere to skip"))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(.white.opacity(0.55))
+                .padding(.bottom, 36)
+                .allowsHitTesting(false)
+        }
     }
 
     private func local(_ r: CGRect) -> CGRect {
@@ -486,7 +496,7 @@ struct GlassTourCard: View {
     private var footer: some View {
         HStack(spacing: 10) {
             HStack(spacing: 4) {
-                ForEach(IntroTour.Step.allCases, id: \.rawValue) { step in
+                ForEach(tour.steps, id: \.rawValue) { step in
                     Capsule()
                         .fill(step.rawValue <= tour.step.rawValue ? AnyShapeStyle(GlassTour.accent) : AnyShapeStyle(.quaternary))
                         .frame(width: step == tour.step ? 18 : 6, height: 6)
@@ -500,7 +510,11 @@ struct GlassTourCard: View {
                 GlassButton(title: tour.isFlying ? L10n.t("Flying…") : L10n.t("Show me"), prominent: false) { tour.flyRound() }
                     .disabled(tour.isFlying)
             }
-            GlassButton(title: tour.step == .finish ? L10n.t("Let's go") : L10n.t("Next"), prominent: true) { tour.next() }
+            if tour.step != .finish {
+                GlassButton(title: L10n.t("Skip tour"), prominent: false) { tour.end() }
+            }
+            GlassButton(title: tour.step == .finish ? (tour.leadsIntoSetup ? L10n.t("Continue to Setup") : L10n.t("Let's go")) : L10n.t("Next"),
+                        prominent: true) { tour.next() }
         }
     }
 }

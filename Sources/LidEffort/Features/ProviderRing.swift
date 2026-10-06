@@ -13,6 +13,8 @@ struct ProviderRing: View {
     /// there is no arc to draw, and inventing one would be a lie in a shape.
     let usedFraction: Double?
     let glyph: ProviderGlyph
+    /// A custom endpoint's own image, drawn instead of the glyph.
+    var customIconFilename: String? = nil
     var isStale: Bool = false
     /// Blocked right now. Shown as spent whatever the arc says, because that is
     /// what it means for you — a ring reading 16% while the account is paused
@@ -33,6 +35,9 @@ struct ProviderRing: View {
     /// How much of the circle the gauge leaves open at the bottom, in
     /// degrees — sized by the cell for the dots it has to seat there.
     var gaugeGapDegrees: Double = NotchLayout.defaultGaugeGapDegrees
+    /// The band the provider chose itself — a ring showing what is *left*,
+    /// where a full arc is ample rather than spent.
+    var bandOverride: UsageBand? = nil
 
     /// The arc as a fraction of the circle, and where it starts (degrees
     /// from 3 o'clock, clockwise) so the gap is centred on 6 o'clock.
@@ -45,7 +50,9 @@ struct ProviderRing: View {
     @State private var spin: Double = 0
 
     private var band: UsageBand {
-        isBlocked ? .exhausted : UsageBand.band(for: usedFraction ?? 0)
+        if isBlocked { return .exhausted }
+        if let bandOverride { return bandOverride }
+        return UsageBand.band(for: usedFraction ?? 0)
     }
     private var sweep: CGFloat { CGFloat(min(max(usedFraction ?? 0, 0), 1)) }
     private var localSweep: CGFloat { CGFloat(min(max(localContextFraction ?? 1, 0), 1)) }
@@ -153,7 +160,7 @@ struct ProviderRing: View {
                         .animation(NotchMotion.reading, value: weeklyBand)
                 }
 
-                ProviderBadge(glyph: glyph)
+                ProviderBadge(glyph: glyph, customIconFilename: customIconFilename)
                     // Working: the agent's own mark breathes, dim to bright
                     // and back — the logo is what is busy, not a ring of dots.
                     .modifier(Breathing(active: activity?.state == .working))
@@ -273,6 +280,7 @@ struct ProviderCell: View {
             ProviderRing(
                 usedFraction: snapshot.localModel == nil && snapshot.hasReading ? snapshot.ringFraction : nil,
                 glyph: snapshot.glyph,
+                customIconFilename: snapshot.customIconFilename,
                 isStale: snapshot.status.isStale || !snapshot.hasReading,
                 isBlocked: snapshot.block != nil,
                 activity: activity,
@@ -281,7 +289,8 @@ struct ProviderCell: View {
                 localContextFraction: snapshot.localContextFraction,
                 weeklyFraction: snapshot.hasReading ? snapshot.weeklyFraction : nil,
                 weeklyRing: weeklyRing,
-                gaugeGapDegrees: gaugeGap
+                gaugeGapDegrees: gaugeGap,
+                bandOverride: snapshot.bandOverride
             )
             // The dots complete the circle the gauge leaves open: one per
             // level the model has, filled to where it is. The number is a

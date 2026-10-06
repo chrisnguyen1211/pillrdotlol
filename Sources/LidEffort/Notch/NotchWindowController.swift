@@ -57,6 +57,12 @@ final class NotchWindowController {
     /// which is what a single-controller setup did before the fleet existed —
     /// so leaving it unset changes nothing.
     var assignedScreen: NSScreen?
+
+    /// Someone is using the notch right now — a card under the pointer, or a
+    /// reply hanging from it — so it is not to be moved to another display.
+    var isInUse: Bool {
+        model.hoveredIndex != nil || ReplyPanelController.shared.isOpen
+    }
     private var cancellables = Set<AnyCancellable>()
     private var mouseMonitors: [Any] = []
     private var clearHoverWork: DispatchWorkItem?
@@ -135,6 +141,24 @@ final class NotchWindowController {
             }
             updateInteractiveRects()
         }
+    }
+
+    /// Folds the notch now, peek or not — to make way for the reply field,
+    /// which takes the tooltip's place beside the pill.
+    func foldForReply() {
+        peekWork?.cancel()
+        peekWork = nil
+        peekUntil = nil
+        foldWork?.cancel()
+        foldWork = nil
+        model.isPinned = false
+        guard model.isExpanded else { return }
+        withAnimation(NotchMotion.unfold) {
+            model.isExpanded = false
+            model.hoveredIndex = nil
+        }
+        setPointing(false)
+        updateInteractiveRects()
     }
 
     /// Immediately folds the notch and clears pending hover timers when a full-screen app takes focus.
@@ -363,6 +387,22 @@ final class NotchWindowController {
     private func dragged(dx: CGFloat, dy: CGFloat) {
         model.alongOffset += model.edge.isVertical ? dy : dx
         relocate()
+        // Past the end of the edge the pill stops but the pointer goes on:
+        // kept to where the pill actually stands, so dragging back moves it
+        // at once instead of first unwinding the distance it did not travel.
+        if let panel, let screen = currentScreen() {
+            let settled = Self.alongOffset(of: panel.frame, on: screen.frame, edge: model.edge)
+            if abs(settled - model.alongOffset) > 0.5 { model.alongOffset = settled }
+        }
+    }
+
+    /// The offset a panel frame stands at — the inverse of
+    /// `NotchGeometry.panelFrame`'s placement along the edge.
+    static func alongOffset(of frame: CGRect, on screen: CGRect, edge: NotchEdge) -> CGFloat {
+        switch edge {
+        case .left, .right: return screen.midY - frame.height / 2 - frame.minY
+        case .top, .bottom: return frame.minX - (screen.midX - frame.width / 2)
+        }
     }
 
     // MARK: - Hit regions
@@ -461,7 +501,9 @@ final class NotchWindowController {
                 localLedgerRows: snapshot.localLedgerRowCount,
             compactRowCount: snapshot.compactRowCount,
             effortRow: model.hasEffortRow(for: snapshot),
-            promptHeight: model.promptHeight(for: snapshot)
+            promptHeight: model.promptHeight(for: snapshot),
+            costRows: model.costRows(for: snapshot),
+            keyGroupBody: model.keyGroupBody(for: snapshot)
         )
         // Across the stack the region is the card, its tail, and the gap the
         // pointer has to cross. Along it, the card's own extent.
@@ -503,8 +545,12 @@ final class NotchWindowController {
             rects.append(promptCardRect(prompt))
         } else if !model.isExpanded, model.activeDoneToast != nil, model.currentPrompt == nil {
             rects.append(doneToastRect)
+            if let toast = model.activeDoneToast, DoneToastView.canReply(toast) { rects.append(doneToastReplyRect) }
         }
-        if model.isExpanded, let event = model.activeResetAlert, let card = resetCardRect(event: event) {
+        // The effort card is the gesture's answer and goes over a reset
+        // card; the reset card is only clickable while it is the one shown.
+        if model.isExpanded, model.activeEffortAlert == nil, let event = model.activeResetAlert,
+           let card = resetCardRect(event: event) {
             rects.append(card)
         }
         if model.isExpanded, let index = model.hoveredIndex, let card = tooltipRect(index: index) {
@@ -589,10 +635,10 @@ final class NotchWindowController {
         if !model.isExpanded, model.activeDoneToast != nil, model.currentPrompt == nil { return doneToastRect }
         guard model.isExpanded else { return nil }
         if model.hoveredIndex == nil {
-            if let event = model.activeResetAlert { return resetCardRect(event: event) }
             if let event = model.activeEffortAlert {
                 return alertCardRect(index: model.effortAlertIndex() ?? 0, height: EffortChangeCard.cardHeight(for: event))
             }
+            if let event = model.activeResetAlert { return resetCardRect(event: event) }
         }
         if let index = model.hoveredIndex { return tooltipRect(index: index) }
         return nil
@@ -765,12 +811,28 @@ final class NotchWindowController {
         // click elsewhere while it is up merely dismisses it; the pill's
         // own pending-focus answer below still stands for that.
         if let toast = model.activeDoneToast {
+            // The round Reply button beside the card: write to the session.
+            if !model.isExpanded, DoneToastView.canReply(toast), doneToastReplyRect.contains(local),
+               let reply = model.onSessionAction {
+                clearDoneToast()
+                pendingFocus = nil
+                reply(.reply(toast.session))
+                return
+            }
             let onCard = !model.isExpanded && doneToastRect.contains(local)
             Log.usage.notice("click with done card up: on card \(onCard, privacy: .public), pid \(toast.pid ?? -1, privacy: .public), at \(NSStringFromPoint(local), privacy: .public) in \(NSStringFromRect(self.doneToastRect), privacy: .public)")
             clearDoneToast()
+            // Elsewhere, a click only puts the card away: opening the notch
+            // must never turn into a jump to some terminal.
+            if !onCard { pendingFocus = nil }
             if onCard {
                 pendingFocus = nil
-                if let pid = toast.pid { focusSession(pid) }
+                // ⌥-click on the card: write to it instead of going to it.
+                if NSEvent.modifierFlags.contains(.option), let reply = model.onSessionAction {
+                    reply(.reply(toast.session))
+                } else if let pid = toast.pid {
+                    focusSession(pid)
+                }
                 return
             }
         }
@@ -1223,13 +1285,16 @@ final class NotchWindowController {
     /// its bar follow. Nil when it has rested — the card stays a moment in
     /// case the rest changed nothing, and is replaced at once if it did.
     func showEffortPreview(_ position: Double?, level: EffortLevel, note: String? = nil, noteIsLive: Bool = false,
-                           agent: String? = nil) {
+                           agent: String? = nil, aim: EffortAim? = nil) {
         guard visibility != .hidden, panel != nil else { return }
         if let position {
             model.effortPreview = position
             if model.activeEffortAlert == nil || model.activeEffortAlert?.id != liveEffortAlertID {
-                let live = EffortChangeEvent(level: level, values: [], at: Date(), note: note, noteIsLive: noteIsLive,
-                                             agent: agent)
+                // Before ⌘ is let go: what it will change, and how to apply it.
+                let how = L10n.t("Let go of ⌘ to apply")
+                let live = EffortChangeEvent(level: level, values: [], at: Date(),
+                                             note: note.map { "\(how) · \($0)" } ?? how, noteIsLive: noteIsLive,
+                                             agent: agent, aim: aim)
                 liveEffortAlertID = live.id
                 withAnimation(NotchMotion.contents) { model.activeEffortAlert = live }
             }
@@ -1401,19 +1466,35 @@ final class NotchWindowController {
         )
     }
 
+    /// The round Reply button beside the done card, in panel coordinates —
+    /// the same centre the root view draws it at, a little larger than drawn.
+    private var doneToastReplyRect: CGRect {
+        let scale = model.cardScale
+        let centre = DoneToastView.replyBubbleCentre(edge: model.edge, scale: scale,
+                                                     restingDepth: model.restingDepth * model.sizeScale,
+                                                     alongCentre: model.slack + model.shapeLength * model.sizeScale / 2)
+        let size = DoneToastView.replyBubble * scale
+        return placement.rect(along: centre.along - size / 2, across: centre.across - size / 2,
+                              length: size, depth: size).insetBy(dx: -6, dy: -6)
+    }
+
     /// Say a session finished, from the pill, without opening the notch.
     ///
     /// A click on the line — or on the pill, while the offer stands — raises
     /// that session, the same answer a peek used to take; the offer outlives
     /// the line by the usual grace for a hand that set off late.
-    func showDoneToast(_ event: SessionCompletionWatcher.Event, duration: TimeInterval) {
+    func showDoneToast(_ event: SessionCompletionWatcher.Event, duration: TimeInterval, changes: String? = nil) {
         guard visibility != .hidden, let panel else {
             Log.usage.notice("done line skipped: notch hidden (\(String(describing: self.visibility), privacy: .public), panel \(self.panel == nil ? "none" : "up", privacy: .public))")
             return
         }
-        let glyph = model.snapshots.first { $0.providerID == event.providerID }?.glyph ?? .claude
-        let toast = DoneToast(event: event, glyph: glyph)
-        Log.usage.notice("done card for \(event.session.name, privacy: .public) pid \(toast.pid ?? -1, privacy: .public), rect \(NSStringFromRect(self.doneToastRect), privacy: .public), panel \(NSStringFromRect(panel.frame), privacy: .public)")
+        // The session's own agent, whether or not it has a ring here — a
+        // Grok card wearing Claude's mark said nothing about which finished.
+        let glyph = model.snapshots.first { $0.providerID == event.providerID }?.glyph
+            ?? ProviderGlyph.forProvider(event.providerID) ?? .third
+        var toast = DoneToast(event: event, glyph: glyph)
+        toast.changes = changes
+        Log.usage.notice("done card for \(event.session.name, privacy: .private) pid \(toast.pid ?? -1, privacy: .public), rect \(NSStringFromRect(self.doneToastRect), privacy: .public), panel \(NSStringFromRect(panel.frame), privacy: .public)")
         // A session waiting on you is not news that goes stale in five
         // seconds: that card stays until the session stops waiting (see
         // `resolveWaiting`) or is clicked. A finished one is said and goes.
@@ -1427,8 +1508,25 @@ final class NotchWindowController {
         if !Runtime.isUnderTest { panel.orderFrontRegardless() }
 
         doneToastWork?.cancel()
+        // A session waiting on you, pushed aside by one that merely finished,
+        // comes back once that card has gone — it is still waiting.
+        if lasts, let current = model.activeDoneToast, current.isBlocked { parkedWaiting = current }
+        if !lasts { parkedWaiting = nil }
         withAnimation(NotchMotion.contents) { model.activeDoneToast = toast }
         updateInteractiveRects()
+        // What it changed, once git has said — off the main thread, filled
+        // into the card if it is still the one up.
+        if lasts, let pid = toast.pid {
+            Task.detached(priority: .utility) { [weak self] in
+                guard let cwd = SessionFocus.currentDirectory(of: pid),
+                      let changes = GitChanges.summary(cwd: cwd) else { return }
+                await MainActor.run {
+                    guard let self, var current = self.model.activeDoneToast, current.id == toast.id else { return }
+                    current.changes = changes
+                    self.model.activeDoneToast = current
+                }
+            }
+        }
         guard lasts else { return }
 
         let work = DispatchWorkItem { [weak self] in
@@ -1444,6 +1542,7 @@ final class NotchWindowController {
     /// Clears a "waiting on you" card once its session is no longer waiting
     /// — answered in the terminal, or anywhere else.
     func resolveWaiting(waitingPIDs: Set<pid_t>) {
+        if let parked = parkedWaiting, let pid = parked.pid, !waitingPIDs.contains(pid) { parkedWaiting = nil }
         guard let toast = model.activeDoneToast, toast.isBlocked else { return }
         if let pid = toast.pid, waitingPIDs.contains(pid) { return }
         if let pid = toast.pid, pendingFocus?.pid == pid { pendingFocus = nil }
@@ -1454,15 +1553,22 @@ final class NotchWindowController {
     /// tour, whose demo line must not outlive its step.
     func dismissDoneToast() {
         if let pid = model.activeDoneToast?.pid, pendingFocus?.pid == pid { pendingFocus = nil }
+        parkedWaiting = nil
         clearDoneToast()
     }
 
     private func clearDoneToast() {
         doneToastWork?.cancel()
         doneToastWork = nil
-        withAnimation(NotchMotion.contents) { model.activeDoneToast = nil }
+        let back = model.activeDoneToast?.isBlocked == false ? parkedWaiting : nil
+        if model.activeDoneToast?.isBlocked == true { parkedWaiting = nil }
+        parkedWaiting = back == nil ? parkedWaiting : nil
+        withAnimation(NotchMotion.contents) { model.activeDoneToast = back }
         updateInteractiveRects()
     }
+
+    /// A waiting card a finished one replaced, to bring back after it.
+    private var parkedWaiting: DoneToast?
 
     /// Open the notch and show a usage reset notification modal card.
     func showResetAlert(_ event: UsageResetEvent, duration: TimeInterval = 5.0) {

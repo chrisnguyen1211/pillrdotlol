@@ -29,6 +29,9 @@ actor CodexLocalProvider: UsageProvider {
 
     nonisolated var signInCommand: String? { profile.signInCommand }
 
+    /// Where the sign-in lives: a new one written there is read at once.
+    nonisolated var credentialFiles: [URL] { [authURL] }
+
     nonisolated var signInRoute: SignInRoute {
         guard profile.slug != nil else { return .openApp(bundleID: "com.openai.codex", name: "Codex") }
         return .guidance(L10n.t("Run \(profile.signInCommand) in Terminal to sign in to \(displayName)."))

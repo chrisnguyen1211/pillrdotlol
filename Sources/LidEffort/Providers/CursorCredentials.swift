@@ -1,4 +1,5 @@
 import Foundation
+import os
 import Security
 import SQLite3
 
@@ -144,7 +145,7 @@ struct CursorCredentials {
         )
     }
 
-    static func forgetCachedAgent() { CursorAgentKeychain.forgetCached() }
+    static func forgetCachedAgent(allowingPrompt: Bool = false) { CursorAgentKeychain.forgetCached(allowingPrompt: allowingPrompt) }
 
     /// The cookie's left half. `authId` is the WorkOS subject the editor
     /// itself stores as `stripeMembershipAuthId`. Numeric `userId` also works
@@ -261,7 +262,14 @@ enum CursorAgentKeychain {
         )
     }
 
-    static func forgetCached() { cache.forget() }
+    /// "Allow access…" in Settings: the next read may show macOS's dialog,
+    /// with the person there to answer it. Every other read never does.
+    static func forgetCached(allowingPrompt: Bool = false) {
+        cache.forget()
+        if allowingPrompt { promptNext.withLock { $0 = true } }
+    }
+
+    private static let promptNext = OSAllocatedUnfairLock(initialState: false)
 
     /// Newest item under this service and account, then a targeted data read.
     /// Same two-step as Claude Code: attributes are free, the secret is not,
@@ -272,15 +280,17 @@ enum CursorAgentKeychain {
             throw UsageProviderError.needsAuth
         }
 
-        var item: CFTypeRef?
-        let status = SecItemCopyMatching([
+        // Never a dialog from a background read: a refusal says so in
+        // Settings, where "Allow access…" asks with the person there.
+        let interactive = promptNext.withLock { flag -> Bool in let was = flag; flag = false; return was }
+        let (status, data) = KeychainSecret.read(query: [
             kSecClass: kSecClassGenericPassword,
             kSecValuePersistentRef: winner.persistentRef,
             kSecReturnData: true,
             kSecMatchLimit: kSecMatchLimitOne
-        ] as CFDictionary, &item)
+        ], interactive: interactive, rescue: nil)
 
-        guard status == errSecSuccess, let data = item as? Data else {
+        guard status == errSecSuccess, let data else {
             Log.usage.error("cursor-agent keychain read failed: OSStatus \(status)")
             if ClaudeCredentials.wasTransient(status) { throw UsageProviderError.credentialExpired }
             throw ClaudeCredentials.wasRefused(status)

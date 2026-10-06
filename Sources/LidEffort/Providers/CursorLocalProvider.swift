@@ -34,7 +34,8 @@ actor CursorLocalProvider: UsageProvider {
 
     nonisolated func account() -> ProviderAccount? { CursorCredentials.account() }
 
-    nonisolated func forgetCachedCredential() { CursorCredentials.forgetCachedAgent() }
+    /// From "Allow access…": the one read that may ask macOS.
+    nonisolated func forgetCachedCredential() { CursorCredentials.forgetCachedAgent(allowingPrompt: true) }
 
     func fetchSnapshot() async throws -> ProviderSnapshot {
         // Re-read every time: the editor rotates this, and holding a stale copy
@@ -63,7 +64,7 @@ actor CursorLocalProvider: UsageProvider {
         }
 
         let body = String(data: data, encoding: .utf8) ?? ""
-        Log.usage.debug("cursor usage -> \(body.prefix(900), privacy: .public)")
+        Log.usage.debug("cursor usage -> \(body.prefix(900), privacy: .private)")
 
         let windows = try CursorUsage.windows(fromJSON: body)
         return ProviderSnapshot(

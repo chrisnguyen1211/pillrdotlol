@@ -101,6 +101,9 @@ final class IntroTour: ObservableObject {
     static let cardSize = CGSize(width: 380, height: 430)
 
     var onEnd: (() -> Void)?
+    /// The first launch's intro, with setup to follow: the last card says
+    /// what comes next rather than "you're all set".
+    @Published var leadsIntoSetup = false
     var isRunning: Bool { cardPanel != nil }
 
     private weak var fleet: NotchFleet?
@@ -223,12 +226,14 @@ final class IntroTour: ObservableObject {
     private func beginFilm() {
         guard isRunning, phase == .intro else { return }
         introStart = Date()
+        overlayPanel?.ignoresMouseEvents = false
         if preferences.tourSound { sound.play() }
         let reveal = DispatchWorkItem { [weak self] in self?.fleet?.setTourVeil(false) }
         revealWork = reveal
         DispatchQueue.main.asyncAfter(deadline: .now() + IntroTimeline.reveal, execute: reveal)
         let work = DispatchWorkItem { [weak self] in
             guard let self, self.isRunning else { return }
+            self.overlayPanel?.ignoresMouseEvents = true
             self.phase = .steps
             self.cardPanel?.orderFrontRegardless()
             self.go(to: .hello)
@@ -256,12 +261,33 @@ final class IntroTour: ObservableObject {
         end()
     }
 
+    /// The steps this Mac has something to show for: approving and
+    /// answering only where an agent here can ask through a hook.
+    var steps: [Step] {
+        Step.allCases.filter { step in
+            (step != .approval && step != .question) || AgentHooks.claudePresent
+        }
+    }
+
     func next() {
-        if let following = Step(rawValue: step.rawValue + 1) { go(to: following) } else { end() }
+        if let following = steps.first(where: { $0.rawValue > step.rawValue }) { go(to: following) } else { end() }
     }
 
     func back() {
-        if let previous = Step(rawValue: step.rawValue - 1) { go(to: previous) }
+        if let previous = steps.last(where: { $0.rawValue < step.rawValue }) { go(to: previous) }
+    }
+
+    /// The film, cut short by a click: straight to the first card.
+    func skipIntro() {
+        guard isRunning, phase == .intro else { return }
+        introWork?.cancel()
+        revealWork?.cancel()
+        sound.stop()
+        fleet?.setTourVeil(false)
+        overlayPanel?.ignoresMouseEvents = true
+        phase = .steps
+        cardPanel?.orderFrontRegardless()
+        go(to: .hello)
     }
 
     func end() {
@@ -624,7 +650,7 @@ extension IntroTour {
         case .question: return L10n.t("Answer questions too")
         case .anywhere: return L10n.t("spyx can be anywhere!")
         case .lid: return L10n.t("Tilt the lid to think harder")
-        case .finish: return L10n.t("You're all set ✨")
+        case .finish: return leadsIntoSetup ? L10n.t("One more minute") : L10n.t("You're all set ✨")
         }
     }
 
@@ -652,7 +678,10 @@ extension IntroTour {
             }
             return L10n.t("Hold ⌘ and tilt the lid: open it further for more effort, close it a little for less. Let go to set it — every agent follows.")
         case .finish:
-            return L10n.t("I'm in the notch, the menu bar and Settings whenever you need me. The tour is in Settings → General if you want it again.")
+            if leadsIntoSetup {
+                return L10n.t("Next, a short setup: pick your agents and give macOS's permissions once, so nothing interrupts you later.")
+            }
+            return L10n.t("I'm on the edge of your screen whenever you need me. Setup and this tour are in Settings → General if you want them again.")
         }
     }
 }

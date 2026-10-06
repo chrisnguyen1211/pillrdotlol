@@ -10,33 +10,51 @@ import os
 /// sign-out deletes it. Polling and error handling follow the same path every
 /// other provider takes through `UsageStore`.
 actor OllamaProvider: UsageProvider {
-    nonisolated let id = "ollama"
-    nonisolated let displayName = "Ollama"
+    nonisolated let id: String
+    nonisolated let displayName: String
     nonisolated let glyph = ProviderGlyph.ollama
 
     private let endpoint = URL(string: "https://ollama.com/api/usage")!
     private let session: URLSession
+    /// An extra key's ring: its own key, never the environment's or the
+    /// base's keychain item. Nil for the provider's own ring.
+    nonisolated private let extraKey: (@Sendable () -> String?)?
 
-    init(session: URLSession = .shared) {
+    /// The defaults are the provider's own ring. An extra key passes its id,
+    /// its "Ollama · Work" name and `key`, which returns its key.
+    init(id: String = "ollama", displayName: String = "Ollama",
+         session: URLSession = .shared, key: (@Sendable () -> String?)? = nil) {
+        self.id = id
+        self.displayName = displayName
         self.session = session
+        self.extraKey = key
+    }
+
+    private func loadKey() -> String? {
+        extraKey.map { $0() } ?? OllamaCredentials.load()
     }
 
     nonisolated var signInRoute: SignInRoute {
-        .guidance(L10n.t("Enter an Ollama API key below, or export OLLAMA_API_KEY in your shell."))
+        if extraKey != nil { return .guidance(ExtraKey.signInGuidance) }
+        return .guidance(L10n.t("Add an Ollama API key under API, or export OLLAMA_API_KEY in your shell."))
     }
 
     nonisolated func account() -> ProviderAccount? {
-        guard OllamaCredentials.isPresent else { return nil }
+        if let extraKey {
+            guard extraKey() != nil else { return nil }
+        } else {
+            guard OllamaCredentials.isPresent else { return nil }
+        }
         return ProviderAccount(
             label: nil,
             plan: nil,
-            source: "Ollama",
+            source: extraKey == nil ? "Ollama" : "spyx",
             manageURL: URL(string: "https://ollama.com/settings")
         )
     }
 
     func fetchSnapshot() async throws -> ProviderSnapshot {
-        guard let key = OllamaCredentials.load() else { throw UsageProviderError.needsAuth }
+        guard let key = loadKey() else { throw UsageProviderError.needsAuth }
 
         var request = URLRequest(url: endpoint)
         request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
@@ -52,7 +70,7 @@ actor OllamaProvider: UsageProvider {
         }
 
         let body = String(data: data, encoding: .utf8) ?? ""
-        Log.usage.debug("ollama usage -> \(body.prefix(900), privacy: .private)")
+        Log.usage.debug("\(self.id, privacy: .public) usage -> \(body.prefix(900), privacy: .private)")
 
         let result = try OllamaUsage.parse(body)
         return ProviderSnapshot(
@@ -68,10 +86,13 @@ actor OllamaProvider: UsageProvider {
     }
 
     nonisolated func signOut() async {
+        // An extra key is removed from Settings, not by switching it off.
+        guard extraKey == nil else { return }
         OllamaCredentials.delete()
     }
 
     nonisolated func forgetCachedCredential() {
+        guard extraKey == nil else { return }
         OllamaCredentials.forgetCached()
     }
 }

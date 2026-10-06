@@ -71,6 +71,7 @@ final class NotchFleet {
     var onRefreshProvider: ((String) async -> Void)?
     var onOpenSettings: (() -> Void)?
     var onFocusSession: ((pid_t) -> Void)?
+    var onSessionAction: ((SessionAction) -> Void)?
     var signInItems: [(title: String, action: () -> Void)] = []
     /// An ⌥-drag on any one panel settled at a new offset. Persisting it is
     /// Preferences' job, same division `apply(edge:)` already keeps.
@@ -104,6 +105,13 @@ final class NotchFleet {
         guard prompts.contains(where: { $0.id == id }) else { return }
         prompts.removeAll { $0.id == id }
         pushPrompts()
+    }
+
+    /// Someone is back at the Mac with questions still waiting: every panel
+    /// in front again, the card where they will look first.
+    func resurfacePrompts() {
+        guard !prompts.isEmpty else { return }
+        for controller in controllers.values { controller.promptsChanged() }
     }
 
     private var quietPrompts: Set<UUID> = []
@@ -151,6 +159,38 @@ final class NotchFleet {
             }
         }
         .store(in: &cancellables)
+
+        // "Follow the window you are typing in" has to be told when that
+        // window moves: switching app, switching Space — and, on the timer,
+        // dragging a window to the other display without switching anything.
+        // Before this the notch only moved when a display was plugged in or
+        // a setting changed, and stayed — with its done cards — on a display
+        // you were no longer looking at.
+        let workspace = NSWorkspace.shared.notificationCenter
+        Publishers.Merge(
+            workspace.publisher(for: NSWorkspace.didActivateApplicationNotification),
+            workspace.publisher(for: NSWorkspace.activeSpaceDidChangeNotification)
+        )
+        .delay(for: .milliseconds(150), scheduler: RunLoop.main)
+        .sink { [weak self] _ in MainActor.assumeIsolated { self?.followActiveWindow() } }
+        .store(in: &cancellables)
+        Timer.publish(every: 2, on: .main, in: .common).autoconnect()
+            .sink { [weak self] _ in MainActor.assumeIsolated { self?.followActiveWindow() } }
+            .store(in: &cancellables)
+    }
+
+    /// Moves the one notch to the display of the window you are working in,
+    /// when that is what it is set to do and it is not already there. Never
+    /// while it is in use: a card under the pointer, or a reply being written,
+    /// does not jump to another screen.
+    func followActiveWindow() {
+        guard scope == .mainDisplay, displayPreference == .followActiveWindow,
+              controllers.count == 1, let controller = controllers.values.first,
+              !controller.isInUse,
+              let target = NotchGeometry.activeWindowScreen(in: NSScreen.screens),
+              controller.assignedScreen !== target else { return }
+        Log.usage.notice("notch follows the active window to \(target.localizedName, privacy: .public)")
+        reconcile(screens: NSScreen.screens)
     }
 
     func stop() {
@@ -411,7 +451,34 @@ final class NotchFleet {
 
     /// The readings as the notch has them, for the intro to settle on.
     var tourAgents: [ProviderSnapshot] {
-        menuModel.snapshots.filter { $0.localModel == nil && $0.localRuntime == nil }
+        menuModel.snapshots.filter { $0.localModel == nil && $0.localRuntime == nil && $0.keyGroup == nil }
+    }
+
+    /// Folds the notch under the pointer and says where its pill now is:
+    /// the reply field takes the tooltip's place, beside the pill.
+    func foldForReply() -> (rect: CGRect, screen: NSScreen, edge: NotchEdge)? {
+        let mouse = NSEvent.mouseLocation
+        let all = Array(controllers.values)
+        guard let controller = all.first(where: { $0.screen.map { NSMouseInRect(mouse, $0.frame, false) } ?? false }) ?? all.first,
+              let screen = controller.screen else { return nil }
+        for each in all { each.foldForReply() }
+        guard let pill = controller.screenRect(of: .notch) else { return nil }
+        return (pill, screen, controller.model.edge)
+    }
+
+    /// Where a panel opened from the notch should sit beside: the tooltip it
+    /// came from (or the done card, or the pill), on the screen the pointer
+    /// is on, and the edge the pill is on.
+    func popoverAnchor() -> (rect: CGRect, screen: NSScreen, edge: NotchEdge)? {
+        let mouse = NSEvent.mouseLocation
+        let all = Array(controllers.values)
+        guard let controller = all.first(where: { $0.screen.map { NSMouseInRect(mouse, $0.frame, false) } ?? false }) ?? all.first,
+              let screen = controller.screen else { return nil }
+        let rect = (controller.model.isExpanded ? controller.screenRect(of: .tooltip) : nil)
+            ?? (controller.model.activeDoneToast != nil ? controller.screenRect(of: .toast) : nil)
+            ?? controller.screenRect(of: .notch)
+        guard let rect else { return nil }
+        return (rect, screen, controller.model.edge)
     }
 
     /// Where a part of the notch is on the display in front of the person —
@@ -426,9 +493,9 @@ final class NotchFleet {
     }
 
     /// Says a session finished from every pill, without opening any notch.
-    func showDoneToast(_ event: SessionCompletionWatcher.Event, duration: TimeInterval) {
+    func showDoneToast(_ event: SessionCompletionWatcher.Event, duration: TimeInterval, changes: String? = nil) {
         for controller in controllers.values {
-            controller.showDoneToast(event, duration: duration)
+            controller.showDoneToast(event, duration: duration, changes: changes)
         }
     }
 
@@ -475,9 +542,9 @@ final class NotchFleet {
 
     /// The lid moving, on every panel's card.
     func setEffortPreview(_ position: Double?, level: EffortLevel, note: String? = nil, noteIsLive: Bool = false,
-                          agent: String? = nil) {
+                          agent: String? = nil, aim: EffortAim? = nil) {
         for controller in controllers.values {
-            controller.showEffortPreview(position, level: level, note: note, noteIsLive: noteIsLive, agent: agent)
+            controller.showEffortPreview(position, level: level, note: note, noteIsLive: noteIsLive, agent: agent, aim: aim)
         }
     }
 
@@ -606,6 +673,7 @@ final class NotchFleet {
         controller.agentMenuActions = agentMenuActions
         controller.model.onOpenSettings = onOpenSettings
         controller.model.onFocusSession = onFocusSession
+        controller.model.onSessionAction = onSessionAction
         controller.onReposition = onReposition
         controller.onMoveToEdge = onMoveToEdge
         controller.model.onSetEffort = onSetEffort

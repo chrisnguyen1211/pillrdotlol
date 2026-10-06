@@ -1,18 +1,19 @@
 import Foundation
 
-/// One page of the setup assistant.
+/// One page of the setup assistant. No page belongs to one agent: every
+/// agent is on the same list, gets the same hooks, the same lid.
 enum SetupStep: String, CaseIterable, Identifiable {
     case welcome
     /// Out of the disk image or Downloads and into Applications.
     case move
-    /// The prompt hook, and macOS's leave to read Claude's login.
-    case claude
+    /// Every agent's account, switched on or off, side by side.
+    case agents
+    /// Each agent's turn-finished hook — and approvals, where an agent has them.
+    case hooks
     /// Apple Events to the terminals sessions run in.
     case terminals
-    /// Accessibility, for typing /effort into Claude Desktop.
-    case claudeDesktop
-    /// Every other agent's account.
-    case agents
+    /// Accessibility, for agents' desktop apps, which have no terminal.
+    case desktopApps
     case ready
 
     var id: String { rawValue }
@@ -21,11 +22,11 @@ enum SetupStep: String, CaseIterable, Identifiable {
         switch self {
         case .welcome: return L10n.t("Welcome to spyx")
         case .move: return L10n.t("Move to Applications")
-        case .claude: return L10n.t("Claude Code")
-        case .terminals: return L10n.t("Your terminals")
-        case .claudeDesktop: return L10n.t("Claude Desktop")
         case .agents: return L10n.t("Your agents")
-        case .ready: return L10n.t("You're all set")
+        case .hooks: return L10n.t("Done & approvals")
+        case .terminals: return L10n.t("Your terminals")
+        case .desktopApps: return L10n.t("Desktop apps")
+        case .ready: return IntroGate.seen ? L10n.t("You're all set") : L10n.t("Almost done")
         }
     }
 
@@ -34,11 +35,11 @@ enum SetupStep: String, CaseIterable, Identifiable {
         switch self {
         case .welcome: return L10n.t("Welcome")
         case .move: return L10n.t("Install")
-        case .claude: return L10n.t("Claude Code")
-        case .terminals: return L10n.t("Terminals")
-        case .claudeDesktop: return L10n.t("Claude Desktop")
         case .agents: return L10n.t("Agents")
-        case .ready: return L10n.t("Try it")
+        case .hooks: return L10n.t("Done & approvals")
+        case .terminals: return L10n.t("Terminals")
+        case .desktopApps: return L10n.t("Desktop apps")
+        case .ready: return L10n.t("Finish")
         }
     }
 
@@ -46,10 +47,10 @@ enum SetupStep: String, CaseIterable, Identifiable {
         switch self {
         case .welcome: return "laptopcomputer"
         case .move: return "square.and.arrow.down"
-        case .claude: return "bubble.left.and.text.bubble.right.fill"
-        case .terminals: return "apple.terminal.fill"
-        case .claudeDesktop: return "accessibility"
         case .agents: return "person.2.fill"
+        case .hooks: return "bell.badge.fill"
+        case .terminals: return "apple.terminal.fill"
+        case .desktopApps: return "accessibility"
         case .ready: return "checkmark"
         }
     }
@@ -68,11 +69,11 @@ enum SetupStep: String, CaseIterable, Identifiable {
 struct SetupPlan: Equatable {
     let steps: [SetupStep]
 
-    init(needsMove: Bool, claudeDesktopInstalled: Bool) {
+    init(needsMove: Bool, desktopAppInstalled: Bool) {
         steps = SetupStep.allCases.filter { step in
             switch step {
             case .move: return needsMove
-            case .claudeDesktop: return claudeDesktopInstalled
+            case .desktopApps: return desktopAppInstalled
             default: return true
             }
         }
@@ -108,4 +109,16 @@ enum SetupGate {
     static var forcedByArguments: Bool {
         ProcessInfo.processInfo.arguments.contains("--setup")
     }
+}
+
+/// Whether the intro tour has been seen on this Mac — so a first launch
+/// plays it before setup, and setup's Finish does not play it twice.
+enum IntroGate {
+    static let key = "intro.seen"
+    /// Someone who went through setup before the intro came first was
+    /// shown round after it: seen too.
+    static var seen: Bool {
+        UserDefaults.standard.bool(forKey: key) || UserDefaults.standard.bool(forKey: SetupGate.seenKey)
+    }
+    static func markSeen() { UserDefaults.standard.set(true, forKey: key) }
 }

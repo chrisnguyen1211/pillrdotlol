@@ -123,7 +123,56 @@ enum NotchGeometry {
         from screens: [NSScreen],
         preference: DisplayPreference = .followActiveWindow
     ) -> NSScreen? {
-        preferredScreen(from: screens, preference: preference, activeScreen: NSScreen.main)
+        preferredScreen(from: screens, preference: preference,
+                        activeScreen: activeWindowScreen(in: screens) ?? NSScreen.main)
+    }
+
+    /// The display holding the window you are working in: the frontmost
+    /// app's topmost ordinary window.
+    ///
+    /// Not `NSScreen.main`. That is the screen of *this* app's key window, and
+    /// spyx never has one — its panel does not take key — so it answered with
+    /// wherever the notch happened to be and the notch never followed you.
+    /// Window bounds need no permission; titles, which would, are not read.
+    static func activeWindowScreen(in screens: [NSScreen]) -> NSScreen? {
+        guard let app = NSWorkspace.shared.frontmostApplication,
+              app.processIdentifier != ProcessInfo.processInfo.processIdentifier,
+              let list = CGWindowListCopyWindowInfo([.optionOnScreenOnly, .excludeDesktopElements],
+                                                    kCGNullWindowID) as? [[String: Any]],
+              let primary = screens.first(where: { $0.frame.origin == .zero }) ?? screens.first
+        else { return nil }
+        let windows = list.compactMap { info -> CGRect? in
+            guard (info[kCGWindowOwnerPID as String] as? Int).map(pid_t.init) == app.processIdentifier,
+                  (info[kCGWindowLayer as String] as? Int) == 0,
+                  let bounds = info[kCGWindowBounds as String] as? [String: Any],
+                  let rect = CGRect(dictionaryRepresentation: bounds as CFDictionary) else { return nil }
+            return rect
+        }
+        guard let window = activeWindow(among: windows) else { return nil }
+        return screen(holding: cocoaRect(fromWindowServer: window, primaryHeight: primary.frame.height), in: screens)
+    }
+
+    /// The window that counts: the topmost one big enough to be a window
+    /// rather than a strip of chrome — a Claude title bar, a toolbar sliver.
+    static func activeWindow(among windows: [CGRect]) -> CGRect? {
+        windows.first { $0.width >= 200 && $0.height >= 120 }
+    }
+
+    /// Window-server bounds (origin top-left of the menu-bar display, y down)
+    /// in AppKit's space (origin bottom-left, y up).
+    static func cocoaRect(fromWindowServer rect: CGRect, primaryHeight: CGFloat) -> CGRect {
+        CGRect(x: rect.minX, y: primaryHeight - rect.maxY, width: rect.width, height: rect.height)
+    }
+
+    /// The screen a rect mostly lies on.
+    static func screen<Screen: ScreenDescribing>(holding rect: CGRect, in screens: [Screen]) -> Screen? {
+        screens.max { a, b in
+            area(a.frameValue.intersection(rect)) < area(b.frameValue.intersection(rect))
+        }.flatMap { area($0.frameValue.intersection(rect)) > 0 ? $0 : nil }
+    }
+
+    private static func area(_ rect: CGRect) -> CGFloat {
+        rect.isNull ? 0 : rect.width * rect.height
     }
 
     /// Kept generic so display selection can be proved without relying on the

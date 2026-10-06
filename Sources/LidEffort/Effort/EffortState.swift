@@ -57,6 +57,9 @@ enum AutoScope {
 struct EffortDotState: Equatable {
     let count: Int
     let filled: Int
+    /// The dots, by index, for values only a running session takes —
+    /// Claude Code's `max` and `ultracode` — drawn hollow until reached.
+    var liveOnly: Set<Int> = []
 }
 
 /// The effort module's whole published state.
@@ -76,6 +79,8 @@ struct EffortState: Equatable {
     var models: [String: String] = [:]
     /// Target id → the full ordered scale that model accepts.
     var scales: [String: [String]] = [:]
+    /// Target id → the values on that scale only a running session takes.
+    var liveOnly: [String: [String]] = [:]
     var lastChange: Date?
 
     /// The value written for a spyx provider id, which may carry a
@@ -88,11 +93,25 @@ struct EffortState: Equatable {
         let id = EffortState.targetID(forProviderID: providerID)
         guard let value = values[id], let scale = scales[id], !scale.isEmpty else { return nil }
         let filled = scale.firstIndex(of: value).map { $0 + 1 } ?? 0
-        return EffortDotState(count: scale.count, filled: filled)
+        let live = Set((liveOnly[id] ?? []).compactMap { scale.firstIndex(of: $0) })
+        return EffortDotState(count: scale.count, filled: filled, liveOnly: live)
     }
 
     static func targetID(forProviderID providerID: String) -> String {
         String(providerID.split(separator: "-").first ?? Substring(providerID))
+    }
+}
+
+/// The one session a lid change goes to, as the card names it.
+struct EffortAim: Equatable {
+    /// "claude", "grok", "codex".
+    let agent: String
+    let session: String
+    /// The model it runs, as an id; shown with `ModelName.pretty`.
+    let model: String?
+
+    var text: String {
+        model.map { "\(session) · \(ModelName.pretty($0))" } ?? session
     }
 }
 
@@ -114,9 +133,18 @@ struct EffortChangeEvent: Equatable, Identifiable {
     var note: String? = nil
     /// Whether the note is good news (typed) or a limit (next session).
     var noteIsLive = false
+    /// Not a gesture: why the level moved by itself ("Auto-eco · Claude
+    /// near its limit"), said where the card would say "Lid gesture".
+    var reason: String? = nil
     /// The agent whose session is in view ("claude", "grok"): the card
     /// comes out of that agent's ring rather than the first one.
     var agent: String? = nil
+    /// What the lid is changing, named on the card: the session in view
+    /// and the model it runs — or nil, for every agent's next sessions.
+    var aim: EffortAim? = nil
+    /// A value past the lid's levels typed into the session in view —
+    /// `ultracode` — which the card names in place of a level.
+    var choice: String? = nil
 
     static func == (lhs: EffortChangeEvent, rhs: EffortChangeEvent) -> Bool { lhs.id == rhs.id }
 }

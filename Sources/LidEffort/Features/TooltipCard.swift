@@ -366,9 +366,11 @@ private struct LimitWindowRow: View {
     let now: Date
     let resetTimeFormat: ResetTimeFormat
     let showsUsagePace: Bool
+    /// Whose window this is, for the forecast of when it runs out.
+    var providerID: String? = nil
     @Environment(\.notchAccentColor) private var accentColor
 
-    private var band: UsageBand { UsageBand.band(for: window.usedFraction ?? 0) }
+    private var band: UsageBand { window.bandOverride ?? UsageBand.band(for: window.usedFraction ?? 0) }
     private var trackWidth: CGFloat { NotchLayout.cardWidth - 2 * NotchLayout.cardPadding - inset }
     private var fillWidth: CGFloat {
         let fraction = CGFloat(min(max(window.usedFraction ?? 0, 0), 1))
@@ -376,11 +378,15 @@ private struct LimitWindowRow: View {
     }
 
     private var paceText: Text {
+        // Running out before the reset is said whatever the pace setting:
+        // it is the one thing on this line worth acting on.
+        let forecast = providerID.flatMap { UsageForecaster.shared.forecast(providerID: $0, window: window, now: now) }
+        let out = forecast.map { Text(" · \($0.text(now: now))").foregroundColor(.orange) } ?? Text("")
         guard showsUsagePace, let pace = window.usagePace(now: now) else {
-            return Text("")
+            return out
         }
         return Text(" · \(pace.summary)")
-            .foregroundColor(pace.isDeficit ? .orange : Palette.textSecondary)
+            .foregroundColor(pace.isDeficit ? .orange : Palette.textSecondary) + out
     }
 
     /// Blank rather than invented: some providers never say when the window rolls.
@@ -529,7 +535,7 @@ private struct ProviderTooltip: View {
                           : L10n.t("\(snapshot.displayName) Usage"),
                           subtitle: snapshot.plan,
                           note: activityNote ?? (snapshot.localModel?.brand != nil ? snapshot.displayName : readingAge)) {
-                ProviderGlyphView(glyph: snapshot.glyph)
+                ProviderGlyphView(glyph: snapshot.glyph, customIconFilename: snapshot.customIconFilename)
                     .foregroundStyle(Palette.textPrimary)
             }
 
@@ -561,7 +567,7 @@ private struct ProviderTooltip: View {
 
                                 VStack(alignment: .leading, spacing: NotchLayout.blockSpacing) {
                                     ForEach(Array(group.windows.enumerated()), id: \.element.id) { windowIndex, window in
-                                        LimitWindowRow(window: window, inset: 2 * Design.px(16), fidelity: snapshot.fidelity, now: now, resetTimeFormat: resetTimeFormat, showsUsagePace: showUsagePace)
+                                        LimitWindowRow(window: window, inset: 2 * Design.px(16), fidelity: snapshot.fidelity, now: now, resetTimeFormat: resetTimeFormat, showsUsagePace: showUsagePace, providerID: snapshot.providerID)
                                             .padding(.top, windowIndex == 0 ? 0 : NotchLayout.blockSpacing)
                                     }
                                 }
@@ -574,7 +580,7 @@ private struct ProviderTooltip: View {
                             .padding(.top, groupIndex == 0 ? NotchLayout.headerToBlock : Design.px(28))
                         } else {
                             ForEach(Array(group.windows.enumerated()), id: \.element.id) { windowIndex, window in
-                                LimitWindowRow(window: window, fidelity: snapshot.fidelity, now: now, resetTimeFormat: resetTimeFormat, showsUsagePace: showUsagePace)
+                                LimitWindowRow(window: window, fidelity: snapshot.fidelity, now: now, resetTimeFormat: resetTimeFormat, showsUsagePace: showUsagePace, providerID: snapshot.providerID)
                                     .padding(.top, (groupIndex == 0 && windowIndex == 0) ? NotchLayout.headerToBlock : NotchLayout.blockSpacing)
                             }
                         }
@@ -582,6 +588,115 @@ private struct ProviderTooltip: View {
                 }
                 .padding(.bottom, groupedWindows.contains(where: { $0.title != nil }) ? Design.px(8) : 0)
             }
+        }
+    }
+}
+
+// MARK: - API keys
+
+/// The API keys cell's card: every key under one title, each with its
+/// name, every figure it has and a bar where a figure has a share.
+private struct KeyGroupTooltip: View {
+    let keys: [ProviderSnapshot]
+    /// How many fit — see `NotchLayout.keyGroupPlan`. The rest are counted.
+    let shown: Int
+    let now: Date
+    let resetTimeFormat: ResetTimeFormat
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            TooltipHeader(title: APIKeyGroup.displayName,
+                          note: APIKeyGroup.note(for: keys, now: now)) {
+                ProviderGlyphView(glyph: .apiKey)
+                    .foregroundStyle(Palette.textPrimary)
+            }
+            ForEach(Array(keys.prefix(shown).enumerated()), id: \.element.id) { index, key in
+                KeyGroupRow(key: key, now: now, resetTimeFormat: resetTimeFormat)
+                    .padding(.top, index == 0 ? NotchLayout.headerToBlock : NotchLayout.blockSpacing)
+            }
+            if keys.count > shown {
+                Text(L10n.t("and \(keys.count - shown) more"))
+                    .font(Typography.cardBody)
+                    .foregroundStyle(Palette.textSecondary)
+                    .frame(height: NotchLayout.cardBodyLineHeight)
+                    .padding(.top, NotchLayout.blockSpacing)
+            }
+        }
+    }
+}
+
+/// One key: its mark and name, then why it failed, then its figures —
+/// every line one body line tall, so `NotchLayout.keyRowHeight` can count
+/// them without laying anything out.
+private struct KeyGroupRow: View {
+    let key: ProviderSnapshot
+    let now: Date
+    let resetTimeFormat: ResetTimeFormat
+    @Environment(\.notchAccentColor) private var accentColor
+
+    private var trackWidth: CGFloat { NotchLayout.cardTextWidth - NotchLayout.keyIndent }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: NotchLayout.keyLineGap) {
+            HStack(spacing: NotchLayout.keyGlyphGap) {
+                ProviderGlyphView(glyph: key.glyph, customIconFilename: key.customIconFilename,
+                                  size: NotchLayout.keyGlyph)
+                    .frame(width: NotchLayout.keyGlyph, height: NotchLayout.keyGlyph)
+                    .foregroundStyle(Palette.textPrimary)
+                Text(key.displayName)
+                    .font(Typography.cardLabel)
+                    .foregroundStyle(Palette.textPrimary)
+                    .lineLimit(1)
+            }
+            .frame(height: NotchLayout.cardBodyLineHeight)
+
+            Group {
+                if let problem = APIKeyGroup.problem(for: key) {
+                    line(Text(problem).foregroundStyle(Color.orange))
+                }
+                if let placeholder = APIKeyGroup.placeholderLine(for: key) {
+                    line(Text(placeholder).foregroundStyle(Palette.textSecondary))
+                }
+                ForEach(Array(APIKeyGroup.figures(for: key, now: now, resetTimeFormat: resetTimeFormat).enumerated()),
+                        id: \.offset) { _, figure in
+                    figureView(figure)
+                }
+            }
+            .padding(.leading, NotchLayout.keyIndent)
+        }
+    }
+
+    private func line(_ text: Text) -> some View {
+        text
+            .font(Typography.cardBody)
+            .lineLimit(1)
+            .truncationMode(.tail)
+            .frame(width: trackWidth, height: NotchLayout.cardBodyLineHeight, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private func figureView(_ figure: APIKeyGroup.Figure) -> some View {
+        if let fraction = figure.usedFraction {
+            VStack(alignment: .leading, spacing: NotchLayout.keyBarGap) {
+                HStack(spacing: Design.px(20)) {
+                    Text(figure.label ?? "").foregroundStyle(Palette.textPrimary)
+                    Spacer(minLength: 0)
+                    Text(figure.text).foregroundStyle(Palette.textSecondary)
+                        .minimumScaleFactor(0.8)
+                }
+                .font(Typography.cardBody)
+                .lineLimit(1)
+                .frame(width: trackWidth, height: NotchLayout.cardBodyLineHeight)
+                ZStack(alignment: .leading) {
+                    Capsule().fill(Palette.barTrack)
+                    Capsule().fill((figure.band ?? .ample).color(accent: accentColor))
+                        .frame(width: max(NotchLayout.keyBarHeight, trackWidth * CGFloat(min(max(fraction, 0), 1))))
+                }
+                .frame(width: trackWidth, height: NotchLayout.keyBarHeight)
+            }
+        } else {
+            line(Text(figure.text).foregroundStyle(Palette.textPrimary))
+                .minimumScaleFactor(0.85)
         }
     }
 }
@@ -885,7 +1000,38 @@ struct SessionRow: View {
     let now: Date
     /// Set when rows can be clicked to jump to the session's terminal.
     var onFocus: ((pid_t) -> Void)? = nil
+    /// Reply and Stop, offered on hover where the session can take them.
+    var onAction: ((SessionAction) -> Void)? = nil
     @Environment(\.notchAccentColor) private var accentColor
+    @State private var hovering = false
+
+    private var canReply: Bool {
+        onAction != nil && session.state != .busy && SessionCommander.reach(session) != .none
+    }
+    private var canStop: Bool { onAction != nil && SessionCommander.canStop(session) }
+    private var canHandOff: Bool { onAction != nil && session.state != .busy && !Handoff.targets(for: session).isEmpty }
+
+    /// Small round buttons at the end of the first line, in place of the
+    /// status while the pointer is on the row.
+    @ViewBuilder private var actions: some View {
+        HStack(spacing: Design.px(10)) {
+            if canReply {
+                RowActionButton(symbol: "arrowshape.turn.up.left.fill", label: L10n.t("Reply")) {
+                    onAction?(.reply(session))
+                }
+            }
+            if canHandOff {
+                RowActionButton(symbol: "arrow.triangle.branch", label: L10n.t("Hand off")) {
+                    onAction?(.handoff(session))
+                }
+            }
+            if canStop {
+                RowActionButton(symbol: "stop.fill", label: L10n.t("Stop"), tint: Palette.watch) {
+                    onAction?(.stop(session))
+                }
+            }
+        }
+    }
 
     private var stateColor: Color {
         switch session.state {
@@ -905,12 +1051,30 @@ struct SessionRow: View {
         }
     }
 
+    /// "Opus 5.5 · high": the model it runs, and its effort where the
+    /// agent keeps one per session — the same for every agent that says.
+    private var modelText: String? {
+        guard let model = session.model, !model.isEmpty else { return nil }
+        return [ModelName.pretty(model), session.effort].compactMap { $0 }.joined(separator: " · ")
+    }
+
     /// While blocked, what it is blocked on matters more than where it lives.
     private var detail: String {
         if session.state == .waiting, let waitingFor = session.waitingFor, !waitingFor.isEmpty {
             return waitingFor
         }
         return session.detail
+    }
+
+    /// The name, and after it, quieter, the model — kept to one line, the
+    /// model giving way first.
+    private var nameWithModel: some View {
+        HStack(spacing: Design.px(10)) {
+            Text(session.name).foregroundStyle(Palette.textPrimary).layoutPriority(1)
+            if let modelText {
+                Text(modelText).foregroundStyle(Palette.textSecondary)
+            }
+        }
     }
 
     var body: some View {
@@ -920,31 +1084,56 @@ struct SessionRow: View {
                 // through it, and a clock that ticks — the row says the work
                 // is live before anything is read.
                 HStack(spacing: Design.px(20)) {
-                    Text(session.name).foregroundStyle(Palette.textPrimary)
+                    nameWithModel
                     Spacer(minLength: 0)
-                    HStack(spacing: NotchLayout.statusDotGap) {
-                        PixelLoader(color: Palette.textPrimary)
-                            .frame(width: NotchLayout.statusDot, height: NotchLayout.statusDot)
-                        ShimmerText(text: stateWord)
+                    if hovering && canStop {
+                        actions
+                    } else {
+                        HStack(spacing: NotchLayout.statusDotGap) {
+                            PixelLoader(color: Palette.textPrimary)
+                                .frame(width: NotchLayout.statusDot, height: NotchLayout.statusDot)
+                            ShimmerText(text: stateWord)
+                        }
                     }
                 }
                 .font(Typography.cardBody)
                 .lineLimit(1)
+                // What it is doing this moment, timed from when that step
+                // began — "$ swift test · 1m 4.2s" says more than where the
+                // session lives. Where the transcript says nothing, the
+                // place and the turn's clock, as before.
                 HStack(spacing: Design.px(20)) {
-                    Text(detail).foregroundStyle(Palette.textSecondary)
+                    if let doing = session.doing {
+                        Text(doing.text)
+                            .foregroundStyle(doing.kind == .tool ? Palette.textPrimary.opacity(0.85) : Palette.textSecondary)
+                            .truncationMode(.middle)
+                            .help(doing.text)
+                    } else {
+                        Text(detail).foregroundStyle(Palette.textSecondary)
+                    }
                     Spacer(minLength: 0)
-                    ElapsedClock(since: session.since)
+                    ElapsedClock(since: session.doing?.since ?? session.since)
                 }
                 .font(Typography.cardBody)
                 .lineLimit(1)
                 .padding(.top, NotchLayout.sessionRowGap)
             } else {
-                SplitRow(leading: session.name, trailing: stateWord,
-                         trailingColor: stateColor) {
-                    StatusRing(state: session.state, color: stateColor)
+                if hovering && (canReply || canHandOff) {
+                    HStack(spacing: Design.px(20)) {
+                        Text(session.name).foregroundStyle(Palette.textPrimary)
+                        Spacer(minLength: 0)
+                        actions
+                    }
+                    .font(Typography.cardBody)
+                    .lineLimit(1)
+                } else {
+                    SplitRow(leading: session.name, trailing: stateWord,
+                             trailingColor: stateColor) {
+                        StatusRing(state: session.state, color: stateColor)
+                    }
                 }
                 SplitRow(
-                    leading: detail,
+                    leading: ([detail, modelText] + session.facts + [session.tokens]).compactMap { $0 }.joined(separator: " · "),
                     trailing: ElapsedCopy.text(since: session.since, now: now),
                     leadingColor: Palette.textSecondary
                 )
@@ -954,6 +1143,7 @@ struct SessionRow: View {
         // Comes forward under the pointer, so it is plain which one a click
         // would open.
         .hoverLift(pointingHand: session.processID != nil && onFocus != nil)
+        .onHover { hovering = $0 }
         // Sessions that publish a pid can be jumped to; the rest are text,
         // and a gesture on them would promise something it cannot do.
         .contentShape(Rectangle())
@@ -988,7 +1178,8 @@ struct SessionListPlan: Equatable {
             guard let pid = session.processID, let since = waiting[pid] ?? (session.id == asking ? prompt?.receivedAt : nil)
             else { return session }
             return AgentSession(id: session.id, name: session.name, detail: session.detail, state: .waiting,
-                                waitingFor: nil, since: since, processID: pid)
+                                waitingFor: nil, since: since, processID: pid, tokens: session.tokens)
+                .keepingModel(of: session)
         }
         // The asker, then what needs you, then what is running, then
         // everything else newest first — so the rows that are cut are the
@@ -1016,6 +1207,7 @@ private struct SessionList: View {
     /// How many rows this screen has room for; the rest are counted.
     let cap: Int
     var onFocus: ((pid_t) -> Void)? = nil
+    var onAction: ((SessionAction) -> Void)? = nil
     var prompt: PendingPrompt? = nil
     var promptDraft: Binding<PromptDraft>? = nil
     var promptQueue: PromptQueuePosition? = nil
@@ -1070,7 +1262,7 @@ private struct SessionList: View {
             // are counted rather than drawn: the card is clipped, not scrolled,
             // so anything past the budget silently pushes the title off the top.
             ForEach(plan.rows) { session in
-                SessionRow(session: session, now: now, onFocus: onFocus)
+                SessionRow(session: session, now: now, onFocus: onFocus, onAction: onAction)
                     .padding(.top, NotchLayout.blockSpacing)
                 // Right under the session that is asking, closer to it than
                 // to the next row, so it reads as that session's.
@@ -1165,6 +1357,10 @@ struct TooltipCard: View {
     /// How many sessions this screen has room to list. Solved from the display
     /// rather than fixed, so a big screen hides nothing.
     var sessionCap: Int = NotchLayout.defaultSessionCap
+    /// Project rows the "what used it" section lists — see `CostSection`.
+    var costRows: Int = 0
+    /// The tallest the API keys card may be — see `NotchViewModel.keyCardBudget`.
+    var keyCardBudget: CGFloat = NotchLayout.defaultMaxCardHeight
     var resetTimeFormat: ResetTimeFormat = .automatic
     var tailOffset: CGFloat = 0
     /// A tap on a session row jumps to that session's terminal — nil leaves
@@ -1172,6 +1368,7 @@ struct TooltipCard: View {
     var onFocusSession: ((pid_t) -> Void)? = nil
     /// What this provider's config is set to by the lid, when it is driven.
     var effortValue: String? = nil
+    var onSessionAction: ((SessionAction) -> Void)? = nil
     /// Not signed in: what to do about it, shown where the effort bar goes.
     var connect: ConnectNeed? = nil
     var onConnect: (() -> Void)? = nil
@@ -1224,8 +1421,15 @@ struct TooltipCard: View {
             promptHeight: prompt.map {
                 PromptPanel.height(for: $0, index: promptDraft?.wrappedValue.index ?? 0,
                                    queued: promptQueue != nil && onPagePrompt != nil)
-            } ?? 0
+            } ?? 0,
+            costRows: costRows,
+            keyGroupBody: keyPlan?.body ?? 0
         )
+    }
+
+    /// For the API keys cell: how many keys the card lists, and their height.
+    private var keyPlan: (shown: Int, body: CGFloat)? {
+        snapshot.keyGroup.map { NotchLayout.keyGroupPlan($0, cardBudget: keyCardBudget) }
     }
 
     var body: some View {
@@ -1236,9 +1440,14 @@ struct TooltipCard: View {
             // drifts while the card resizes around them.
             ZStack(alignment: .topLeading) {
                 VStack(alignment: .leading, spacing: 0) {
-                    ProviderTooltip(activityNote: localActivityNote, snapshot: snapshot, now: now, resetTimeFormat: resetTimeFormat,
-                                    showUsagePace: showUsagePace)
-                        .modifier(TourSpot(lit: tourFocus.map { $0 == .limits }))
+                    if let keys = snapshot.keyGroup {
+                        KeyGroupTooltip(keys: keys, shown: keyPlan?.shown ?? keys.count, now: now,
+                                        resetTimeFormat: resetTimeFormat)
+                    } else {
+                        ProviderTooltip(activityNote: localActivityNote, snapshot: snapshot, now: now, resetTimeFormat: resetTimeFormat,
+                                        showUsagePace: showUsagePace)
+                            .modifier(TourSpot(lit: tourFocus.map { $0 == .limits }))
+                    }
                     VStack(alignment: .leading, spacing: 0) {
                     if let connect {
                         ConnectRow(need: connect) { onConnect?() }
@@ -1259,6 +1468,7 @@ struct TooltipCard: View {
                     if let activity, snapshot.localModel == nil {
                         SessionList(summary: activity, now: now, cap: sessionCap,
                                     onFocus: onFocusSession,
+                                    onAction: onSessionAction,
                                     prompt: prompt,
                                     promptDraft: promptDraft,
                                     promptQueue: promptQueue,
@@ -1268,6 +1478,9 @@ struct TooltipCard: View {
                                     waiting: promptWaiting,
                                     echo: promptEcho)
                             .modifier(TourSpot(lit: tourFocus.map { $0 == .sessions }))
+                    }
+                    if costRows > 0, let model = CostModels.model(for: snapshot.id) {
+                        CostSection(model: model, rows: costRows)
                     }
                 }
                 // An identity, so one provider's rows are never interpolated

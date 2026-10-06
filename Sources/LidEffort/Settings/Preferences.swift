@@ -1,3 +1,4 @@
+import AppKit
 import Combine
 import Foundation
 import ServiceManagement
@@ -18,7 +19,40 @@ final class Preferences: ObservableObject {
     static let disconnectedByDefault: Set<String> = [
         "cursor", "gemini", "antigravity", "glm", "devin", "opencode", "commandcode",
         "copilot", "kimi", "deepseek", "perplexity", "ollama", "ollama-local", "lmstudio",
+        "kiro", "amp", "apify", "kilo", "minimax", "qianwenai",
     ]
+
+    /// Providers added after people already had a saved list — ported from
+    /// Codenotch. Off for them until switched on; see `init`.
+    static let introducedLater: Set<String> = ["kiro", "amp", "apify", "kilo", "minimax", "qianwenai"]
+
+    /// A fresh install's rings: the coding agents found on this Mac — their
+    /// folder, app or binary — so nobody is shown "Not signed in" for an
+    /// agent they never installed. Found nothing: the three the lid drives,
+    /// as before, rather than an empty pill. Local runtimes keep their own
+    /// introduction and stay off here.
+    static func freshDisconnected(exists: (String) -> Bool = { FileManager.default.fileExists(atPath: NSString(string: $0).expandingTildeInPath) },
+                                  appInstalled: (String) -> Bool = { NSWorkspace.shared.urlForApplication(withBundleIdentifier: $0) != nil })
+        -> Set<String> {
+        let signs: [String: Bool] = [
+            "claude": exists("~/.claude"),
+            "codex": exists("~/.codex") || appInstalled("com.openai.codex"),
+            "grok": exists("~/.grok"),
+            "cursor": appInstalled("com.todesktop.230313mzl4w4u92") || exists("~/.cursor/cli-config.json"),
+            "gemini": appInstalled("com.google.antigravity"),
+            "gemini-api": exists("~/.gemini/tmp") || exists("~/.gemini/projects.json"),
+            "kimi": exists("~/.kimi-code"),
+            "opencode": exists("~/.local/share/opencode"),
+            "copilot": exists("~/.copilot"),
+            "amp": exists("~/.local/share/amp/secrets.json"),
+            "apify": exists("~/.apify/auth.json"),
+            "kilo": exists("~/.local/share/kilo/auth.json"),
+            "kiro": exists("~/Library/Application Support/kiro-cli/data.sqlite3"),
+        ]
+        let found = Set(signs.filter(\.value).keys)
+        guard !found.isEmpty else { return disconnectedByDefault }
+        return disconnectedByDefault.union(["claude", "codex", "grok", "gemini-api"]).subtracting(found)
+    }
 
     @Published var ollamaMetricsEnabled: Bool {
         didSet { defaults.set(ollamaMetricsEnabled, forKey: Keys.ollamaMetricsEnabled) }
@@ -39,6 +73,12 @@ final class Preferences: ObservableObject {
     /// `disconnectedProviders`.
     @Published var mutedAlertProviders: Set<String> {
         didSet { defaults.set(Array(mutedAlertProviders), forKey: Keys.mutedAlerts) }
+    }
+
+    /// The 80% / 100% system notifications as a whole. On by default, as
+    /// they always were; each provider's bell in Accounts still mutes one.
+    @Published var thresholdAlertsEnabled: Bool {
+        didSet { defaults.set(thresholdAlertsEnabled, forKey: Keys.thresholdAlerts) }
     }
 
     /// The order the user has dragged the rings into, as provider ids.
@@ -382,6 +422,36 @@ final class Preferences: ObservableObject {
         }
     }
 
+    /// Which MiniMax console the Coding Plan is read from.
+    ///
+    /// International and China mainland are different hosts, and a key issued
+    /// on one is refused by the other. Absent means never chosen, which is
+    /// international.
+    @Published var minimaxRegion: MiniMaxRegion {
+        didSet { defaults.set(minimaxRegion.rawValue, forKey: Keys.minimaxRegion) }
+    }
+
+    /// User-configured custom endpoints — OpenAI-compatible, Anthropic
+    /// Messages or Gemini. The key of each lives in the keychain, never here.
+    @Published var customEndpoints: [CustomEndpoint] {
+        didSet {
+            if let data = try? JSONEncoder().encode(customEndpoints) {
+                defaults.set(data, forKey: Keys.customEndpoints)
+            }
+        }
+    }
+
+    /// Extra API keys for GLM, MiniMax, Ollama and Apify, each its own ring.
+    /// The descriptions only — every key itself lives in the login keychain
+    /// (`ExtraKeySecrets`), never here.
+    @Published var extraKeys: [ExtraKey] {
+        didSet {
+            if let data = try? JSONEncoder().encode(extraKeys) {
+                defaults.set(data, forKey: Keys.extraKeys)
+            }
+        }
+    }
+
     /// The version whose changes have already been shown.
     ///
     /// Written when the What's New dialogue is dismissed rather than when it
@@ -406,12 +476,14 @@ final class Preferences: ObservableObject {
     private enum Keys {
         /// The old name. Kept so existing choices survive the rename.
         static let disconnected = "hiddenProviders"
+        static let introducedProviders = "introducedProviders"
         static let ollamaEndpoint = "ollamaEndpoint"
         static let lmstudioEndpoint = "lmstudioEndpoint"
         static let introducedOllama = "introducedOllama"
         static let migratedOllamaID = "migratedOllamaLocalID"
         static let ollamaMetricsEnabled = "ollamaMetricsEnabled"
         static let mutedAlerts = "mutedAlertProviders"
+        static let thresholdAlerts = "thresholdAlertsEnabled"
         static let hasLaunched = "hasLaunchedBefore"
         static let visibility = "notchVisibility"
         static let presence = "appPresence"
@@ -458,6 +530,9 @@ final class Preferences: ObservableObject {
         static let limitReachedSoundName = "limitReachedSoundName"
         /// A new key, so there is nothing under the old app name to migrate.
         static let geminiAPIMonthlyTokenBudget = "geminiAPIMonthlyTokenBudget"
+        static let minimaxRegion = "minimaxRegion"
+        static let customEndpoints = "customEndpoints"
+        static let extraKeys = "extraKeys"
         static let antigravityHeadlineLimit = "antigravityHeadlineLimit"
         static let antigravityHeadlineModel = "antigravityHeadlineModel"
     }
@@ -476,6 +551,75 @@ final class Preferences: ObservableObject {
         return budget
     }
     
+    /// The MiniMax region read straight from disk, off the main actor.
+    ///
+    /// The provider is an actor and asks for this on every fetch, and
+    /// `@Published` state is main-actor-isolated where `UserDefaults` is
+    /// thread-safe — so the provider reads the store, not the object.
+    nonisolated static func storedMinimaxRegion(
+        defaults: UserDefaults = .standard
+    ) -> MiniMaxRegion {
+        guard let value = defaults.string(forKey: Keys.minimaxRegion),
+              let region = MiniMaxRegion(rawValue: value)
+        else { return .international }
+        return region
+    }
+
+    /// Moves any key an earlier build left in the defaults plist into the
+    /// keychain, once, and writes the list back without it.
+    ///
+    /// The rewrite is the point. `customEndpoints` is assigned during `init`,
+    /// where `didSet` does not run, so without this the plaintext key stayed in
+    /// the plist until the user happened to edit that endpoint. Returns the
+    /// list with the carried keys cleared, so a later encode cannot put them
+    /// back.
+    nonisolated static func movingLegacyKeysToKeychain(
+        _ list: [CustomEndpoint],
+        defaults: UserDefaults
+    ) -> [CustomEndpoint] {
+        guard list.contains(where: { $0.legacyAPIKey != nil }) else { return list }
+        var migrated = list
+        for index in migrated.indices {
+            guard let legacy = migrated[index].legacyAPIKey else { continue }
+            // Only if the keychain has nothing: a key already moved is the newer one.
+            if migrated[index].apiKey == nil {
+                migrated[index].saveAPIKey(legacy)
+            }
+            migrated[index].legacyAPIKey = nil
+        }
+        if let data = try? JSONEncoder().encode(migrated) {
+            defaults.set(data, forKey: Keys.customEndpoints)
+        }
+        return migrated
+    }
+
+    /// Custom endpoints read straight from disk, off the main actor.
+    ///
+    /// Custom endpoint providers are actors and ask for this on every fetch,
+    /// and `@Published` state is main-actor-isolated where `UserDefaults` is
+    /// thread-safe — so providers read the store, not the object.
+    nonisolated static func storedCustomEndpoints(
+        defaults: UserDefaults = .standard
+    ) -> [CustomEndpoint] {
+        guard let data = defaults.data(forKey: Keys.customEndpoints),
+              let endpoints = try? JSONDecoder().decode([CustomEndpoint].self, from: data)
+        else { return [] }
+        return endpoints
+    }
+
+    /// Writes one endpoint back — the provider's sampled readings.
+    nonisolated static func updateStoredCustomEndpoint(
+        _ endpoint: CustomEndpoint,
+        defaults: UserDefaults = .standard
+    ) {
+        var endpoints = storedCustomEndpoints(defaults: defaults)
+        guard let index = endpoints.firstIndex(where: { $0.id == endpoint.id }) else { return }
+        endpoints[index] = endpoint
+        if let data = try? JSONEncoder().encode(endpoints) {
+            defaults.set(data, forKey: Keys.customEndpoints)
+        }
+    }
+
     nonisolated static func storedAntigravityHeadlineLimit(
         defaults: UserDefaults = .standard
     ) -> AntigravityHeadlineLimit {
@@ -544,8 +688,20 @@ final class Preferences: ObservableObject {
         // A fresh install shows the three coding agents the lid drives and
         // nothing else; everything spyx can read stays one switch away
         // behind the notch's "+" (Settings → Accounts).
-        let disconnected = defaults.stringArray(forKey: Keys.disconnected).map(Set.init)
-            ?? Preferences.disconnectedByDefault
+        var disconnected = defaults.stringArray(forKey: Keys.disconnected).map(Set.init)
+            ?? Preferences.freshDisconnected()
+        // Someone updating keeps the list they had — and a provider spyx
+        // gained since joins it switched off, rather than appearing on its
+        // own as "Not signed in". Each newcomer is introduced once.
+        let introduced = Set(defaults.stringArray(forKey: Keys.introducedProviders) ?? [])
+        let newcomers = Preferences.introducedLater.subtracting(introduced)
+        if !newcomers.isEmpty {
+            if defaults.stringArray(forKey: Keys.disconnected) != nil {
+                disconnected.formUnion(newcomers)
+                defaults.set(Array(disconnected), forKey: Keys.disconnected)
+            }
+            defaults.set(Array(introduced.union(Preferences.introducedLater)), forKey: Keys.introducedProviders)
+        }
         self.disconnectedProviders = disconnected
         self.ollamaMetricsEnabled = defaults.object(forKey: Keys.ollamaMetricsEnabled) as? Bool
             ?? (defaults.bool(forKey: Keys.introducedOllama)
@@ -560,6 +716,7 @@ final class Preferences: ObservableObject {
                 ?? LMStudioEndpoint.configuredAddress() ?? LMStudioEndpoint.defaultAddress
         ).absoluteString) ?? LMStudioEndpoint.defaultAddress
         self.mutedAlertProviders = Set(defaults.stringArray(forKey: Keys.mutedAlerts) ?? [])
+        self.thresholdAlertsEnabled = defaults.object(forKey: Keys.thresholdAlerts) as? Bool ?? true
         // Absent means never chosen, which is the hover behaviour the app was
         // designed around — not hidden, which would make a fresh install look
         // like it failed to start.
@@ -663,6 +820,14 @@ final class Preferences: ObservableObject {
         self.limitReachedSoundName = defaults.string(forKey: Keys.limitReachedSoundName)
             ?? SessionChime.defaultBlocked
         self.geminiAPIMonthlyTokenBudget = Self.storedGeminiAPIMonthlyTokenBudget(defaults: defaults)
+        self.minimaxRegion = Self.storedMinimaxRegion(defaults: defaults)
+        if let data = defaults.data(forKey: Keys.customEndpoints),
+           let list = try? JSONDecoder().decode([CustomEndpoint].self, from: data) {
+            self.customEndpoints = Self.movingLegacyKeysToKeychain(list, defaults: defaults)
+        } else {
+            self.customEndpoints = []
+        }
+        self.extraKeys = Self.storedExtraKeys(defaults: defaults)
         // Read from the system rather than from our own store: the user can turn
         // this off in System Settings, and a remembered `true` would then be a lie.
         self.launchAtLogin = Self.isRegisteredForLogin
@@ -670,6 +835,100 @@ final class Preferences: ObservableObject {
         // LidEffort.app before it was spyx.app — the login item still points
         // there. Registering again points it at this copy.
         if launchAtLogin, !Runtime.isUnderTest { try? SMAppService.mainApp.register() }
+    }
+
+    // MARK: Custom endpoints
+
+    /// A new endpoint is something the user just asked for, so it starts on.
+    func addCustomEndpoint(_ endpoint: CustomEndpoint) {
+        customEndpoints.append(endpoint)
+        if endpoint.isEnabled {
+            setConnected(true, for: endpoint.providerID)
+        }
+    }
+
+    func updateCustomEndpoint(_ endpoint: CustomEndpoint) {
+        guard let idx = customEndpoints.firstIndex(where: { $0.id == endpoint.id }) else { return }
+        var merged = endpoint
+        // The provider samples readings into the stored list in the background.
+        // When the editor saves with the usage mapping unchanged and the
+        // readings untouched, the newer sampled ones win over the ones the
+        // editor loaded.
+        let storedList = Self.storedCustomEndpoints(defaults: defaults)
+        if let stored = storedList.first(where: { $0.id == endpoint.id }) {
+            let mappingUnchanged = (stored.usageSource == endpoint.usageSource)
+                && (stored.usagePreset == endpoint.usagePreset)
+                && (stored.usageURL == endpoint.usageURL)
+                && (stored.usageRecordsPath == endpoint.usageRecordsPath)
+                && (stored.usageModelField == endpoint.usageModelField)
+                && (stored.usageTokenField == endpoint.usageTokenField)
+                && (stored.usageModelFilter == endpoint.usageModelFilter)
+                && (stored.trackingUnit == endpoint.trackingUnit)
+            if mappingUnchanged {
+                if merged.currentTokensUsedM == customEndpoints[idx].currentTokensUsedM {
+                    merged.currentTokensUsedM = stored.currentTokensUsedM
+                }
+                if merged.usageHistory == customEndpoints[idx].usageHistory {
+                    merged.usageHistory = stored.usageHistory
+                }
+                if merged.currentSpendUSD == customEndpoints[idx].currentSpendUSD {
+                    merged.currentSpendUSD = stored.currentSpendUSD
+                }
+            }
+        }
+        customEndpoints[idx] = merged
+        setConnected(merged.isEnabled, for: merged.providerID)
+    }
+
+    func removeCustomEndpoint(id: String) {
+        if let endpoint = customEndpoints.first(where: { $0.id == id }) {
+            setConnected(false, for: endpoint.providerID)
+            if let filename = endpoint.customIconFilename {
+                CustomIconStore.deleteIcon(filename: filename)
+            }
+        }
+        customEndpoints.removeAll { $0.id == id }
+    }
+
+    // MARK: Extra keys
+
+    /// The saved list, read straight from disk. Entries that do not describe
+    /// a key spyx can read are dropped rather than trusted.
+    nonisolated static func storedExtraKeys(defaults: UserDefaults = .standard) -> [ExtraKey] {
+        guard let data = defaults.data(forKey: Keys.extraKeys),
+              let list = try? JSONDecoder().decode([ExtraKey].self, from: data)
+        else { return [] }
+        return list.filter { ExtraKey.base(fromProviderID: $0.id) == $0.base }
+    }
+
+    /// A key that has just been checked and kept: it starts on, like any
+    /// account the person has just asked for.
+    func addExtraKey(_ key: ExtraKey) {
+        guard !extraKeys.contains(where: { $0.id == key.id }) else { return }
+        extraKeys.append(key)
+        setConnected(true, for: key.id)
+    }
+
+    /// False when the name is empty or already used by another key of the
+    /// same provider.
+    @discardableResult
+    func renameExtraKey(id: String, to name: String) -> Bool {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty,
+              let index = extraKeys.firstIndex(where: { $0.id == id }),
+              !ExtraKey.isNameTaken(trimmed, base: extraKeys[index].base, in: extraKeys, excluding: id)
+        else { return false }
+        extraKeys[index].name = trimmed
+        return true
+    }
+
+    /// Forgets the description and every choice made about its ring. The
+    /// keychain item is the caller's to delete — see `ExtraKeySecrets`.
+    func removeExtraKey(id: String) {
+        extraKeys.removeAll { $0.id == id }
+        disconnectedProviders.remove(id)
+        mutedAlertProviders.remove(id)
+        if providerOrder.contains(id) { providerOrder.removeAll { $0 == id } }
     }
 
     // MARK: Threshold alerts
@@ -720,6 +979,9 @@ final class Preferences: ObservableObject {
     /// It has to be something the user asks for.
     static func eraseAllData() {
         let bundleID = Bundle.main.bundleIdentifier ?? "lol.spyx.app"
+        // The extra keys' items would be orphaned once the list naming them
+        // is gone, so they go first, while it can still be read.
+        for key in storedExtraKeys() { ExtraKeySecrets.delete(id: key.id) }
         UserDefaults.standard.removePersistentDomain(forName: bundleID)
         UserDefaults.standard.synchronize()
 

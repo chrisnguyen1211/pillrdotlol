@@ -39,6 +39,8 @@ struct UsageResetCard: View {
             return L10n.t("\(event.providerName) Limit Reached")
         case .weeklyLimitReached:
             return L10n.t("\(event.providerName) Weekly Limit")
+        case .recap:
+            return event.recap?.title ?? ""
         }
     }
 
@@ -47,7 +49,9 @@ struct UsageResetCard: View {
         case .reset:
             return ResetCheer.line(for: event).subtitle
         case .sessionLimitReached, .weeklyLimitReached:
-            return L10n.t("\(event.windowLabel) limit is spent")
+            return L10n.t("\(ResetCheer.limitPhrase(event.windowLabel)) is spent")
+        case .recap:
+            return event.recap?.subtitle ?? ""
         }
     }
 
@@ -57,6 +61,8 @@ struct UsageResetCard: View {
             return Palette.ample
         case .sessionLimitReached, .weeklyLimitReached:
             return Palette.critical
+        case .recap:
+            return Palette.ample
         }
     }
 
@@ -68,15 +74,8 @@ struct UsageResetCard: View {
             return L10n.t("Session limit reached (100% used)")
         case .weeklyLimitReached:
             return L10n.t("Weekly limit reached (100% used)")
-        }
-    }
-
-    private var resetTimePrefix: String {
-        switch event.kind {
-        case .reset:
-            return L10n.t("Next reset")
-        case .sessionLimitReached, .weeklyLimitReached:
-            return L10n.t("Resets at")
+        case .recap:
+            return event.recap?.status ?? ""
         }
     }
 
@@ -139,7 +138,9 @@ struct UsageResetCard: View {
                 .padding(.top, NotchLayout.headerToBlock)
 
                 if let resetsAt = event.resetsAt {
-                    Text("\(resetTimePrefix) \(resetsAt.formatted(date: .omitted, time: .shortened))")
+                    // "Resets Thu 3:00 PM" — a weekly limit four days out
+                    // says which day, not only the hour.
+                    Text(ResetCopy.text(for: resetsAt))
                         .font(Typography.cardBody)
                         .foregroundStyle(Palette.textSecondary)
                         .lineLimit(1)

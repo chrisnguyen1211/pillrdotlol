@@ -74,6 +74,14 @@ enum GrokActivity {
         }
     }
 
+    /// The process of a Grok session, from its own registry.
+    static func pid(forSessionID id: String, activeURL: URL = activeURL) -> pid_t? {
+        guard let data = try? Data(contentsOf: activeURL),
+              let rows = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]],
+              let row = rows.first(where: { $0["session_id"] as? String == id }) else { return nil }
+        return (row["pid"] as? NSNumber)?.int32Value
+    }
+
     static func session(row: [String: Any], sessionsRoot: URL,
                         staleAfter: TimeInterval, now: Date) -> AgentSession? {
         guard let id = row["session_id"] as? String, !id.isEmpty else { return nil }
@@ -86,20 +94,40 @@ enum GrokActivity {
                                                under: sessionsRoot)
         else { return nil }
         let updates = directory.appendingPathComponent("updates.jsonl")
-        guard let modified = (try? FileManager.default.attributesOfItem(atPath: updates.path))?[.modificationDate] as? Date,
-              now.timeIntervalSince(modified) <= staleAfter
+        guard let modified = (try? FileManager.default.attributesOfItem(atPath: updates.path))?[.modificationDate] as? Date
         else { return nil }
 
+        // Listed for as long as its process lives, like every other agent's
+        // sessions: working while its turn is open — however long a command
+        // runs without a word — idle once the turn is complete. A turn open
+        // and silent for half an hour is a stuck one, not work.
+        let doing = SessionDoing.cached(updates, parse: SessionDoing.grok(tail:))
+        let silent = now.timeIntervalSince(modified)
+        let busy = doing != nil && silent <= staleAfter.clamped(minimum: 30 * 60)
+        if pid == nil, !busy, silent > staleAfter { return nil }   // no process to vouch for it
+
         let cwd = (row["cwd"] as? String).map { URL(fileURLWithPath: $0).lastPathComponent } ?? "Grok"
-        return AgentSession(
+        let read = TokenTally.read(updates, format: .grok)
+        // The session's own model and effort, as Grok keeps them beside it.
+        let summary = (try? Data(contentsOf: updates.deletingLastPathComponent().appendingPathComponent("summary.json")))
+            .flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] }
+        var session = AgentSession(
             id: "grok.\(id)",
             name: cwd,
             detail: "Grok",
-            state: .busy,
+            // Just finished: "complete" for a minute, the way Codex says it,
+            // then idle.
+            state: busy ? .busy : (silent <= 60 ? .success : .idle),
             waitingFor: nil,
-            since: modified,
-            processID: pid
+            // When the step began, or when the turn ended: both hold still.
+            since: busy ? (doing?.since ?? modified) : modified,
+            processID: pid,
+            doing: busy ? doing : nil,
+            tokens: read.flatMap { $0.total > 0 ? $0.text : nil }
         )
+        session.model = (summary?["current_model_id"] as? String) ?? read?.model
+        session.effort = summary?["reasoning_effort"] as? String
+        return session
     }
 
     /// The on-disk layout is `sessions/<percent-encoded-cwd>/<session-id>/`.
@@ -119,4 +147,8 @@ enum GrokActivity {
         return folders.map { $0.appendingPathComponent(id) }
             .first { FileManager.default.fileExists(atPath: $0.path) }
     }
+}
+
+private extension TimeInterval {
+    func clamped(minimum: TimeInterval) -> TimeInterval { Swift.max(self, minimum) }
 }

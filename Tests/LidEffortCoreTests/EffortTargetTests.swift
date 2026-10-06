@@ -41,7 +41,7 @@ struct EffortTargetTests {
         #expect(grok.enabled)
         #expect(grok.value(for: .low, model: "grok-4.6") == "minimal")
         #expect(grok.bands["bad"] == nil, "a non-5-entry list must be ignored, not half-applied")
-        #expect(grok.value(for: .max, model: "grok-4.5") == "max", "wildcard row is untouched")
+        #expect(grok.value(for: .max, model: "grok-4.5") == "high", "a built-in row not overridden is untouched")
     }
 
     @Test func malformedOverridesLeaveTargetsUnchanged() {
@@ -67,10 +67,10 @@ struct EffortTargetTests {
 
 struct EffortScaleTests {
     @Test func scaleIsPerModelWithCatalogAsTruth() {
-        #expect(BuiltInTargets.claude.scale(for: "sonnet") == ["low", "medium", "high", "xhigh"])
+        #expect(BuiltInTargets.claude.scale(for: "sonnet") == ["low", "medium", "high", "xhigh", "max", "ultracode"])
         #expect(BuiltInTargets.codex.scale(for: "gpt-5.6-sol").count == 6)
         #expect(BuiltInTargets.codex.scale(for: "gpt-5.5") == ["low", "medium", "high", "xhigh"])
-        #expect(BuiltInTargets.grok.scale(for: "grok-4.5").count == 6)
+        #expect(BuiltInTargets.grok.scale(for: "grok-4.5") == ["low", "medium", "high"])
         let filled = CodexCatalog.fill(BuiltInTargets.codex, with: ["gpt-7": ["low", "high"]])
         #expect(filled.scale(for: "gpt-7") == ["low", "high"])
     }

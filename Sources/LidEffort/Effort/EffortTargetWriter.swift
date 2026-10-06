@@ -20,6 +20,8 @@ enum EffortTargetWriter {
         let outcome: Outcome
         /// The full ordered scale the model accepts.
         var scale: [String] = []
+        /// The values on that scale only a running session takes.
+        var liveOnly: [String] = []
 
         /// The value now in effect, when there is one.
         var value: String? {
@@ -69,16 +71,48 @@ enum EffortTargetWriter {
         return targets
     }
 
+    /// The models an agent's own catalog lists today — Codex's and Grok's
+    /// caches — or nil for an agent that keeps none.
+    static func listedModels(for targetID: String) -> Set<String>? {
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        switch targetID {
+        case "codex":
+            guard let json = try? String(contentsOf: home.appendingPathComponent(".codex/models_cache.json"), encoding: .utf8) else { return nil }
+            return Set(CodexCatalog.supportedLevels(json: json).keys)
+        case "grok":
+            guard let json = try? String(contentsOf: home.appendingPathComponent(".grok/models_cache.json"), encoding: .utf8) else { return nil }
+            return Set(GrokCatalog.supportedLevels(json: json).keys)
+        default:
+            return nil
+        }
+    }
+
     static func apply(level: EffortLevel, dryRun: Bool = false) -> [Result] {
         loadTargets().map { apply(level: level, to: $0, dryRun: dryRun) }
     }
 
     /// What each enabled config says right now, without writing — so the
     /// rings can show a value before the lid has moved at all.
+    /// The lid's level for one agent only — the one being worked with —
+    /// and what every other config says, unwritten, so the rings still show
+    /// all of them.
+    static func apply(level: EffortLevel, only targetID: String, dryRun: Bool = false) -> [Result] {
+        let current = currentValues()
+        return loadTargets().map { target in
+            target.id == targetID
+                ? apply(level: level, to: target, dryRun: dryRun)
+                : current.first { $0.targetID == target.id }
+                    ?? Result(targetID: target.id, displayName: target.displayName, model: nil, outcome: .skipped("not read"))
+        }
+    }
+
     static func currentValues() -> [Result] {
         loadTargets().map { target in
             guard target.enabled else {
                 return Result(targetID: target.id, displayName: target.displayName, model: nil, outcome: .skipped("disabled"))
+            }
+            guard target.isPresent(exists: FileManager.default.fileExists(atPath:)) else {
+                return Result(targetID: target.id, displayName: target.displayName, model: nil, outcome: .skipped("not on this Mac"))
             }
             let url = URL(fileURLWithPath: NSString(string: target.configPath).expandingTildeInPath)
             guard let text = try? String(contentsOf: url, encoding: .utf8) else {
@@ -89,16 +123,20 @@ enum EffortTargetWriter {
                 return Result(targetID: target.id, displayName: target.displayName, model: model, outcome: .skipped("no value set"))
             }
             return Result(targetID: target.id, displayName: target.displayName, model: model, outcome: .unchanged(value),
-                          scale: target.scale(for: model))
+                          scale: target.scale(for: model), liveOnly: target.liveOnly(for: model))
         }
     }
 
-    private static func apply(level: EffortLevel, to target: EffortTarget, dryRun: Bool) -> Result {
+    static func apply(level: EffortLevel, to target: EffortTarget, dryRun: Bool) -> Result {
         func result(_ model: String?, _ outcome: Outcome) -> Result {
             Result(targetID: target.id, displayName: target.displayName, model: model, outcome: outcome,
-                   scale: target.scale(for: model))
+                   scale: target.scale(for: model), liveOnly: target.liveOnly(for: model))
         }
         guard target.enabled else { return result(nil, .skipped("disabled")) }
+        // Its config may be another tool's doing; the agent itself must be here.
+        guard target.isPresent(exists: FileManager.default.fileExists(atPath:)) else {
+            return result(nil, .skipped("not on this Mac"))
+        }
         let url = URL(fileURLWithPath: NSString(string: target.configPath).expandingTildeInPath)
         guard let text = try? String(contentsOf: url, encoding: .utf8) else {
             return result(nil, .skipped("no config at \(target.configPath)"))
@@ -107,9 +145,15 @@ enum EffortTargetWriter {
         guard let value = target.value(for: level, model: model) else {
             return result(model, .skipped("no band mapping for \(model ?? "unknown model")"))
         }
+        // Only a running session takes it (`ultracode`, Claude's `max`):
+        // in a config it would hold every new session there, or be refused.
+        guard !target.liveOnlyValues.contains(value) else {
+            return result(model, .skipped("\(value) is live only"))
+        }
         let current = ConfigDocument.readString(key: target.effortKey, section: target.effortSection, format: target.format, text: text)
         if current == value { return result(model, .unchanged(value)) }
-        guard let patched = ConfigDocument.writeString(key: target.effortKey, section: target.effortSection, value: value, format: target.format, text: text) else {
+        guard let patched = ConfigDocument.writeString(key: target.effortKey, section: target.effortSection, value: value,
+                                                       format: target.format, text: text, createSection: target.createsSection) else {
             return result(model, .failed("couldn't place \(target.effortKey) in \(target.configPath)"))
         }
         if dryRun { return result(model, .written(value)) }

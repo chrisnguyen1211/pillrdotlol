@@ -84,7 +84,10 @@ final class NotchViewModel: ObservableObject {
     @Published var activeResetAlert: UsageResetEvent?
 
     func resetAlertIndex(for event: UsageResetEvent) -> Int? {
-        snapshots.firstIndex { $0.id == event.providerID }
+        // A key's alert points at the API keys cell it is drawn in.
+        snapshots.firstIndex {
+            $0.id == event.providerID || $0.keyGroup?.contains { $0.id == event.providerID } == true
+        }
     }
 
     /// The lid-effort module's state: the level, and what each agent's
@@ -189,12 +192,22 @@ final class NotchViewModel: ObservableObject {
     @Published private(set) var refreshingCells: Set<String> = []
 
     func isRefreshing(_ snapshot: ProviderSnapshot) -> Bool {
-        snapshot.localModel == nil
+        if let keys = snapshot.keyGroup { return keys.contains { refreshing.contains($0.id) } }
+        return snapshot.localModel == nil
             ? refreshing.contains(snapshot.providerID)
             : refreshingCells.contains(snapshot.id)
     }
 
     func refresh(_ snapshot: ProviderSnapshot, using refreshProvider: (String) async -> Void) async {
+        // The API keys cell is every key in it, checked side by side.
+        if let keys = snapshot.keyGroup {
+            await withoutActuallyEscaping(refreshProvider) { refresh in
+                await withTaskGroup(of: Void.self) { group in
+                    for key in keys { group.addTask { await refresh(key.id) } }
+                }
+            }
+            return
+        }
         guard snapshot.localModel != nil else {
             await refreshProvider(snapshot.providerID)
             return
@@ -235,6 +248,8 @@ final class NotchViewModel: ObservableObject {
     /// A tap on a session row in the tooltip: jump to the terminal tab the
     /// session runs in. Takes the session's pid; wired to `SessionFocus`.
     var onFocusSession: ((pid_t) -> Void)?
+    /// Reply or Stop, from a session's row or its done card.
+    var onSessionAction: ((SessionAction) -> Void)?
     /// Which screen edge the notch is welded to. Everything geometric reads
     /// this through `placement` rather than assuming an axis.
     @Published var edge: NotchEdge = .right
@@ -943,8 +958,37 @@ final class NotchViewModel: ObservableObject {
                 localModelName: snapshot.localModel?.name,
                 showsLocalPerformance: snapshot.showsLocalPerformance,
                 localLedgerRows: snapshot.localLedgerRowCount,
-                compactRowCount: snapshot.compactRowCount)
+                compactRowCount: snapshot.compactRowCount,
+                costRows: costRows(for: snapshot),
+                keyGroupBody: keyGroupBody(for: snapshot))
         }.max() ?? 0
+    }
+
+    /// The tallest the API keys card may be: the card the panel is already
+    /// sized for at its tallest, so a long list of keys is cut short rather
+    /// than growing the panel off the screen.
+    ///
+    /// Measured against the default session cap, never the one the screen
+    /// allows: along a side edge that cap is worked out from the stack's
+    /// length, which is worked out from the tallest card — this one — and
+    /// asking for it here went round that loop until the stack ran out.
+    var keyCardBudget: CGFloat {
+        NotchLayout.maxCardHeight(sessionCap: NotchLayout.defaultSessionCap,
+                                  hasTokenUsage: hasTokenUsage, hasPlan: hasPlan,
+                                  hasResetCredits: hasResetCredits)
+    }
+
+    /// The API keys card's rows, as `NotchLayout.cardHeight` budgets them.
+    /// Zero for every other card.
+    func keyGroupBody(for snapshot: ProviderSnapshot) -> CGFloat {
+        guard let keys = snapshot.keyGroup else { return 0 }
+        return NotchLayout.keyGroupPlan(keys, cardBudget: keyCardBudget).body
+    }
+
+    /// Project rows a card may list: the ones the cost model has, capped at
+    /// what the section draws.
+    func costRows(for snapshot: ProviderSnapshot) -> Int {
+        CostSection.rowCount(for: snapshot)
     }
 
     func maxCardHeight(cellCount: Int) -> CGFloat {

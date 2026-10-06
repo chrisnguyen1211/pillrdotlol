@@ -156,12 +156,43 @@ final class ClaudeSessionMonitor: ObservableObject, AgentActivityMonitor {
     /// terminal interface knows — exactly as it was.
     static func state(of record: ClaudeSessionRecord,
                       transcripts: ClaudeTranscriptReader?) -> AgentSession {
+        // While it works, the step it is on — read from the transcript for
+        // terminal sessions too, which otherwise never open it.
+        func doing() -> AgentSession.Doing? {
+            guard let sessionID = record.sessionID,
+                  let url = transcripts?.transcriptURL(sessionID: sessionID, cwd: record.cwd) else { return nil }
+            return SessionDoing.cached(url, parse: SessionDoing.claude(tail:))
+        }
+        var session = Self.session(of: record, transcripts: transcripts, doing: doing)
+        // Said idle, but a command it started is still running in the
+        // background and will wake it again: not finished, and not to be
+        // announced as finished each time it stops between wake-ups.
+        if session.state == .idle || session.state == .success,
+           BackgroundShells.count(under: record.pid) > 0 {
+            session = record.session(state: .busy, since: session.since,
+                                     doing: AgentSession.Doing(text: L10n.t("Background task running"),
+                                                               kind: .tool, since: session.since))
+        }
+        if let sessionID = record.sessionID,
+           let url = transcripts?.transcriptURL(sessionID: sessionID, cwd: record.cwd) {
+            let read = TokenTally.read(url, format: .claude)
+            session.tokens = read.flatMap { $0.total > 0 ? $0.text : nil }
+            session.model = read?.model
+        }
+        return session
+    }
+
+    private static func session(of record: ClaudeSessionRecord, transcripts: ClaudeTranscriptReader?,
+                                doing: () -> AgentSession.Doing?) -> AgentSession {
         guard !record.reportsStatus,
               let sessionID = record.sessionID,
               let activity = transcripts?.activity(sessionID: sessionID, cwd: record.cwd)
-        else { return record.session }
-        return record.session(state: activity.turn == .inFlight ? .busy : .idle,
-                              since: activity.since)
+        else {
+            guard record.session.state == .busy else { return record.session }
+            return record.session(state: .busy, since: record.session.since, doing: doing())
+        }
+        let busy = activity.turn == .inFlight
+        return record.session(state: busy ? .busy : .idle, since: activity.since, doing: busy ? doing() : nil)
     }
 
     /// One session can hold two registry records at once: resuming after a

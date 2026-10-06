@@ -1329,19 +1329,22 @@ final class StatusMenuTests: XCTestCase {
         XCTAssertTrue(titles[0].contains("20 hr 21 min ago"), titles[0])
         XCTAssertTrue(titles[1].contains("Weekly limit"), titles[1])
         XCTAssertTrue(titles[1].contains("29% Used · 71% left"), titles[1])
-        XCTAssertTrue(titles.contains("Refresh all"))
+        XCTAssertTrue(titles.contains("Refresh All"))
+        XCTAssertTrue(titles.contains("About spyx"))
+        XCTAssertTrue(titles.contains("Report a Bug…"))
         XCTAssertTrue(titles.contains("Settings…"))
         XCTAssertTrue(titles.contains("Quit spyx"))
         // The header re-reads its own provider.
         XCTAssertEqual(menu.items[0].representedObject as? String, "codex")
     }
 
-    /// With no readings yet the menu says so instead of showing an empty list.
+    /// With nothing connected the menu says so, and offers the way to connect.
     func testAnEmptyMenuSaysItIsWaiting() {
         let controller = StatusItemController(onOpenSettings: {})
         let menu = NSMenu()
         controller.rebuild(menu: menu, now: now)
-        XCTAssertTrue(menu.items[0].title.contains("Waiting for the first reading"))
+        XCTAssertEqual(menu.items[0].title, "No agents connected yet")
+        XCTAssertEqual(menu.items[1].title, "Connect an Agent…")
     }
 }
 

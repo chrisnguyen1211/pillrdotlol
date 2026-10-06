@@ -119,14 +119,14 @@ enum NotchLayout {
     static func orbConvexArcRadius(corner: CGFloat) -> CGFloat { corner + pillArcGap }
 
     /// How far the resting arc's centre line sits off a capsule's round end —
-    /// a clear 7pt once its own stroke is taken off, so it stands apart from the pill. Tight, so it
-    /// reads as tracing that curve: at the flare's `orbGap` it floated a
-    /// whole stroke away, flatter than the end it belongs to.
-    static let pillArcGap = Design.px(28)
+    /// clear of the pill by a little more than its own stroke, so it reads
+    /// as a handle beside the end rather than an outline drawn round it.
+    static let pillArcGap = Design.px(40)
 
     /// How much of the circle the resting arc takes round a capsule's end —
-    /// a quarter: enough to follow the round end, short enough to stay on it.
-    static let pillArcSpan: CGFloat = 1.0 / 4.0
+    /// a sixth: a short cap over the end, not a bracket reaching down the
+    /// pill's sides.
+    static let pillArcSpan: CGFloat = 1.0 / 6.0
 
     static let orbGlyph    = Design.px(56)
 
@@ -189,6 +189,15 @@ enum NotchLayout {
     static let statusDotStroke = Design.px(3.4)
     static let statusDotGap    = Design.px(11)
     static let hairline      = Design.px(2.5)  // rule above the session list
+
+    // The API keys card: a line per key, a line per figure under it
+    static let keyGlyph      = Design.px(26)
+    static let keyGlyphGap   = Design.px(14)
+    /// Where a key's figures start, under its name rather than its mark.
+    static var keyIndent: CGFloat { keyGlyph + keyGlyphGap }
+    static let keyLineGap    = Design.px(8)
+    static let keyBarGap     = Design.px(9)
+    static let keyBarHeight  = Design.px(7)
 
     // Codex account activity
     static let codexUsageTop   = Design.px(20)
@@ -363,7 +372,9 @@ enum NotchLayout {
                            localLedgerRows: Int = 0,
                            compactRowCount: Int = 0,
                            effortRow: Bool = false,
-                           promptHeight: CGFloat = 0) -> CGFloat {
+                           promptHeight: CGFloat = 0,
+                           costRows: Int = 0,
+                           keyGroupBody: CGFloat = 0) -> CGFloat {
         let header = max(glyphSize, cardTitleLineHeight)
             + (hasPlan ? cardBodyLineHeight : 0)
         var height = 2 * cardPadding + header
@@ -381,7 +392,10 @@ enum NotchLayout {
             height += headerToBlock + bodyTextHeight(blockMessage)
         }
 
-        if let localModelName {
+        if keyGroupBody > 0 {
+            // The API keys card: its rows, solved by `keyGroupPlan`.
+            height += headerToBlock + keyGroupBody
+        } else if let localModelName {
             // Match RuntimeModelDetails so the panel and hover region fit all
             // rows: the runtime's own, the speed pair, and a logged runtime's
             // ledger lines.
@@ -424,6 +438,13 @@ enum NotchLayout {
             height += codexUsageTop + hairline + codexResetCreditsHeight
         }
 
+        // "What used it": a line of range tabs, then one line per project.
+        if costRows > 0 {
+            height += blockSpacing + hairline       // the divider above it
+                + blockSpacing + cardBodyLineHeight
+                + CGFloat(costRows) * (cardBodyLineHeight + sessionRowGap)
+        }
+
         height += usageDetailHeight(usageDetailGroupCount)
 
         if hasTokenUsage {
@@ -449,6 +470,45 @@ enum NotchLayout {
             }
         }
         return height
+    }
+
+    /// How tall one key's rows are: its name, why it failed if it did, and
+    /// a line per figure, with a bar under any figure that has a share.
+    static func keyRowHeight(_ member: ProviderSnapshot) -> CGFloat {
+        var lines = 1
+        var bars = 0
+        if APIKeyGroup.problem(for: member) != nil { lines += 1 }
+        if APIKeyGroup.placeholderLine(for: member) != nil { lines += 1 }
+        for window in member.windows {
+            lines += 1
+            if window.usedFraction != nil { bars += 1 }
+        }
+        return CGFloat(lines) * cardBodyLineHeight + CGFloat(lines - 1) * keyLineGap
+            + CGFloat(bars) * (keyBarGap + keyBarHeight)
+    }
+
+    /// How many keys the card lists, and how tall that makes its body.
+    ///
+    /// Clipped, not scrolled, like the session list: the card is never taller
+    /// than `cardBudget`, and the keys that would not fit are counted on a
+    /// line of their own — the API tab lists every one.
+    static func keyGroupPlan(_ members: [ProviderSnapshot],
+                             cardBudget: CGFloat = defaultMaxCardHeight) -> (shown: Int, body: CGFloat) {
+        let header = 2 * cardPadding + max(glyphSize, cardTitleLineHeight) + headerToBlock
+        let more = blockSpacing + cardBodyLineHeight
+        var body: CGFloat = 0
+        var shown = 0
+        for (index, member) in members.enumerated() {
+            let next = body + (index == 0 ? 0 : blockSpacing) + keyRowHeight(member)
+            // Room left for the "and N more" line whenever a key is left out.
+            let tail: CGFloat = index == members.count - 1 ? 0 : more
+            // The first key is always listed, whatever the budget.
+            guard index == 0 || header + next + tail <= cardBudget else { break }
+            body = next
+            shown += 1
+        }
+        if shown < members.count { body += more }
+        return (shown, body)
     }
 
     static func modelNameHeight(_ name: String) -> CGFloat {

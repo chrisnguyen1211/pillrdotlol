@@ -11,6 +11,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var effort: EffortController?
     /// When to sound again for a prompt nobody has answered.
     private var promptReminder = PromptReminder(minutes: 0)
+    /// Whether someone was at the Mac on the last prompt watch — to notice
+    /// them coming back to questions that arrived while they were away.
+    private var wasPresent = true
+    /// How long a question waits in the notch, with the person there and in
+    /// the session's app, before it is left to the session's own dialog.
+    static let presentPatience: TimeInterval = 540
     private var ollamaRelay: OllamaActivityRelay?
     private var lmstudioMetrics: LMStudioMetrics?
     private var preferences: Preferences?
@@ -33,6 +39,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Turns the monitors' running commentary into the one event worth
     /// interrupting for: an agent that has just stopped working.
     private var completions = SessionCompletionWatcher()
+    /// Finishes held back until the session has stayed finished a while,
+    /// by session id. A session woken again inside the window — a
+    /// background command reporting back, the next step of a Grok turn —
+    /// was not done, and its card is never shown.
+    private var settling: [String: DispatchWorkItem] = [:]
+    static let finishSettle: TimeInterval = 20
+    /// Finishes said the moment Claude Code's Stop hook ran, by session id:
+    /// the status file's own finish, a beat later, is the same one.
+    private var saidByHook: [String: Date] = [:]
+    /// The same, by agent: Codex's and Cursor's sessions in the notch are
+    /// not named the way their hooks name them.
+    private var saidByHookProvider: [String: Date] = [:]
 
     /// The unit bundle is hosted by this app, so `xcodebuild test` launches it
     /// for real. Without this guard every test run put a live request on the
@@ -77,6 +95,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// refresher needs to ask one of them how long its token has left, and the
     /// protocol has no business carrying that.
     private var claudeProviders: [ClaudeOAuthProvider] = []
+    /// MiniMax Platform sign-in sheet. Not a UsageProvider — that is MiniMaxProvider.
+    private var miniMaxWeb: WebSessionProvider?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Set here, not in the Info.plist: this call is applied at launch and
@@ -111,11 +131,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // login is explicit, stays in spyx's own WKWebView store, and
             // the page-local requests are refreshed only after that login.
             let deepSeek = WebSessionProvider(site: Sites.deepSeek)
-            let webProviders: [WebSessionProvider] = [deepSeek]
-            fleet.signInItems = webProviders.map { provider in
+            // QianwenAI's Token Plan is the same kind of provider: no usage API
+            // to call, only a console, readable after the user signs in inside
+            // this app's own WKWebView. Unlike MiniMax's sheet below, its ring
+            // *is* this adapter, so it belongs in `webProviders` — exactly once.
+            let qianwen = WebSessionProvider(site: Sites.qianwen)
+            // MiniMax's ring is MiniMaxProvider. The sheet is the same kind of
+            // WebView DeepSeek uses, but it must not join `webProviders`: two
+            // adapters with id `minimax` would both poll, both draw a row, and
+            // fight over the same archive key. Region is applied here and again
+            // when Settings changes it, because the fetch URLs live on the site.
+            let miniMaxWeb = WebSessionProvider(site: Sites.minimax(region: preferences.minimaxRegion))
+            self.miniMaxWeb = miniMaxWeb
+            let webProviders: [WebSessionProvider] = [deepSeek, qianwen]
+            fleet.signInItems = [deepSeek, miniMaxWeb, qianwen].map { provider in
                 (title: L10n.t("Sign in to \(provider.displayName)…"),
                  action: { [weak provider] in provider?.presentSignIn() })
             }
+            let customProviders: [UsageProvider] = preferences.customEndpoints
+                .filter(\.isEnabled)
+                .map { CustomEndpointProvider(endpoint: $0) }
+            // A second (third…) key for GLM, MiniMax, Ollama or Apify, and any
+            // catalog key — each read on its own, all drawn in the API keys
+            // cell beside the providers' own rings. See `ExtraKey`.
+            let extraKeyProviders = ExtraKeyProviders.makeAll(preferences.extraKeys)
 
             // Cursor reads the editor's session, or cursor-agent's if the
             // editor is missing — never a browser one: signing into
@@ -134,8 +173,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     + [CursorLocalProvider()]
                     + codexProfiles.map { CodexLocalProvider(profile: $0) }
                     + [AntigravityProvider(),
-                       GLMProvider(), GrokLocalProvider(), DevinLocalProvider(), OpenCodeProvider(),
+                       GLMProvider(), MiniMaxProvider(web: miniMaxWeb), GrokLocalProvider(), DevinLocalProvider(), OpenCodeProvider(),
                        CommandCodeProvider(), GitHubCopilotProvider(), KimiProvider(),
+                       KiroProvider(), AmpProvider(), ApifyProvider(), KiloProvider(),
                        OllamaLocalProvider(endpoint: URL(string: preferences.ollamaEndpoint)!),
                        LMStudioLocalProvider(endpoint: URL(string: preferences.lmstudioEndpoint)!),
                        OllamaProvider(),
@@ -145,7 +185,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                        GeminiAPIProvider(budget: {
                            Preferences.storedGeminiAPIMonthlyTokenBudget()
                        })]
-                    + webProviders,
+                    + extraKeyProviders
+                    + webProviders
+                    + customProviders,
                 disconnected: preferences.disconnectedProviders,
                 // Passed at construction, not left to the sink below, for the
                 // same reason `disconnected` is: the sink delivers a run loop
@@ -156,6 +198,50 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             deepSeek.onAuthenticated = { [weak store] in
                 store?.refresh(providerID: "deepseek")
             }
+            qianwen.onAuthenticated = { [weak store] in
+                store?.refresh(providerID: "qianwenai")
+            }
+            miniMaxWeb.onAuthenticated = { [weak store] in
+                store?.refresh(providerID: "minimax")
+            }
+            // Custom endpoints come and go while the app runs. Everything that
+            // decides what an endpoint's provider reads goes into the key, so a
+            // save that changes nothing it reads does not rebuild the rings.
+            // The first value is the list the store was just built with.
+            preferences.$customEndpoints
+                .map { endpoints in
+                    endpoints.filter(\.isEnabled).map {
+                        "\($0.id):\($0.name):\($0.baseURL):\($0.apiType.rawValue):\($0.trackingUnit.rawValue):\($0.monthlyBudgetUSD ?? -1):\($0.currentSpendUSD ?? -1):\($0.monthlyBudgetTokensM ?? -1):\($0.currentTokensUsedM ?? -1):\($0.displayRemaining):\($0.showCurrency):\($0.iconPreset ?? ""):\($0.customIconFilename ?? ""):\($0.accentColorHex):\($0.selectedModel):\($0.usageSource.rawValue):\($0.usagePreset?.rawValue ?? ""):\($0.usageURL ?? ""):\($0.usageRecordsPath ?? ""):\($0.usageModelField ?? ""):\($0.usageTokenField ?? ""):\($0.usageModelFilter ?? ""):\($0.usageAuthentication.rawValue)"
+                    }
+                }
+                .removeDuplicates()
+                .dropFirst()
+                .receive(on: RunLoop.main)
+                .sink { [weak store] _ in
+                    let active = Preferences.storedCustomEndpoints().filter(\.isEnabled)
+                    store?.registerCustomProviders(active.map { CustomEndpointProvider(endpoint: $0) })
+                }
+                .store(in: &cancellables)
+            // Extra keys are added, renamed and removed from Settings while
+            // the app runs. The first value is the list the store was just
+            // built with.
+            preferences.$extraKeys
+                .removeDuplicates()
+                .dropFirst()
+                .receive(on: RunLoop.main)
+                .sink { [weak store] keys in
+                    store?.registerExtraKeyProviders(ExtraKeyProviders.makeAll(keys))
+                }
+                .store(in: &cancellables)
+            preferences.$minimaxRegion
+                .dropFirst()
+                .removeDuplicates()
+                .receive(on: RunLoop.main)
+                .sink { [weak miniMaxWeb, weak store] region in
+                    miniMaxWeb?.apply(site: Sites.minimax(region: region))
+                    store?.refresh(providerID: "minimax")
+                }
+                .store(in: &cancellables)
 
             let updater = Updater()
             self.updater = updater
@@ -273,6 +359,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             fleet.onConnect = { [weak store, weak settings] id in
                 if store?.connect(providerID: id) != true { settings?.show() }
             }
+            fleet.onSessionAction = { [weak fleet] action in
+                // The tooltip folds away; the field takes its place by the pill.
+                if case .stop = action {} else { ReplyPanelController.shared.anchor = fleet?.foldForReply() }
+                switch action {
+                case .reply(let session):
+                    ReplyPanelController.shared.open(for: session)
+                case .stop(let session):
+                    Task { @MainActor in _ = await SessionCommander.stop(session) }
+                case .handoff(let session):
+                    ReplyPanelController.shared.openHandoff(for: session)
+                }
+            }
+            Handoff.warmUp()
+            let recap = DailyRecapScheduler { [weak fleet] recap in
+                let top = recap.agents.max { ($0.toolCalls, $0.sessions) < ($1.toolCalls, $1.sessions) }
+                let glyph: ProviderGlyph = ["Claude Code": .claude, "Codex": .openai, "Grok": .grok][top?.name ?? ""] ?? .third
+                var event = UsageAlertEvent(kind: .recap, providerID: "recap", providerName: "", windowLabel: "",
+                                            glyph: glyph, previousFraction: 0, currentFraction: 0, resetsAt: nil)
+                event.recap = recap
+                fleet?.showResetAlert(event, duration: 12)
+            }
+            recap.start()
+            self.recapScheduler = recap
             fleet.onFocusSession = { [weak self] pid in
                 // The tour's demo sessions have no window; it answers for them.
                 if self?.tour?.handleSessionClick(pid) == true { return }
@@ -305,10 +414,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 effort: { [weak self] in self?.effort },
                 openSettings: { [weak settings] in settings?.show() }
             )
-            // Set up, then shown round: the tour takes over from Finish.
+            // Shown round first, then set up: the intro says what spyx is,
+            // so the setup that follows — permissions, hooks — has a reason
+            // behind every question. A tour skipped or finished leads into
+            // setup; setup's Finish only tours someone who has not seen it.
             let tour = IntroTour(fleet: fleet, preferences: preferences, effort: { [weak self] in self?.effort })
             self.tour = tour
             setup.onFinish = { [weak tour] in
+                guard !IntroGate.seen else { return }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { tour?.start() }
             }
             self.setup = setup
@@ -323,6 +436,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak tour] in tour?.start(at: step) }
             } else if arguments.contains("--tour") {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak tour] in tour?.start() }
+            } else if arguments.contains("--demo"), let fleet = notchFleet {
+                let demo = FeatureDemo(fleet: fleet)
+                self.featureDemo = demo
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) { demo.start() }
             }
             let seen = UserDefaults.standard.bool(forKey: SetupGate.seenKey)
             if SetupGate.shouldShow(seen: seen, forced: SetupGate.forcedByArguments) {
@@ -334,7 +451,21 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         whatsNew?.showIfNeeded()
                     }
                 }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak setup] in setup?.show() }
+                // Intro first, unless spyx must first be moved into
+                // Applications: that page comes before anything, and the
+                // copy that reopens from there plays the intro.
+                if !IntroGate.seen, !AppLocation.current.needsMove {
+                    tour.leadsIntoSetup = true
+                    tour.onEnd = { [weak tour, weak setup] in
+                        IntroGate.markSeen()
+                        tour?.leadsIntoSetup = false
+                        tour?.onEnd = nil
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { setup?.show() }
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak tour] in tour?.start() }
+                } else {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak setup] in setup?.show() }
+                }
             } else {
                 whatsNew.showIfNeeded()
             }
@@ -342,6 +473,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let statusItem = StatusItemController { [weak settings] in settings?.show() }
             statusItem.onOpenSetup = { [weak setup] in setup?.show() }
             statusItem.onTakeTour = { [weak tour] in tour?.start() }
+            statusItem.onCheckForUpdates = { [weak self] in self?.updater?.checkNow() }
+            statusItem.onRestartToUpdate = { [weak self] in self?.updater?.restartToUpdate() }
+            statusItem.readyUpdate = { [weak self] in
+                if case .ready(let version) = self?.updater?.outcome { return version }
+                return nil
+            }
             self.statusItem = statusItem
             statusItem.onRefreshProvider = { [weak store] id in store?.refresh(providerID: id) }
             statusItem.onRefreshAll = { [weak store] in store?.refreshNow() }
@@ -532,13 +669,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             // worth interrupting someone for, and neither needs to know the
             // other.
             let notifier = ThresholdNotifier(
-                isMuted: { [weak preferences] in preferences?.isMutedAlerts(for: $0) ?? false },
+                isMuted: { [weak preferences] in
+                    guard let preferences else { return false }
+                    return !preferences.thresholdAlertsEnabled || preferences.isMutedAlerts(for: $0)
+                },
                 deliver: { ThresholdAlerts.deliver($0) }
             )
             self.thresholdNotifier = notifier
 
             let resetWatcher = UsageResetWatcher(
-                isMuted: { [weak preferences] in preferences?.isMutedAlerts(for: $0) ?? false },
+                isMuted: { [weak preferences] in
+                    guard let preferences else { return false }
+                    return !preferences.thresholdAlertsEnabled || preferences.isMutedAlerts(for: $0)
+                },
                 deliver: { [weak self] event in
                     MainActor.assumeIsolated {
                         self?.announceUsageReset(event: event)
@@ -548,7 +691,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self.resetWatcher = resetWatcher
 
             let limitWatcher = UsageLimitWatcher(
-                isMuted: { [weak preferences] in preferences?.isMutedAlerts(for: $0) ?? false },
+                isMuted: { [weak preferences] in
+                    guard let preferences else { return false }
+                    return !preferences.thresholdAlertsEnabled || preferences.isMutedAlerts(for: $0)
+                },
                 deliver: { [weak self] event in
                     MainActor.assumeIsolated {
                         self?.announceUsageLimit(event: event)
@@ -574,8 +720,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
             store.$snapshots
                 .receive(on: RunLoop.main)
-                .sink { [weak statusItem] snapshots in
+                .sink { [weak statusItem, weak self] snapshots in
                     statusItem?.snapshots = snapshots
+                    UsageForecaster.shared.observe(snapshots)
+                    self?.considerAutoEco(snapshots)
                     notifier.observe(snapshots)
                     resetWatcher.observe(snapshots)
                     limitWatcher.observe(snapshots)
@@ -620,6 +768,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             }
             self.store = store
+            // Per-project spend: samples each limit reading against the
+            // turns the transcripts record — see `Costs`.
+            Costs.attach(to: store)
         }
 
         // What each agent is doing right now, so the notch can say whether it is
@@ -724,7 +875,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             effort.onChange = { [weak fleet] event in fleet?.showEffortAlert(event) }
             effort.onPreview = { [weak fleet] position, level, note in
                 fleet?.setEffortPreview(position, level: level, note: note?.text, noteIsLive: note?.isLive ?? false,
-                                        agent: note?.agent)
+                                        agent: note?.agent, aim: note?.aim)
             }
             // The bars are the lid by hand: same level, same targets.
             fleet.onSetEffort = { [weak effort] providerID, index in
@@ -782,7 +933,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     .first { $0.processID == pid }?.name
                 // The person is looking at that session: its own dialog is
                 // where they will answer, and holding the hook would hide it.
-                if Self.isInView(pid: pid, focus: EffortInjector.focus()) { return .passThrough }
+                // Only someone who is there is looking: a terminal left in
+                // front by someone who walked away is no one's view, and the
+                // question waits in the notch for them instead.
+                if UserPresence.isPresent, Self.isInView(pid: pid, focus: EffortInjector.focus()) { return .passThrough }
             }
             // Which piece of work it is, for when several sessions run at
             // once: read now, once, from the end of that session's transcript.
@@ -823,10 +977,36 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         SessionChime.play(sound)
                     }
                 }
-                guard fleet.prompts.contains(where: { $0.pid != nil }) else { return }
+                // Away: questions wait in the notch, however long — nothing
+                // is handed back to a session no one is looking at. Back:
+                // the card is put in front again and sounds once, so a
+                // question that arrived while they were gone is the first
+                // thing they see.
+                let present = UserPresence.isPresent
+                if let self {
+                    defer { self.wasPresent = present }
+                    if present, !self.wasPresent, !fleet.prompts.isEmpty {
+                        fleet.resurfacePrompts()
+                        if let oldest = fleet.prompts.first,
+                           let sound = PromptAlerts.sound(for: oldest, preferences: preferences) {
+                            SessionChime.play(sound)
+                            self.promptReminder.sounded(at: Date())
+                        }
+                    }
+                }
+                guard present, fleet.prompts.contains(where: { $0.pid != nil }) else { return }
                 let focus = EffortInjector.focus()
+                let front = NSWorkspace.shared.frontmostApplication?.processIdentifier
                 for prompt in fleet.prompts {
-                    if let pid = prompt.pid, Self.isInView(pid: pid, focus: focus) {
+                    guard let pid = prompt.pid else { continue }
+                    if Self.isInView(pid: pid, focus: focus) {
+                        broker.answer(prompt.id, with: .passThrough)
+                    } else if Date().timeIntervalSince(prompt.receivedAt) > Self.presentPatience,
+                              let host = SessionFocus.owningApp(of: pid)?.processIdentifier, host == front {
+                        // Here, in the app the session runs in, and the card
+                        // left a long while: a terminal spyx cannot see into
+                        // (iTerm2, Ghostty, an IDE) may be the very tab they
+                        // are in. Its own dialog, there, is the safer place.
                         broker.answer(prompt.id, with: .passThrough)
                     }
                 }
@@ -834,18 +1014,52 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         RunLoop.main.add(watch, forMode: .common)
 
+        // Claude Code's Stop hook: the answer is finished. Done at once —
+        // unless a command it started is still running in the background,
+        // which will wake it again; then the next Stop is the one.
+        broker.onStop = { [weak self] stop in
+            // The hook's own shell is a child of the session until it exits.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                MainActor.assumeIsolated { self?.agentStopped(stop) }
+            }
+        }
         do { try broker.start() } catch {
             Log.usage.error("prompt broker failed to start: \(error.localizedDescription, privacy: .public)")
         }
         promptBroker = broker
 
+        // Every agent's turn-finished hook goes in with the done card, and
+        // out with it — where the agent is installed, once the person has
+        // seen what they are (`HookConsent`), from a copy that stays put.
+        // Turning either switch on in Settings is consent too.
+        HookConsent.migrate()
+        let consent = NotificationCenter.default.publisher(for: HookConsent.changed).map { _ in () }.prepend(())
+        preferences.$announceSessionEnd.removeDuplicates().dropFirst().filter { $0 }
+            .merge(with: preferences.$answerPromptsFromNotch.removeDuplicates().dropFirst().filter { $0 })
+            .sink { _ in HookConsent.grant() }
+            .store(in: &cancellables)
+
+        preferences.$announceSessionEnd
+            .removeDuplicates()
+            .combineLatest(consent)
+            .receive(on: RunLoop.main)
+            .sink { enabled, _ in
+                guard enabled else { AgentHooks.removeAll(); return }
+                guard HookConsent.mayInstall(), let executable = Bundle.main.executablePath else { return }
+                AgentHooks.installAll(executable: executable)
+            }
+            .store(in: &cancellables)
+
         preferences.$answerPromptsFromNotch
             .removeDuplicates()
+            .combineLatest(consent)
             .receive(on: RunLoop.main)
-            .sink { enabled in
-                guard let executable = Bundle.main.executablePath else { return }
+            .sink { enabled, _ in
                 do {
                     if enabled {
+                        // Claude Code's own folder: never made for someone without it.
+                        guard HookConsent.mayInstall(), AgentHooks.claudePresent,
+                              let executable = Bundle.main.executablePath else { return }
                         try ClaudeHookInstaller.install(executable: executable)
                     } else if ClaudeHookInstaller.isInstalled() {
                         try ClaudeHookInstaller.remove()
@@ -863,8 +1077,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     static func isInView(pid: pid_t, focus: FocusContext) -> Bool {
         let tty = SessionFocus.tty(of: pid)
         if let tty { return tty == focus.focusedTTY }
-        guard let host = SessionFocus.owningApp(of: pid)?.localizedName else { return false }
-        return host == focus.frontmostApp
+        guard let app = SessionFocus.owningApp(of: pid), app.localizedName == focus.frontmostApp else { return false }
+        // The Claude app holds many sessions in one window: only the one it
+        // is showing is in view, not every session it hosts.
+        if app.bundleIdentifier == ClaudeDesktopComposer.bundleID {
+            guard let host = SessionModels.desktop(pid: pid)?.hostSessionID, !host.isEmpty else { return false }
+            return ClaudeDesktopComposer.view() == .session(host)
+        }
+        return true
     }
 
     /// Open the notch, and make a noise, when something has just finished.
@@ -881,12 +1101,91 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @MainActor
     private func announceCompletions(sessions: [String: [AgentSession]]) {
         let events = completions.absorb(sessions)
-        // Every reading, not only the ones with news: a card saying a
-        // session waits on you goes the moment it no longer does.
-        let waiting = Set(sessions.values.flatMap { $0 }.filter { $0.state == .waiting }.compactMap(\.processID))
+        // Working again: whatever finish it had pending was a pause.
+        let all: [AgentSession] = sessions.values.flatMap { $0 }
+        let working: Set<String> = Set(all.filter { $0.state == .busy || $0.state == .waiting }.map { $0.id })
+        for id in working { settling.removeValue(forKey: id)?.cancel() }
+        for event in events where event.reason == .finished {
+            // Already said, in real time, by the Stop hook.
+            if let said = saidByHook[event.session.id], Date().timeIntervalSince(said) < 60 { continue }
+            if let said = saidByHookProvider[EffortState.targetID(forProviderID: event.providerID)],
+               Date().timeIntervalSince(said) < 60 { continue }
+            settling[event.session.id]?.cancel()
+            let work = DispatchWorkItem { [weak self] in
+                MainActor.assumeIsolated {
+                    guard let self else { return }
+                    self.settling[event.session.id] = nil
+                    self.announce(event)
+                }
+            }
+            settling[event.session.id] = work
+            DispatchQueue.main.asyncAfter(deadline: .now() + Self.finishSettle, execute: work)
+        }
+        // A session waiting on you is said at once.
+        let waiting: Set<pid_t> = Set(all.filter { $0.state == .waiting }.compactMap { $0.processID })
         notchFleet?.resolveWaiting(waitingPIDs: waiting)
-        guard let event = events.first, let preferences, let fleet = notchFleet else { return }
-        Log.usage.info("session \(event.session.name, privacy: .public) \(String(describing: event.reason), privacy: .public)")
+        if let blocked = events.first(where: { $0.reason == .blocked }) { announce(blocked) }
+    }
+
+    /// An agent's own hook said its turn finished. Claude Code and Grok
+    /// name a process: when a command they started still runs in the
+    /// background, this was not the end and the next stop is. Codex and
+    /// Cursor name a thread: their session in the notch, or one made from
+    /// the folder when the notch has none.
+    @MainActor
+    private func agentStopped(_ stop: AgentStop) {
+        let lists = notchFleet?.sessions ?? [:]
+        let all: [(provider: String, session: AgentSession)] = lists.flatMap { key, list in list.map { (key, $0) } }
+        var found: (provider: String, session: AgentSession)?
+        switch stop.agent {
+        case "claude":
+            guard let id = stop.sessionID, let pid = ClaudeSessionLookup.pid(forSessionID: id) else { return }
+            guard BackgroundShells.count(under: pid) == 0 else {
+                Log.usage.info("stop hook: claude pid \(pid, privacy: .public) still has background work")
+                return
+            }
+            found = all.first { $0.session.processID == pid }
+        case "grok":
+            guard let id = stop.sessionID else { return }
+            if let pid = GrokActivity.pid(forSessionID: id), BackgroundShells.count(under: pid) > 0 {
+                Log.usage.info("stop hook: grok pid \(pid, privacy: .public) still has background work")
+                return
+            }
+            found = all.first { $0.session.id == "grok.\(id)" }
+        default:
+            // Antigravity's ring is the one its provider has always used: `gemini`.
+            // Antigravity's ring is the one its provider has always used,
+            // `gemini`; Gemini CLI's is the API key's, `gemini-api`.
+            let prefix = ["antigravity": "gemini", "gemini-cli": "gemini-api"][stop.agent] ?? stop.agent
+            func ours(_ provider: String) -> Bool {
+                provider == prefix || (provider.hasPrefix(prefix + "-") && !(prefix == "gemini" && provider.hasPrefix("gemini-api")))
+            }
+            found = all.first { ours($0.provider) && (stop.sessionID.map($0.session.id.contains) ?? false) }
+                ?? all.first { ours($0.provider) }
+        }
+        let event: SessionCompletionWatcher.Event
+        if let found {
+            event = .init(session: found.session, reason: .finished, providerID: found.provider)
+        } else {
+            // No ring for it here: still say which agent finished, and where.
+            let folder = stop.cwd.map { ($0 as NSString).lastPathComponent } ?? stop.agent.capitalized
+            let session = AgentSession(id: "\(stop.agent).\(stop.sessionID ?? folder)", name: folder,
+                                       detail: ProviderGlyph.forProvider(stop.agent)?.agentName ?? stop.agent.capitalized,
+                                       state: .success, waitingFor: nil, since: Date())
+            event = .init(session: session, reason: .finished, providerID: stop.agent)
+        }
+        settling.removeValue(forKey: event.session.id)?.cancel()
+        if let said = saidByHook[event.session.id], Date().timeIntervalSince(said) < 3 { return }
+        saidByHook[event.session.id] = Date()
+        saidByHookProvider[EffortState.targetID(forProviderID: event.providerID)] = Date()
+        announce(event)
+    }
+
+    /// Sounds and shows one finish or one wait.
+    @MainActor
+    private func announce(_ event: SessionCompletionWatcher.Event) {
+        guard let preferences, let fleet = notchFleet else { return }
+        Log.usage.info("session \(event.session.name, privacy: .private) \(String(describing: event.reason), privacy: .public)")
 
         // A session blocked on a prompt the notch is holding has already
         // sounded, in the prompt's own voice — not twice.
@@ -904,6 +1203,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // A line from the pill, not the whole notch: the announcement must
         // not get in the way of the work it is announcing.
         fleet.showDoneToast(event, duration: preferences.peekDuration.seconds)
+    }
+
+    /// Steps effort down when an agent is about to run out, if switched on.
+    @MainActor private let autoEco = AutoEco()
+    private var recapScheduler: DailyRecapScheduler?
+    private var featureDemo: FeatureDemo?
+
+    /// An agent about to run out: effort down one step, said on the card.
+    @MainActor
+    private func considerAutoEco(_ snapshots: [ProviderSnapshot]) {
+        guard let effort, let near = autoEco.trigger(snapshots, forecaster: .shared) else { return }
+        // Only the agent that is running out steps down.
+        effort.stepDown(agent: EffortState.targetID(forProviderID: near.providerID),
+                        reason: L10n.t("Auto-eco · \(near.displayName) is near its limit"))
     }
 
     /// Open the notch and show a usage reset notification modal when a limit resets.
@@ -950,6 +1263,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             isAnnounceEnabled = preferences.announceWeeklyLimitReached
         case .reset:
             isAnnounceEnabled = preferences.announceUsageReset
+        case .recap:
+            isAnnounceEnabled = true
         }
 
         guard isAnnounceEnabled else { return }
@@ -1029,6 +1344,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @MainActor func openSettings() { settings?.show() }
+    @MainActor func checkForUpdates() { updater?.checkNow() }
 
     func applicationWillTerminate(_ notification: Notification) {
         ollamaRelay?.configure(enabled: false, endpoint: OllamaEndpoint.defaultAddress)

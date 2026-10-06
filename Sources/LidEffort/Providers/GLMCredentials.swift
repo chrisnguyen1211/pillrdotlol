@@ -52,10 +52,44 @@ enum GLMCredentials {
     }
 
     static func load() -> Credential? {
-        load(claudeSettings: claudeSettingsURL,
-             zcodeConfig: zcodeConfigURL,
-             zcodeCredentials: zcodeCredentialsURL,
-             openCodeAuth: openCodeAuthURL)
+        pasted() ?? load(claudeSettings: claudeSettingsURL,
+                         zcodeConfig: zcodeConfigURL,
+                         zcodeCredentials: zcodeCredentialsURL,
+                         openCodeAuth: openCodeAuthURL)
+    }
+
+    // MARK: A key pasted into spyx
+
+    /// For a Mac with no coding tool holding the plan's key: pasted in
+    /// Settings, kept in the login keychain, and tried before the borrowed
+    /// ones — it is the one the person chose for spyx.
+    static let keychainService = "spyx-glm-coding-plan"
+    static let keychainAccount = "spyx"
+    static let regionKey = "glm.pastedRegion"
+
+    /// Which console a pasted key belongs to: Z.ai's global one, or
+    /// bigmodel.cn in mainland China.
+    static var pastedIsChina: Bool {
+        get { UserDefaults.standard.bool(forKey: regionKey) }
+        set { UserDefaults.standard.set(newValue, forKey: regionKey) }
+    }
+
+    static func pasted() -> Credential? {
+        guard let token = KeychainItem.read(service: keychainService, account: keychainAccount),
+              !token.isEmpty else { return nil }
+        let base = URL(string: pastedIsChina ? "https://open.bigmodel.cn" : "https://api.z.ai")!
+        return Credential(token: token, baseURL: base, source: "spyx")
+    }
+
+    @discardableResult
+    static func storePasted(_ key: String) -> Bool {
+        KeychainItem.store(service: keychainService, account: keychainAccount,
+                           value: key.trimmingCharacters(in: .whitespacesAndNewlines))
+    }
+
+    @discardableResult
+    static func deletePasted() -> Bool {
+        KeychainItem.delete(service: keychainService, account: keychainAccount)
     }
 
     /// Every path is a parameter so a test can point each source at its own

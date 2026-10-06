@@ -5,13 +5,17 @@ import SwiftUI
 /// without a known brand colour keep the plain template glyph.
 struct ProviderBadge: View {
     let glyph: ProviderGlyph
+    /// A custom endpoint's own image, drawn instead of the glyph.
+    var customIconFilename: String? = nil
 
     /// Diameter of the disc, inside the gauge: clear of the track, larger
     /// than the glyph it carries.
     static let diameter = Design.px(50)
 
     var body: some View {
-        if let brand = Self.brand(for: glyph) {
+        if customIconFilename != nil {
+            ProviderGlyphView(glyph: glyph, customIconFilename: customIconFilename)
+        } else if let brand = Self.brand(for: glyph) {
             ZStack {
                 Circle().fill(brand.fill)
                 if let stroke = brand.stroke {

@@ -293,6 +293,14 @@ final class EffortDotStateTests: XCTestCase {
         XCTAssertEqual(state.dots(forProviderID: "grok"), EffortDotState(count: 6, filled: 0), "a value off the scale fills nothing")
         XCTAssertNil(state.dots(forProviderID: "cursor"))
     }
+
+    func testLiveOnlyDotsAreMarked() {
+        var state = EffortState()
+        state.values = ["claude": "xhigh"]
+        state.scales = ["claude": BuiltInTargets.claude.scale(for: "claude-opus-5-5")]
+        state.liveOnly = ["claude": BuiltInTargets.claude.liveOnly(for: "claude-opus-5-5")]
+        XCTAssertEqual(state.dots(forProviderID: "claude"), EffortDotState(count: 6, filled: 4, liveOnly: [4, 5]))
+    }
 }
 
 /// A live update reaches the one session in view — Grok's framed prompt

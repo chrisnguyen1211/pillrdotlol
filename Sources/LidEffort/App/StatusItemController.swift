@@ -21,6 +21,10 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     var onOpenSetup: (() -> Void)?
     /// Start the intro tour.
     var onTakeTour: (() -> Void)?
+    var onCheckForUpdates: (() -> Void)?
+    /// An update downloaded and waiting: its version, and the restart.
+    var readyUpdate: (() -> String?)?
+    var onRestartToUpdate: (() -> Void)?
 
     /// The latest readings, mirrored from the store. The menu is rebuilt from
     /// these every time it opens, so reset countdowns and ages are fresh.
@@ -71,9 +75,10 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     func rebuild(menu: NSMenu, now: Date) {
         menu.removeAllItems()
         if snapshots.isEmpty {
-            let empty = NSMenuItem(title: L10n.t("Waiting for the first reading…"), action: nil, keyEquivalent: "")
+            let empty = NSMenuItem(title: L10n.t("No agents connected yet"), action: nil, keyEquivalent: "")
             empty.isEnabled = false
             menu.addItem(empty)
+            menu.addItem(withTitle: L10n.t("Connect an Agent…"), action: #selector(openSetup), keyEquivalent: "").target = self
         } else {
             let cells = cells()
             for snapshot in snapshots {
@@ -88,7 +93,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         }
         menu.addItem(.separator())
         menu.addItem(
-            withTitle: L10n.t("Refresh all"), action: #selector(refreshAll), keyEquivalent: "r"
+            withTitle: L10n.t("Refresh All"), action: #selector(refreshAll), keyEquivalent: "r"
         ).target = self
         menu.addItem(
             withTitle: L10n.t("Settings…"), action: #selector(openSettings), keyEquivalent: ","
@@ -99,6 +104,14 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         menu.addItem(
             withTitle: L10n.t("Take the Tour"), action: #selector(takeTour), keyEquivalent: ""
         ).target = self
+        menu.addItem(.separator())
+        menu.addItem(withTitle: L10n.t("About spyx"), action: #selector(about), keyEquivalent: "").target = self
+        if let version = readyUpdate?() {
+            menu.addItem(withTitle: L10n.t("Restart to Update to \(version)"), action: #selector(restartToUpdate), keyEquivalent: "").target = self
+        } else {
+            menu.addItem(withTitle: L10n.t("Check for Updates…"), action: #selector(checkForUpdates), keyEquivalent: "").target = self
+        }
+        menu.addItem(withTitle: L10n.t("Report a Bug…"), action: #selector(reportBug), keyEquivalent: "").target = self
         menu.addItem(.separator())
         menu.addItem(
             withTitle: L10n.t("Quit spyx"), action: #selector(quit), keyEquivalent: "q"
@@ -128,6 +141,15 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     @objc private func openSetup() { onOpenSetup?() }
     @objc private func takeTour() { onTakeTour?() }
     @objc private func quit() { NSApp.terminate(nil) }
+    @objc private func about() {
+        NSApp.activate(ignoringOtherApps: true)
+        NSApp.orderFrontStandardAboutPanel(nil)
+    }
+    @objc private func checkForUpdates() { onCheckForUpdates?() }
+    @objc private func restartToUpdate() { onRestartToUpdate?() }
+    @objc private func reportBug() {
+        BugReport.open(version: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?")
+    }
 
     @objc private func refreshProvider(_ sender: NSMenuItem) {
         guard let id = sender.representedObject as? String else { return }

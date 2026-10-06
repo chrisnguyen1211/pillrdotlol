@@ -92,7 +92,9 @@ enum KimiActivity {
         let wire = sessionDir
             .appendingPathComponent("agents/main/wire.jsonl")
         let modified = (try? FileManager.default.attributesOfItem(atPath: wire.path))?[.modificationDate] as? Date
-        let turn = tail(of: wire).flatMap { KimiActivity.turn(inTail: $0) }
+        let wireTail = tail(of: wire)
+        let turn = wireTail.flatMap { KimiActivity.turn(inTail: $0) }
+        let readings = wireTail.map { KimiActivity.readings(inTail: $0) }
 
         /// Two levels, not one: `repos/personal` says something where
         /// `personal` could be any folder on the machine.
@@ -130,15 +132,19 @@ enum KimiActivity {
             state = .idle
         }
 
-        return AgentSession(
+        var session = AgentSession(
             id: "kimi.\(sessionDir.lastPathComponent)",
             name: name,
             detail: surface,
             state: state,
             waitingFor: waitingFor,
             since: since,
-            processID: pid
+            processID: pid,
+            tokens: readings?.tokens.map { TokenCount(total: $0).text }
         )
+        session.model = readings?.model
+        session.effort = readings?.effort
+        return session
     }
 
     /// The last 64 KB of the wire is enough: turn boundaries are one line
@@ -212,6 +218,39 @@ enum KimiActivity {
             }
         }
         return nil
+    }
+
+    /// The model and thinking effort the main agent runs, and the session's
+    /// tokens so far — the newest of each the tail holds: `usage.record`
+    /// names the model and, scoped to the session, the running total;
+    /// `llm.request` / `config.update` / `profile.bind` carry the alias and
+    /// `thinkingEffort`.
+    static func readings(inTail data: Data) -> (model: String?, effort: String?, tokens: Int?) {
+        guard let text = String(data: data, encoding: .utf8) else { return (nil, nil, nil) }
+        var model: String?, effort: String?, tokens: Int?
+        for line in text.split(separator: "\n").reversed() {
+            guard model == nil || effort == nil || tokens == nil,
+                  var record = try? JSONSerialization.jsonObject(with: Data(line.utf8)) as? [String: Any] else { continue }
+            if record["type"] as? String == "context.append_loop_event", let event = record["event"] as? [String: Any] {
+                record = event
+            }
+            if let agent = record["agentId"] as? String, agent != "main" { continue }
+            switch record["type"] as? String {
+            case "usage.record":
+                if model == nil { model = record["model"] as? String }
+                if tokens == nil, record["usageScope"] as? String == "session",
+                   let usage = record["usage"] as? [String: Any] {
+                    tokens = ["inputOther", "output", "inputCacheRead", "inputCacheCreation"]
+                        .reduce(0) { $0 + ((usage[$1] as? NSNumber)?.intValue ?? 0) }
+                }
+            case "llm.request", "config.update", "profile.bind":
+                if model == nil { model = record["modelAlias"] as? String }
+                if effort == nil { effort = record["thinkingEffort"] as? String }
+            default:
+                continue
+            }
+        }
+        return (model, effort, tokens)
     }
 
     /// What an approval is asking about, in whichever field the CLI put it.

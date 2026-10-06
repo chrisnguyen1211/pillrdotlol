@@ -6,7 +6,7 @@ import SwiftUI
 /// 73% orange. (The prose table in the design spec says 50–79 is yellow, which
 /// would make 73% yellow and contradict the frame it claims to describe — the
 /// frame wins.)
-enum UsageBand: Equatable {
+enum UsageBand: String, Codable, Equatable {
     case ample       // under half
     case watch       // getting close
     case critical    // nearly out

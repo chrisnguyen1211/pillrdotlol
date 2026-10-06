@@ -27,6 +27,9 @@ final class PromptBroker: @unchecked Sendable {
     var onPrompt: (@MainActor (PendingPrompt) -> PromptAnswer?)?
     /// A held prompt is gone: answered, timed out, or its hook exited.
     var onGone: (@MainActor (UUID) -> Void)?
+    /// An agent's turn-finished hook: that agent's session has just
+    /// finished its answer. Nothing is held and nothing is answered.
+    var onStop: (@MainActor (AgentStop) -> Void)?
 
     private let queue = DispatchQueue(label: "lol.spyx.app.prompts")
     private let lock = NSLock()
@@ -34,7 +37,10 @@ final class PromptBroker: @unchecked Sendable {
     private var listener: Int32 = -1
     private let log = Logger(subsystem: "lol.spyx.app", category: "prompts")
 
-    init(path: String = PromptBroker.defaultPath, patience: TimeInterval = 540) {
+    /// Just under the hook's own timeout. Letting go earlier is the app's
+    /// call, made only while someone is at the Mac (`UserPresence`).
+    init(path: String = PromptBroker.defaultPath,
+         patience: TimeInterval = TimeInterval(ClaudeHookInstaller.timeoutSeconds - 60)) {
         self.path = path
         self.patience = patience
     }
@@ -96,7 +102,15 @@ final class PromptBroker: @unchecked Sendable {
     }
 
     private func serve(_ fd: Int32) {
-        guard let request = Self.readLine(fd), let prompt = PendingPrompt(hookInput: request) else {
+        guard let request = Self.readLine(fd) else { close(fd); return }
+        if let stop = AgentStop(request) {
+            close(fd)
+            log.notice("stop hook: \(stop.agent, privacy: .public) session \(stop.sessionID ?? "-", privacy: .public) finished its answer")
+            let onStop = self.onStop
+            Task { @MainActor in onStop?(stop) }
+            return
+        }
+        guard let prompt = PendingPrompt(hookInput: request) else {
             close(fd)
             return
         }
@@ -134,6 +148,12 @@ final class PromptBroker: @unchecked Sendable {
         Task { @MainActor in gone?(id) }
     }
 
+    /// The session id of a Claude Code Stop hook's payload — the main
+    /// agent's, not a subagent's (SubagentStop is another event).
+    static func stoppedSession(_ request: Data) -> String? {
+        AgentStop(request).flatMap { $0.agent == "claude" ? $0.sessionID : nil }
+    }
+
     /// One newline-terminated request. The client keeps its end open after
     /// it — the open connection is how we know it is still waiting.
     static func readLine(_ fd: Int32, limit: Int = 1 << 20) -> Data? {
@@ -168,6 +188,21 @@ final class PromptBroker: @unchecked Sendable {
 /// Every failure is silent and prints nothing, which leaves Claude to ask
 /// in its own dialog — a notch that is not running must never stall it.
 enum PromptHookClient {
+    /// One line to the app, no answer awaited.
+    static func notify(_ request: Data, path: String = PromptBroker.defaultPath) {
+        let fd = socket(AF_UNIX, SOCK_STREAM, 0)
+        guard fd >= 0 else { return }
+        defer { close(fd) }
+        var address = PromptBroker.address(path)
+        let connected = withUnsafePointer(to: &address) {
+            $0.withMemoryRebound(to: sockaddr.self, capacity: 1) { connect(fd, $0, socklen_t(MemoryLayout<sockaddr_un>.size)) }
+        }
+        guard connected == 0 else { return }
+        var line = request.filter { $0 != 0x0A }
+        line.append(0x0A)
+        _ = line.withUnsafeBytes { write(fd, $0.baseAddress, $0.count) }
+    }
+
     static func exchange(_ request: Data, path: String = PromptBroker.defaultPath) -> Data? {
         let fd = socket(AF_UNIX, SOCK_STREAM, 0)
         guard fd >= 0 else { return nil }
@@ -192,6 +227,34 @@ enum PromptHookClient {
     }
 
     static func runIfRequested() {
+        // Stop: hand the payload over and go — Claude Code waits on a hook,
+        // and the end of an answer must never be held up by spyx.
+        let arguments = CommandLine.arguments
+        if arguments.contains(ClaudeHookInstaller.stopMarker) {
+            let agent = arguments.firstIndex(of: "--agent").flatMap { arguments.indices.contains($0 + 1) ? arguments[$0 + 1] : nil } ?? "claude"
+            let request = FileHandle.standardInput.readDataToEndOfFile()
+            notify(AgentStop.envelope(agent: agent, payload: request))
+            exit(0)
+        }
+        // Codex's notify program: the turn's JSON comes as the last argument.
+        // Whoever had notify before spyx is called first, exactly as before.
+        if let marker = arguments.firstIndex(of: AgentHooks.codexMarker) {
+            let rest = Array(arguments[(marker + 1)...])
+            let payload = rest.last ?? "{}"
+            if let then = rest.firstIndex(of: AgentHooks.thenMarker), rest.indices.contains(then + 1) {
+                let program = rest[then + 1]
+                let theirs = Array(rest[(then + 2)...].dropLast())
+                let process = Process()
+                process.executableURL = URL(fileURLWithPath: program)
+                process.arguments = theirs + [payload]
+                try? process.run()
+            }
+            if let json = try? JSONSerialization.jsonObject(with: Data(payload.utf8)) as? [String: Any],
+               json["type"] as? String == "agent-turn-complete" {
+                notify(AgentStop.envelope(agent: "codex", payload: Data(payload.utf8)))
+            }
+            exit(0)
+        }
         guard CommandLine.arguments.contains("--prompt-hook") else { return }
         let request = FileHandle.standardInput.readDataToEndOfFile()
         if let reply = exchange(request) {
@@ -199,5 +262,50 @@ enum PromptHookClient {
             if !text.isEmpty { print(text) }
         }
         exit(0)
+    }
+}
+
+/// One agent's "turn finished" as the hooks hand it over: which agent, and
+/// whatever it names the session by — Claude's and Grok's session id,
+/// Codex's thread id, Cursor's conversation id.
+struct AgentStop: Equatable {
+    let agent: String
+    let sessionID: String?
+    let cwd: String?
+
+    /// What the hook client sends: the agent's own payload, tagged.
+    static func envelope(agent: String, payload: Data) -> Data {
+        var json = (try? JSONSerialization.jsonObject(with: payload) as? [String: Any]) ?? [:]
+        json["spyx_agent"] = agent
+        json["spyx_event"] = "stop"
+        return (try? JSONSerialization.data(withJSONObject: json)) ?? Data()
+    }
+
+    init?(_ request: Data) {
+        guard let json = try? JSONSerialization.jsonObject(with: request) as? [String: Any] else { return nil }
+        if let agent = json["spyx_agent"] as? String, json["spyx_event"] as? String == "stop" {
+            // A subagent's stop is not the answer's end.
+            let event = (json["hook_event_name"] as? String) ?? (json["hookEventName"] as? String) ?? "Stop"
+            guard !event.lowercased().hasPrefix("subagent") else { return nil }
+            // Antigravity stops between steps too; only a fully idle stop is the end.
+            guard json["fullyIdle"] as? Bool != false else { return nil }
+            self.agent = agent
+        } else if json["hook_event_name"] as? String == "Stop" {
+            // From before the hook said which agent it was: Claude Code.
+            self.agent = "claude"
+        } else {
+            return nil
+        }
+        sessionID = (json["session_id"] as? String) ?? (json["sessionId"] as? String)
+            ?? (json["thread-id"] as? String) ?? (json["conversation_id"] as? String)
+            ?? (json["conversationId"] as? String)
+        cwd = (json["cwd"] as? String) ?? (json["workspace_roots"] as? [String])?.first
+            ?? (json["workspacePaths"] as? [String])?.first
+    }
+
+    init(agent: String, sessionID: String?, cwd: String?) {
+        self.agent = agent
+        self.sessionID = sessionID
+        self.cwd = cwd
     }
 }

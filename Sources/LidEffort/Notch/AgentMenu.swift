@@ -85,11 +85,13 @@ extension NotchWindowController {
 
         menu.addItem(.separator())
 
-        // Local models have no limits to be warned about.
+        // Local models have no limits to be warned about. The API keys cell
+        // mutes every key in it: the alerts are each key's own.
         if snapshot.localModel == nil {
-            let muted = agentMenuActions.alertsMuted(snapshot.providerID)
+            let alertIDs = snapshot.keyGroup?.map(\.id) ?? [snapshot.providerID]
+            let muted = alertIDs.allSatisfy { agentMenuActions.alertsMuted($0) }
             menu.addItem(ActionMenuItem(L10n.t("Mute Limit Alerts"), checked: muted) { [weak self] in
-                self?.agentMenuActions.setAlertsMuted(snapshot.providerID, !muted)
+                for id in alertIDs { self?.agentMenuActions.setAlertsMuted(id, !muted) }
             })
         }
 
@@ -124,6 +126,12 @@ extension NotchWindowController {
             lines.append(local.name)
             return lines
         }
+        // A line a key, as many as a menu can bear; the tooltip has the rest.
+        if let keys = snapshot.keyGroup {
+            lines += keys.prefix(Self.keyLineCap).map { APIKeyGroup.menuLine(for: $0, now: model.now) }
+            if keys.count > Self.keyLineCap { lines.append(L10n.t("and \(keys.count - Self.keyLineCap) more")) }
+            return lines
+        }
         let account = agentMenuActions.account(snapshot.providerID)
         let who = [account?.label, (account?.plan ?? snapshot.plan).map { $0.capitalized }].compactMap { $0 }
         if !who.isEmpty { lines.append(who.joined(separator: " · ")) }
@@ -141,6 +149,9 @@ extension NotchWindowController {
         }
         return lines
     }
+
+    /// How many keys the API keys cell's menu names before counting the rest.
+    static let keyLineCap = 8
 
     private static func info(_ text: String) -> NSMenuItem {
         let item = NSMenuItem(title: text, action: nil, keyEquivalent: "")

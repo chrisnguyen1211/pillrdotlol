@@ -9,9 +9,16 @@ import os
 /// failure degrades to a status the UI can render honestly, and a 429 backs off
 /// on a schedule that outlives the process rather than polling into the limit.
 actor GLMProvider: UsageProvider {
-    nonisolated let id = "glm"
-    nonisolated let displayName = "GLM"
+    nonisolated let id: String
+    nonisolated let displayName: String
     nonisolated let glyph = ProviderGlyph.glm
+    /// Where the key comes from. The provider's own ring borrows one from a
+    /// coding tool (or the one pasted in Settings); an extra key's ring is
+    /// handed its own — see `ExtraKey`.
+    nonisolated private let loadCredential: @Sendable () -> GLMCredentials.Credential?
+    /// True for an extra key's ring, whose key is spyx's and whose account
+    /// is only ever that key.
+    nonisolated private let isExtraKey: Bool
 
     private let session: URLSession
     private let archive: UsageArchive
@@ -27,14 +34,23 @@ actor GLMProvider: UsageProvider {
     /// one row-draw.
     nonisolated(unsafe) private var lastKnownPlan: String?
 
-    init(session: URLSession = .shared, archive: UsageArchive = UsageArchive()) {
+    /// The defaults are the provider's own ring. An extra key passes its id,
+    /// its "GLM · Work" name and a `credential` that returns its key.
+    init(id: String = "glm", displayName: String = "GLM",
+         session: URLSession = .shared, archive: UsageArchive = UsageArchive(),
+         credential: (@Sendable () -> GLMCredentials.Credential?)? = nil) {
+        self.id = id
+        self.displayName = displayName
         self.session = session
         self.archive = archive
+        self.isExtraKey = credential != nil
+        self.loadCredential = credential ?? { GLMCredentials.load() }
         self.retryNoEarlierThan = archive.loadBackoffUntil(providerID: id)
     }
 
     nonisolated var signInRoute: SignInRoute {
-        .guidance(L10n.t("Usage rides on a Z.ai GLM Coding Plan key held by a coding tool — Claude Code's settings.json, ZCode or OpenCode. Set one up there and the notch reads it."))
+        if isExtraKey { return .guidance(ExtraKey.signInGuidance) }
+        return .guidance(L10n.t("Usage rides on a Z.ai GLM Coding Plan key held by a coding tool — Claude Code's settings.json, ZCode or OpenCode. Set one up there and the notch reads it."))
     }
 
     nonisolated func forgetCachedCredential() {
@@ -43,7 +59,7 @@ actor GLMProvider: UsageProvider {
     }
 
     nonisolated func account() -> ProviderAccount? {
-        guard let credentials = GLMCredentials.load() else { return nil }
+        guard let credentials = loadCredential() else { return nil }
         return ProviderAccount(
             label: nil,   // none of the borrowed keys carries an address
             plan: lastKnownPlan,
@@ -57,14 +73,14 @@ actor GLMProvider: UsageProvider {
     func fetchSnapshot() async throws -> ProviderSnapshot {
         if let retryNoEarlierThan, retryNoEarlierThan > Date() {
             let remaining = retryNoEarlierThan.timeIntervalSinceNow
-            Log.usage.debug("glm: skipping fetch, backing off for \(remaining, format: .fixed(precision: 0))s")
+            Log.usage.debug("\(self.id, privacy: .public): skipping fetch, backing off for \(remaining, format: .fixed(precision: 0))s")
             throw UsageProviderError.rateLimited(retryAfter: remaining)
         }
 
         // Re-read on every fetch. These are ordinary files, not keychain items:
         // reading them puts no prompt in front of anyone, which is why this
         // provider needs none of Claude's credential caching.
-        guard let credentials = GLMCredentials.load() else {
+        guard let credentials = loadCredential() else {
             throw UsageProviderError.needsAuth
         }
 
@@ -94,7 +110,7 @@ actor GLMProvider: UsageProvider {
             consecutiveRateLimits += 1
             retryNoEarlierThan = Date().addingTimeInterval(retryAfter)
             archive.saveBackoffUntil(retryNoEarlierThan, providerID: id)
-            Log.usage.notice("glm: rate limited (\(self.consecutiveRateLimits)x), next attempt in \(retryAfter, format: .fixed(precision: 0))s")
+            Log.usage.notice("\(self.id, privacy: .public): rate limited (\(self.consecutiveRateLimits)x), next attempt in \(retryAfter, format: .fixed(precision: 0))s")
             throw UsageProviderError.rateLimited(retryAfter: retryAfter)
         }
     }

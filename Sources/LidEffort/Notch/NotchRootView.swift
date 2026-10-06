@@ -97,7 +97,28 @@ struct NotchRootView: View {
                             .animation(motion(orbMotion), value: model.isExpanded)
                 }
 
-                if let resetEvent = model.activeResetAlert,
+                // The lid's answer goes over a reset card: the gesture is what
+                // the person is doing now; the reset card is back after it.
+                if let effortEvent = model.activeEffortAlert,
+                          model.isExpanded,
+                          model.hoveredIndex == nil {
+                    let index = model.effortAlertIndex() ?? 0
+                    let snapshot = model.snapshots[safe: index] ?? model.snapshots.first ?? Fixtures.snapshots().first!
+                    EffortChangeCard(
+                        event: effortEvent,
+                        direction: model.edge.tooltipDirection,
+                        tailOffset: tooltipTailOffset(index: index, snapshot: snapshot),
+                        livePosition: model.effortPreview,
+                        onSet: model.onSetLidLevel
+                    )
+                    .scaleEffect(model.cardScale)
+                    .position(resetCardCentre(place, index: index,
+                                              height: EffortChangeCard.cardHeight(for: effortEvent)))
+                    .transition(.opacity.combined(with: .offset(
+                        x: model.edge.outward.x * Design.px(24),
+                        y: model.edge.outward.y * Design.px(24)
+                    )))
+                } else if let resetEvent = model.activeResetAlert,
                    model.isExpanded,
                    model.hoveredIndex == nil {
                     let index = model.resetAlertIndex(for: resetEvent) ?? 0
@@ -118,25 +139,6 @@ struct NotchRootView: View {
                         x: model.edge.outward.x * Design.px(24),
                         y: model.edge.outward.y * Design.px(24)
                     )))
-                } else if let effortEvent = model.activeEffortAlert,
-                          model.isExpanded,
-                          model.hoveredIndex == nil {
-                    let index = model.effortAlertIndex() ?? 0
-                    let snapshot = model.snapshots[safe: index] ?? model.snapshots.first ?? Fixtures.snapshots().first!
-                    EffortChangeCard(
-                        event: effortEvent,
-                        direction: model.edge.tooltipDirection,
-                        tailOffset: tooltipTailOffset(index: index, snapshot: snapshot),
-                        livePosition: model.effortPreview,
-                        onSet: model.onSetLidLevel
-                    )
-                    .scaleEffect(model.cardScale)
-                    .position(resetCardCentre(place, index: index,
-                                              height: EffortChangeCard.cardHeight(for: effortEvent)))
-                    .transition(.opacity.combined(with: .offset(
-                        x: model.edge.outward.x * Design.px(24),
-                        y: model.edge.outward.y * Design.px(24)
-                    )))
                 } else if let snapshot = model.hoveredSnapshot, let index = model.hoveredIndex,
                    model.isExpanded {
                     TooltipCard(
@@ -145,10 +147,13 @@ struct NotchRootView: View {
                         now: model.now,
                         direction: model.edge.tooltipDirection,
                         sessionCap: model.sessionCap(for: snapshot),
+                        costRows: model.costRows(for: snapshot),
+                        keyCardBudget: model.keyCardBudget,
                         resetTimeFormat: model.resetTimeFormat,
                         tailOffset: tooltipTailOffset(index: index, snapshot: snapshot),
                         onFocusSession: model.onFocusSession,
                         effortValue: model.effortValue(for: snapshot),
+                        onSessionAction: model.onSessionAction,
                         connect: model.connectNeed(for: snapshot),
                         onConnect: { model.onConnect?(snapshot.id) },
                         effortDots: model.effortDots(for: snapshot),
@@ -213,6 +218,12 @@ struct NotchRootView: View {
                             x: model.edge.outward.x * Design.px(40),
                             y: model.edge.outward.y * Design.px(40)
                         )).combined(with: .scale(scale: 0.85)))
+                    if DoneToastView.canReply(toast) {
+                        ReplyBubble()
+                            .scaleEffect(model.cardScale)
+                            .position(replyBubbleCentre(place))
+                            .transition(.opacity.combined(with: .scale(scale: 0.6)))
+                    }
                 }
             }
             .frame(width: proxy.size.width, height: proxy.size.height)
@@ -517,7 +528,9 @@ struct NotchRootView: View {
                 localLedgerRows: snapshot.localLedgerRowCount,
                 compactRowCount: snapshot.compactRowCount,
                 effortRow: model.hasEffortRow(for: snapshot),
-                promptHeight: model.promptHeight(for: snapshot)
+                promptHeight: model.promptHeight(for: snapshot),
+                costRows: model.costRows(for: snapshot),
+                keyGroupBody: model.keyGroupBody(for: snapshot)
             )
             : NotchLayout.cardWidth
     }
@@ -553,7 +566,9 @@ struct NotchRootView: View {
                 localLedgerRows: snapshot.localLedgerRowCount,
                 compactRowCount: snapshot.compactRowCount,
                 effortRow: model.hasEffortRow(for: snapshot),
-                promptHeight: model.promptHeight(for: snapshot)
+                promptHeight: model.promptHeight(for: snapshot),
+                costRows: model.costRows(for: snapshot),
+                keyGroupBody: model.keyGroupBody(for: snapshot)
             )
         // The ring it points at has moved with the notch, so the tail follows
         // it — but the card beyond the tail is drawn at its own size, and
@@ -595,6 +610,13 @@ struct NotchRootView: View {
     /// Beside the folded pill, level with its middle, its tail a tail's gap
     /// off the pill — the same seam the tooltip keeps from the open notch,
     /// measured from the pill rather than the open shape.
+    private func replyBubbleCentre(_ place: NotchPlacement) -> CGPoint {
+        let centre = DoneToastView.replyBubbleCentre(edge: model.edge, scale: model.cardScale,
+                                                     restingDepth: model.restingDepth * model.sizeScale,
+                                                     alongCentre: model.slack + model.shapeLength * model.sizeScale / 2)
+        return place.point(along: centre.along, across: centre.across)
+    }
+
     private func doneToastCentre(_ place: NotchPlacement) -> CGPoint {
         let card = model.edge.isVertical ? NotchLayout.cardWidth : DoneToastView.cardHeight
         return place.point(

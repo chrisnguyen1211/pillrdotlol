@@ -1,3 +1,4 @@
+import LidEffortCore
 import Foundation
 
 /// What the effort card says when the app in front is Claude's or Codex's
@@ -28,7 +29,7 @@ enum EffortNotes {
             return Note(text: L10n.t("\(session) · sends when the Claude app is in front"), isLive: false, waits: true)
         case .notTrusted:
             return Note(text: L10n.t("Allow spyx in Accessibility to change Claude app sessions live"), isLive: false)
-        case .noComposer:
+        case .noComposer, .otherSession:
             return Note(text: L10n.t("Claude app · no message box in view · sends when there is one"), isLive: false, waits: true)
         case .draft, .userTyping:
             return Note(text: L10n.t("Draft in the message box · sends to \(session) once it's empty"), isLive: false, waits: true)
@@ -58,9 +59,30 @@ enum EffortNotes {
         return nil
     }
 
+    /// What a choice past the lid's levels does, said where the card
+    /// would name the gesture — nil for a value that is just a level.
+    /// `ultracode` is not "more effort": it runs workflows of several
+    /// agents on every task, and the bill says so.
+    static func choiceDetail(_ value: String) -> String? {
+        value == "ultracode" ? L10n.t("ultracode · multi-agent workflows, many more tokens") : nil
+    }
+
     /// A change that waited — for a turn to end, a draft to clear — and
     /// has now gone in: the card comes back to say so.
     static func delivered(to session: String) -> String {
         L10n.t("Now live → \(session)")
+    }
+}
+
+extension EffortLevel {
+    /// The lid's level as people read it: "Extra high", not "Xhigh".
+    var displayName: String {
+        switch self {
+        case .low: return L10n.t("Low")
+        case .medium: return L10n.t("Medium")
+        case .high: return L10n.t("High")
+        case .xhigh: return L10n.t("Extra high")
+        case .max: return L10n.t("Max")
+        }
     }
 }

@@ -69,23 +69,31 @@ final class CodexActivityMonitor: ObservableObject, AgentActivityMonitor {
         // in different places: the CLI and the VS Code extension append to a
         // rollout, and the desktop app writes to its own catalogue. Whichever
         // moved last is the one that is working.
-        var candidates: [(id: String, name: String, at: Date)] = []
+        var candidates: [(id: String, name: String, at: Date, log: URL?)] = []
 
         if let rollout = CodexStore.newestRollout(in: stateStore),
            let modified = (try? FileManager.default
                .attributesOfItem(atPath: rollout.path))?[.modificationDate] as? Date {
             candidates.append((id: "\(profile.id).\(rollout.lastPathComponent)",
-                               name: profile.displayName, at: modified))
+                               name: profile.displayName, at: modified, log: rollout))
         }
         if let desktop = CodexStore.newestDesktopThread(in: desktopStore) {
             candidates.append((id: "\(profile.id).desktop", name: desktop.title,
-                               at: desktop.updatedAt))
+                               at: desktop.updatedAt, log: nil))
         }
 
         guard let newest = candidates.max(by: { $0.at < $1.at }),
-              let session = session(id: newest.id, name: newest.name,
+              var session = session(id: newest.id, name: newest.name,
                                     modified: newest.at, staleAfter: staleAfter, now: now)
         else { return [] }
+        // The rollout says which call it is on; the desktop catalogue does not.
+        if let log = newest.log {
+            if session.state == .busy { session.doing = SessionDoing.cached(log, parse: SessionDoing.codex(tail:)) }
+            let read = TokenTally.read(log, format: .codex)
+            session.tokens = read.flatMap { $0.total > 0 ? $0.text : nil }
+            session.model = read?.model
+            session.effort = read?.effort
+        }
         return [session]
     }
 

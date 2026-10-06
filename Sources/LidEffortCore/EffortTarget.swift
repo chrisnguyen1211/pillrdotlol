@@ -1,13 +1,13 @@
 import Foundation
 
 public enum ConfigFormat: String, Codable, Equatable {
-    case json, toml
+    case json, toml, yaml
 }
 
 /// One coding agent whose default reasoning effort LidEffort can drive.
 ///
-/// Every agent exposes a different scale (Claude persists 4 levels, Codex
-/// up to 6 depending on the model, Grok 7), so instead of one global
+/// Every agent exposes a different scale, and most differ by model too
+/// (Claude persists 4 levels, Codex up to 6, Grok 3 or 4), so instead of one global
 /// vocabulary each target carries `bands`: for a model id (or `*`), exactly
 /// five values — the effort that model gets when the lid sits in each of the
 /// five lid bands, low → max.
@@ -29,6 +29,16 @@ public struct EffortTarget: Equatable {
     /// *where* the current value sits — the bands above only say which of
     /// those values each lid level lands on.
     public var scales: [String: [String]]
+    /// Where the agent itself shows it is on this Mac — its binary, its
+    /// sessions — when its config file alone does not say so: another tool
+    /// may have made that file. Empty: the config file is enough.
+    public var presencePaths: [String] = []
+    /// The effort's section may be added when the file lacks it.
+    public var createsSection = false
+    /// Values a running session takes when typed in, but its config can
+    /// never hold — Claude Code's `max` and `ultracode`. On a model's scale
+    /// so they can be shown and picked; never written, whatever the bands say.
+    public var liveOnlyValues: [String] = []
 
     public static let wildcard = "*"
 
@@ -36,7 +46,9 @@ public struct EffortTarget: Equatable {
         id: String, displayName: String, configPath: String, format: ConfigFormat,
         effortKey: String, effortSection: String? = nil,
         modelKey: String, modelSection: String? = nil,
-        enabled: Bool = true, bands: [String: [String]], scales: [String: [String]] = [:]
+        enabled: Bool = true, bands: [String: [String]], scales: [String: [String]] = [:],
+        presencePaths: [String] = [], createsSection: Bool = false,
+        liveOnlyValues: [String] = []
     ) {
         self.id = id
         self.displayName = displayName
@@ -49,23 +61,63 @@ public struct EffortTarget: Equatable {
         self.enabled = enabled
         self.bands = bands
         self.scales = scales
+        self.presencePaths = presencePaths
+        self.createsSection = createsSection
+        self.liveOnlyValues = liveOnlyValues
     }
 
-    /// The ordered scale for `model`: its own entry, else the wildcard, else
-    /// the distinct values its bands reach.
+    /// The entry a model is filed under: its own id, else the longest
+    /// family id it starts with — `claude-opus-4-6` for a dated
+    /// `claude-opus-4-6-20260115`, `haiku` for `haiku[1m]`. Nil when it
+    /// is under neither, and the wildcard speaks for it.
+    public func entry(for model: String?) -> String? {
+        guard let model else { return nil }
+        if bands[model] != nil || scales[model] != nil { return model }
+        let lowered = model.lowercased()
+        let keys = Set(bands.keys).union(scales.keys).subtracting([EffortTarget.wildcard])
+        if keys.contains(lowered) { return lowered }
+        return keys.filter { key in
+            guard lowered.hasPrefix(key), lowered.count > key.count else { return false }
+            let next = lowered[lowered.index(lowered.startIndex, offsetBy: key.count)]
+            return "-[@:".contains(next)
+        }.max { $0.count < $1.count }
+    }
+
+    /// The ordered scale for `model`: its entry's, else the wildcard's, else
+    /// the distinct values its bands reach. Empty for a model that takes no
+    /// effort level at all.
     public func scale(for model: String?) -> [String] {
-        if let model, let exact = scales[model] { return exact }
-        if let any = scales[EffortTarget.wildcard] { return any }
+        if let entry = entry(for: model), let exact = scales[entry] { return exact }
+        if entry(for: model) == nil, let any = scales[EffortTarget.wildcard] { return any }
         var seen: [String] = []
         for value in bands(for: model) ?? [] where !seen.contains(value) { seen.append(value) }
         return seen
     }
 
-    /// Bands used for `model`: an exact entry, else the wildcard.
+    /// Bands used for `model`: its entry's, else the wildcard's. Nil for a
+    /// model filed with an empty scale — one with no effort to set.
     public func bands(for model: String?) -> [String]? {
-        if let model, let exact = bands[model] { return exact }
-        return bands[EffortTarget.wildcard]
+        guard let entry = entry(for: model) else { return bands[EffortTarget.wildcard] }
+        if let exact = bands[entry] { return exact }
+        guard let scale = scales[entry], !scale.isEmpty else { return nil }
+        return BandMapping.byName(from: scale) ?? BandMapping.proportional(from: scale)
     }
+
+    /// Whether the agent is on this Mac, by `presencePaths` (any of them).
+    public func isPresent(exists: (String) -> Bool) -> Bool {
+        presencePaths.isEmpty || presencePaths.contains { exists(NSString(string: $0).expandingTildeInPath) }
+    }
+
+    /// The values on `model`'s scale that only a running session takes,
+    /// least to most: on the scale, among `liveOnlyValues`, and reached by
+    /// none of its bands. Empty for every agent but Claude Code.
+    public func liveOnly(for model: String?) -> [String] {
+        let banded = bands(for: model) ?? []
+        return scale(for: model).filter { liveOnlyValues.contains($0) && !banded.contains($0) }
+    }
+
+    /// Whether `model` takes an effort level at all.
+    public func takesEffort(model: String?) -> Bool { bands(for: model) != nil }
 
     /// The value this target should be set to for a lid level and model,
     /// or nil when no usable 5-entry mapping exists.
@@ -83,6 +135,10 @@ public struct EffortTarget: Equatable {
         let scale = scale(for: model)
         guard let wanted = scale.firstIndex(of: value),
               let bands = bands(for: model), bands.count == EffortLevel.allCases.count else { return nil }
+        // Above every band — `max`, which only a live session takes — is the
+        // lid's top level, not the nearest band below it.
+        let reached = EffortLevel.allCases.compactMap { scale.firstIndex(of: bands[$0.rawValue]) }
+        if let highest = reached.max(), wanted > highest { return .max }
         var best: (level: EffortLevel, distance: Int)?
         for level in EffortLevel.allCases {
             guard let index = scale.firstIndex(of: bands[level.rawValue]) else { continue }
@@ -122,15 +178,38 @@ public enum BandMapping {
 }
 
 public enum BuiltInTargets {
-    /// Claude Code persists exactly these four (`effortLevel` schema); `max`
-    /// exists on the CLI but is silently dropped from settings.json, so the
-    /// top two lid bands both land on `xhigh`.
+    /// Claude Code persists four levels (`effortLevel`: low…xhigh); `max`
+    /// it takes only live, as `/effort max` in a session. Past max sits
+    /// `ultracode` — xhigh plus multi-agent workflows on every task, and
+    /// many more tokens — which Claude Code also takes only live, as
+    /// `/effort ultracode`, and only on a model that has xhigh. It is on
+    /// the scale for the bar and the chips, never in a band: no lid level
+    /// reaches it and no config is ever written with it (an `ultracode` key
+    /// in settings.json would put every new session into it). And not every
+    /// model has every level — as Claude Code 2.1 decides it: no effort at
+    /// all before Opus 4.5 and on Haiku 4.5; Opus 4.5 stops at high; Opus
+    /// and Sonnet 4.6 skip xhigh but have max; everything newer has all five.
+    /// A level a model lacks lands on the nearest one below it.
     public static let claude = EffortTarget(
         id: "claude", displayName: "Claude Code",
         configPath: "~/.claude/settings.json", format: .json,
         effortKey: "effortLevel", modelKey: "model",
-        bands: [EffortTarget.wildcard: ["low", "medium", "high", "xhigh", "xhigh"]],
-        scales: [EffortTarget.wildcard: ["low", "medium", "high", "xhigh"]]
+        bands: [
+            "claude-opus-4-5": ["low", "medium", "high", "high", "high"],
+            "claude-opus-4-6": ["low", "medium", "high", "high", "high"],
+            "claude-sonnet-4-6": ["low", "medium", "high", "high", "high"],
+            EffortTarget.wildcard: ["low", "medium", "high", "xhigh", "xhigh"],
+        ],
+        scales: [
+            "claude-3": [], "claude-opus-4-0": [], "claude-opus-4-1": [],
+            "claude-opus-4-20250514": [], "claude-sonnet-4-0": [], "claude-sonnet-4-20250514": [],
+            "claude-sonnet-4-5": [], "claude-haiku-4-5": [], "haiku": [],
+            "claude-opus-4-5": ["low", "medium", "high"],
+            "claude-opus-4-6": ["low", "medium", "high", "max"],
+            "claude-sonnet-4-6": ["low", "medium", "high", "max"],
+            EffortTarget.wildcard: ["low", "medium", "high", "xhigh", "max", "ultracode"],
+        ],
+        liveOnlyValues: ["max", "ultracode"]
     )
 
     /// Hand-tuned for the models in Codex's catalog at time of writing;
@@ -159,18 +238,83 @@ public enum BuiltInTargets {
         ]
     )
 
-    /// Grok accepts none/minimal/low/medium/high/xhigh/max on the CLI and
-    /// stores the default under `[models] default_reasoning_effort`.
+    /// Grok stores the default under `[models] default_reasoning_effort`.
+    /// Its own catalog (`GrokCatalog`) is the truth per model; without it,
+    /// what Grok 1.0 ships: low…xhigh, and grok-4.5 stopping at high.
     public static let grok = EffortTarget(
         id: "grok", displayName: "Grok",
         configPath: "~/.grok/config.toml", format: .toml,
         effortKey: "default_reasoning_effort", effortSection: "models",
         modelKey: "default", modelSection: "models",
-        bands: [EffortTarget.wildcard: ["low", "medium", "high", "xhigh", "max"]],
-        scales: [EffortTarget.wildcard: ["minimal", "low", "medium", "high", "xhigh", "max"]]
+        bands: [
+            "grok-4.5": ["low", "medium", "high", "high", "high"],
+            EffortTarget.wildcard: ["low", "medium", "high", "xhigh", "xhigh"],
+        ],
+        scales: [
+            "grok-4.5": ["low", "medium", "high"],
+            EffortTarget.wildcard: ["low", "medium", "high", "xhigh"],
+        ]
     )
 
-    public static let all: [EffortTarget] = [claude, codex, grok]
+    /// Hermes Agent keeps `agent.reasoning_effort` in its YAML config, and
+    /// takes none/minimal/low/medium/high/xhigh whatever model it runs.
+    public static let hermes = EffortTarget(
+        id: "hermes", displayName: "Hermes",
+        configPath: "~/.hermes/config.yaml", format: .yaml,
+        effortKey: "reasoning_effort", effortSection: "agent",
+        modelKey: "default", modelSection: "model",
+        bands: [EffortTarget.wildcard: ["low", "medium", "high", "xhigh", "xhigh"]],
+        scales: [EffortTarget.wildcard: ["none", "minimal", "low", "medium", "high", "xhigh"]]
+    )
+
+    /// Factory Droid: `reasoningEffort` in `~/.factory/settings.json`, its
+    /// levels per model as Factory's model guide lists them — Opus and
+    /// Sonnet 4.6 and later off…max, the 4.5 models off…high, GPT-5.6 none
+    /// to xhigh. A model it does not list gets off…high, which every one has.
+    public static let droid = EffortTarget(
+        id: "droid", displayName: "Droid",
+        configPath: "~/.factory/settings.json", format: .json,
+        effortKey: "reasoningEffort", modelKey: "model",
+        bands: [EffortTarget.wildcard: ["low", "medium", "high", "high", "high"]],
+        scales: [
+            "claude-opus-4-6": ["off", "low", "medium", "high", "max"],
+            "claude-opus-4-7": ["off", "low", "medium", "high", "max"],
+            "claude-opus-4-8": ["off", "low", "medium", "high", "max"],
+            "claude-sonnet-4-6": ["off", "low", "medium", "high", "max"],
+            "claude-opus-4-5": ["off", "low", "medium", "high"],
+            "claude-sonnet-4-5": ["off", "low", "medium", "high"],
+            "claude-haiku-4-5": ["off", "low", "medium", "high"],
+            "gpt-5.6": ["none", "low", "medium", "high", "xhigh"],
+            EffortTarget.wildcard: ["off", "low", "medium", "high"],
+        ],
+        presencePaths: ["~/.factory/sessions", "~/.local/bin/droid", "/opt/homebrew/bin/droid", "/usr/local/bin/droid"]
+    )
+
+    /// GitHub Copilot CLI: `effortLevel` in `~/.copilot/settings.json`, one
+    /// level for every model — low, medium, high, xhigh.
+    public static let copilot = EffortTarget(
+        id: "copilot", displayName: "Copilot CLI",
+        configPath: "~/.copilot/settings.json", format: .json,
+        effortKey: "effortLevel", modelKey: "model",
+        bands: [EffortTarget.wildcard: ["low", "medium", "high", "xhigh", "xhigh"]],
+        scales: [EffortTarget.wildcard: ["low", "medium", "high", "xhigh"]],
+        presencePaths: ["~/.copilot/session-state", "~/.local/bin/copilot", "/opt/homebrew/bin/copilot", "/usr/local/bin/copilot"]
+    )
+
+    /// Kimi Code: `[thinking] effort` in `~/.kimi-code/config.toml`, with
+    /// `default_model` at the top. Each model allows its own subset of
+    /// low…max (`support_efforts`); one it lacks is clamped by Kimi itself.
+    public static let kimi = EffortTarget(
+        id: "kimi", displayName: "Kimi Code",
+        configPath: "~/.kimi-code/config.toml", format: .toml,
+        effortKey: "effort", effortSection: "thinking", modelKey: "default_model",
+        bands: [EffortTarget.wildcard: ["low", "medium", "high", "xhigh", "max"]],
+        scales: [EffortTarget.wildcard: ["low", "medium", "high", "xhigh", "max"]],
+        presencePaths: ["~/.kimi-code/bin/kimi", "~/.kimi-code/sessions"],
+        createsSection: true
+    )
+
+    public static let all: [EffortTarget] = [claude, codex, grok, hermes, droid, copilot, kimi]
 }
 
 /// User overrides from ~/.lid-effort/targets.json:
@@ -181,8 +325,9 @@ public enum BuiltInTargets {
 ///     }
 ///
 /// Only `enabled` and per-model `bands` can be overridden; paths and keys
-/// are fixed per agent. A band list that isn't exactly five strings is
-/// ignored rather than half-applied.
+/// are fixed per agent. A band list that isn't exactly five strings, or
+/// that names a value only a live session takes, is ignored rather than
+/// half-applied.
 public enum TargetOverrides {
     /// The overrides file with one agent switched on or off, everything
     /// else in it — bands, other agents, keys this version does not know —
@@ -210,8 +355,11 @@ public enum TargetOverrides {
             if let enabled = override["enabled"] as? Bool { updated.enabled = enabled }
             if let bands = override["bands"] as? [String: Any] {
                 for (model, value) in bands {
+                    // A value only a live session takes (`ultracode`) is never
+                    // written, so a band that names one is not a band.
                     if let list = value as? [String], list.count == EffortLevel.allCases.count,
-                       list.allSatisfy(EffortValue.isPlain) {
+                       list.allSatisfy(EffortValue.isPlain),
+                       !list.contains(where: target.liveOnlyValues.contains) {
                         updated.bands[model] = list
                     }
                 }

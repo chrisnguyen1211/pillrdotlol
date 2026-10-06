@@ -33,6 +33,29 @@ struct AgentSession: Identifiable, Equatable {
     /// rather than from a process, and a nil here costs nothing but the ability
     /// to jump to that session.
     let processID: pid_t?
+    /// While busy: the step it is on, when its transcript says.
+    var doing: Doing? = nil
+    /// Tokens it has gone through, as shown ("1.2M tokens") — rounded, so
+    /// the session is not republished on every message.
+    var tokens: String? = nil
+    /// The model it runs now, as an id ("claude-opus-5-5", "grok-4.7"),
+    /// and its effort where the agent keeps one per session.
+    var model: String? = nil
+    var effort: String? = nil
+    /// Whatever else its agent records about it, already worded and short —
+    /// "+120 −30", "64% context" — shown after the model, the same slot for
+    /// every agent.
+    var facts: [String] = []
+
+    /// This session with `other`'s model, effort and facts — for a copy
+    /// rebuilt with a new state or place, which should not forget them.
+    func keepingModel(of other: AgentSession) -> AgentSession {
+        var copy = self
+        copy.model = other.model
+        copy.effort = other.effort
+        copy.facts = other.facts
+        return copy
+    }
 
     /// Written out rather than synthesised so `processID` can default to nil:
     /// four of the five monitors have no pid to give, and a memberwise
@@ -44,7 +67,9 @@ struct AgentSession: Identifiable, Equatable {
         state: State,
         waitingFor: String?,
         since: Date,
-        processID: pid_t? = nil
+        processID: pid_t? = nil,
+        doing: Doing? = nil,
+        tokens: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -53,5 +78,7 @@ struct AgentSession: Identifiable, Equatable {
         self.waitingFor = waitingFor
         self.since = since
         self.processID = processID
+        self.doing = doing
+        self.tokens = tokens
     }
 }

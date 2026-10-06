@@ -16,6 +16,13 @@ import Foundation
 /// by tty over AppleScript, Warp and Ghostty publish nothing. `focus` tries
 /// the tab and settles for the app; `activateApp` is the app-only route.
 enum SessionFocus {
+    /// Where focusing got to: the app brought forward, and whether the
+    /// session's own tab was chosen in it — which only some terminals allow.
+    struct Focused: Equatable {
+        let activated: Bool
+        let tabSelected: Bool
+    }
+
     /// Select the tab this process runs in where the terminal allows it, then
     /// raise the owning application either way.
     ///
@@ -23,10 +30,17 @@ enum SessionFocus {
     /// are subprocesses that would otherwise stall the notch's tap handling.
     @discardableResult
     static func focus(pid: pid_t) async -> Bool {
+        guard let place = await focusTab(pid: pid) else { return false }
+        return place.activated || place.tabSelected
+    }
+
+    /// `focus(pid:)`, telling the app apart from the tab. Nil when nothing
+    /// owns the process.
+    static func focusTab(pid: pid_t) async -> Focused? {
         // A Superset pane: its own deep link opens the workspace with that
         // very terminal in front, which no window-level raise can.
         if Superset.place(of: pid) != nil, await MainActor.run(body: { Superset.focus(pid: pid) }) {
-            return true
+            return Focused(activated: true, tabSelected: true)
         }
         let app = owningApp(of: pid)
         let tty = tty(of: pid)
@@ -37,7 +51,7 @@ enum SessionFocus {
         }.value
         guard let app else {
             Log.usage.notice("no owning app for pid \(pid, privacy: .public)")
-            return false
+            return nil
         }
         // Since macOS 14 an app that is not itself active may be refused
         // when it asks to activate another — and this one never is active;
@@ -51,7 +65,7 @@ enum SessionFocus {
             _ = try? await NSWorkspace.shared.openApplication(at: url, configuration: configuration)
         }
         Log.usage.notice("focus pid \(pid, privacy: .public): tab \(selected, privacy: .public), activate \(activated, privacy: .public)")
-        return activated || selected
+        return Focused(activated: activated, tabSelected: selected)
     }
 
     /// The process's controlling terminal, named the way ps prints it

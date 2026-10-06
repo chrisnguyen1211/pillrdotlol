@@ -132,7 +132,8 @@ enum Superset {
         return AgentSession(id: session.id, name: session.name,
                             detail: detail(for: known),
                             state: session.state, waitingFor: session.waitingFor,
-                            since: session.since, processID: pid)
+                            since: session.since, processID: pid, doing: session.doing, tokens: session.tokens)
+            .keepingModel(of: session)
     }
 
     // MARK: Going there

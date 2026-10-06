@@ -39,6 +39,7 @@ let package = Package(
                 .copy("Resources/Assets.xcassets"),
                 .process("Resources/Localizable.xcstrings"),
                 .copy("Resources/LobeIcons-LICENSE.txt"),
+                .copy("Resources/SimpleIcons-LICENSE.txt"),
             ]
         ),
 

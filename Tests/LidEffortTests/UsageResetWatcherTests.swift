@@ -90,11 +90,62 @@ final class UsageResetWatcherTests: XCTestCase {
         let date1 = Date(timeIntervalSince1970: 1000)
         let date2 = Date(timeIntervalSince1970: 2000)
 
-        watcher.observe([snapshot("claude", "Claude", 0.40, resetsAt: date1)])
-        watcher.observe([snapshot("claude", "Claude", 0.05, resetsAt: date2)])
+        // Watched up to the reset, and read again just after it.
+        watcher.observe([snapshot("claude", "Claude", 0.40, resetsAt: date1)], now: date1.addingTimeInterval(-300))
+        watcher.observe([snapshot("claude", "Claude", 0.05, resetsAt: date2)], now: date1.addingTimeInterval(30))
 
         XCTAssertEqual(alerts.count, 1)
         XCTAssertEqual(alerts[0].resetsAt, date2)
+    }
+
+    // MARK: - What is not a reset
+
+    private let t0 = Date(timeIntervalSince1970: 1_790_000_000)
+
+    func testAResetTimeThatOnlyDriftsIsTheSameWindow() {
+        let end = t0.addingTimeInterval(3 * 3600)
+        watcher.observe([snapshot("claude", "Claude", 0.60, resetsAt: end)], now: t0)
+        watcher.observe([snapshot("claude", "Claude", 0.62, resetsAt: end.addingTimeInterval(120))], now: t0.addingTimeInterval(300))
+        watcher.observe([snapshot("claude", "Claude", 0.63, resetsAt: end.addingTimeInterval(240))], now: t0.addingTimeInterval(600))
+        XCTAssertTrue(alerts.isEmpty, "a rolling window's reset time creeping later is not a reset")
+    }
+
+    func testADropLongBeforeTheResetIsAnotherSourceNotAReset() {
+        let end = t0.addingTimeInterval(3 * 3600)
+        watcher.observe([snapshot("claude", "Claude", 0.80, resetsAt: end)], now: t0)
+        watcher.observe([snapshot("claude", "Claude", 0.10, resetsAt: end)], now: t0.addingTimeInterval(120))
+        XCTAssertTrue(alerts.isEmpty, "three hours before its reset time the window cannot have reset")
+        // And the glitch's low number is not later taken for a recovery.
+        watcher.observe([snapshot("claude", "Claude", 0.81, resetsAt: end)], now: t0.addingTimeInterval(240))
+        XCTAssertTrue(alerts.isEmpty)
+    }
+
+    func testAResetFoundLateIsNotAnnounced() {
+        // Last read at 80% before the login dropped; the window reset at
+        // 21:00; the login came back at 23:29.
+        let end = t0.addingTimeInterval(3600)
+        watcher.observe([snapshot("claude", "Claude", 0.80, resetsAt: end)], now: t0)
+        watcher.observe([snapshot("claude", "Claude", 0.05, resetsAt: end.addingTimeInterval(5 * 3600))],
+                        now: end.addingTimeInterval(2.5 * 3600))
+        XCTAssertTrue(alerts.isEmpty, "Claude came back hours ago; saying so now is wrong")
+    }
+
+    func testAResetSeenAsItHappensIsAnnounced() {
+        let end = t0.addingTimeInterval(3600)
+        watcher.observe([snapshot("claude", "Claude", 0.80, resetsAt: end)], now: end.addingTimeInterval(-240))
+        watcher.observe([snapshot("claude", "Claude", 0.02, resetsAt: end.addingTimeInterval(5 * 3600))],
+                        now: end.addingTimeInterval(60))
+        XCTAssertEqual(alerts.count, 1)
+    }
+
+    func testStaleReadingsAreNeitherComparedNorABaseline() {
+        let end = t0.addingTimeInterval(3600)
+        watcher.observe([snapshot("claude", "Claude", 0.80, resetsAt: end)], now: end.addingTimeInterval(-300))
+        var stale = snapshot("claude", "Claude", 0.00, resetsAt: end)
+        stale.status = .stale(since: t0)
+        watcher.observe([stale], now: end.addingTimeInterval(-200))
+        watcher.observe([snapshot("claude", "Claude", 0.81, resetsAt: end)], now: end.addingTimeInterval(-100))
+        XCTAssertTrue(alerts.isEmpty)
     }
 
     func testNoAlertForNegligibleFluctuation() {

@@ -6,6 +6,8 @@ struct OllamaSettingsRow: View {
     var relay: OllamaActivityRelay? = nil
     @State private var address = ""
     @State private var addressError: String?
+    @State private var check: LocalCheckResult?
+    @State private var checkingNow = false
 
     private var enabled: Bool { preferences.isConnected("ollama-local") }
     private var snapshot: ProviderSnapshot? { store.snapshots.first { $0.id == "ollama-local" } }
@@ -38,15 +40,23 @@ struct OllamaSettingsRow: View {
                     .textFieldStyle(.roundedBorder)
                     .onSubmit { applyAddress() }
                     .accessibilityLabel("Ollama server address")
-                Button(address == preferences.ollamaEndpoint ? L10n.t("Check connection") : L10n.t("Apply")) {
+                Button(address == preferences.ollamaEndpoint ? L10n.t("Check connection") : L10n.t("Apply & check")) {
                     applyAddress()
+                    runCheck()
                 }
-                .disabled(address == preferences.ollamaEndpoint && (!enabled || checking))
+                .disabled(checkingNow)
                 .controlSize(.small)
             }
 
             if let addressError {
                 Text(addressError).foregroundStyle(.orange)
+            } else if checkingNow {
+                HStack(spacing: 6) {
+                    ProgressView().controlSize(.mini)
+                    Text(L10n.t("Checking \("Ollama")…")).foregroundStyle(.secondary)
+                }
+            } else if let check {
+                LocalCheckLine(result: check)
             } else if !enabled {
                 Text(L10n.t("Monitoring off."))
                     .foregroundStyle(.secondary)
@@ -71,7 +81,20 @@ struct OllamaSettingsRow: View {
         .font(.caption)
         .fixedSize(horizontal: false, vertical: true)
         .onAppear { address = preferences.ollamaEndpoint }
-        .onChange(of: address) { _, _ in addressError = nil }
+        .onChange(of: address) { _, _ in addressError = nil; check = nil }
+    }
+
+    /// A real look at the server, said in the row whatever it finds —
+    /// switched on or not, reading before or not.
+    private func runCheck() {
+        guard addressError == nil else { return }
+        checkingNow = true
+        Task { @MainActor in
+            let probe = await store.probeReading(providerID: "ollama-local")
+            check = LocalCheckResult.from(status: probe.status, snapshot: probe.snapshot,
+                                          name: "Ollama", address: preferences.ollamaEndpoint)
+            checkingNow = false
+        }
     }
 
     private func applyAddress() {

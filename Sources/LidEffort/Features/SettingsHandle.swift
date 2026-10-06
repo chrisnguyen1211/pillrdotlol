@@ -142,7 +142,7 @@ struct SettingsOrb: View {
 
     var body: some View {
         if inline {
-            InlineHandle(glyph: "plus", isHovered: isHovered, spins: spins, turn: 360)
+            InlineHandle(glyph: "gearshape", isHovered: isHovered, spins: spins, turn: 360)
         } else {
             orb
         }
@@ -160,7 +160,7 @@ struct SettingsOrb: View {
                 .opacity(isHovered ? 1 : 0)
                 .scaleEffect(isHovered ? 1 : 1.1)
 
-            Image(systemName: "plus")
+            Image(systemName: "gearshape")
                 .font(.system(size: NotchLayout.orbGlyph, weight: .regular))
                 .foregroundStyle(Palette.textPrimary)
                 .opacity(isHovered ? 1 : 0)

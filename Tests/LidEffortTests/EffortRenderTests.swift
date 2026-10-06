@@ -195,6 +195,136 @@ final class EffortRenderTests: XCTestCase {
     }
 }
 
+/// The API keys cell in the pill, and its card, in both appearances.
+@MainActor
+final class APIKeysRenderTests: XCTestCase {
+    private func write(_ image: NSImage, _ name: String) throws {
+        guard let dir = ProcessInfo.processInfo.environment["EFFORT_RENDER_DIR"] else { return }
+        let tiff = try XCTUnwrap(image.tiffRepresentation)
+        let png = try XCTUnwrap(NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]))
+        try FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
+        try png.write(to: URL(fileURLWithPath: dir).appendingPathComponent(name))
+    }
+
+    /// Drawn under the appearance asked for: the palette's colours resolve
+    /// against the drawing appearance, not the SwiftUI colour scheme.
+    private func render<V: View>(_ view: V, dark: Bool, scale: CGFloat = 2) throws -> NSImage {
+        let appearance = try XCTUnwrap(NSAppearance(named: dark ? .darkAqua : .aqua))
+        var image: NSImage?
+        appearance.performAsCurrentDrawingAppearance {
+            let renderer = ImageRenderer(content: view.environment(\.colorScheme, dark ? .dark : .light))
+            renderer.scale = scale
+            image = renderer.nsImage
+        }
+        return try XCTUnwrap(image)
+    }
+
+    /// Drawn by AppKit in an offscreen window, as Settings' renders are:
+    /// the glass card needs a window to draw into.
+    private func windowSnapshot(_ view: some View, size: CGSize, name: String, dark: Bool) throws {
+        let background = dark ? Color(white: 0.16) : Color(white: 0.93)
+        let host = NSHostingView(rootView: AnyView(view.frame(width: size.width, height: size.height)
+            .background(background)))
+        host.frame = CGRect(origin: .zero, size: size)
+        let window = NSWindow(contentRect: CGRect(x: -20000, y: -20000, width: size.width, height: size.height),
+                              styleMask: [.borderless], backing: .buffered, defer: false)
+        window.appearance = NSAppearance(named: dark ? .darkAqua : .aqua)
+        window.contentView = host
+        window.orderFrontRegardless()
+        defer { window.orderOut(nil) }
+        RunLoop.main.run(until: Date().addingTimeInterval(0.4))
+        host.layoutSubtreeIfNeeded()
+        let rep = try XCTUnwrap(host.bitmapImageRepForCachingDisplay(in: host.bounds))
+        host.cacheDisplay(in: host.bounds, to: rep)
+        guard let dir = ProcessInfo.processInfo.environment["EFFORT_RENDER_DIR"] else { return }
+        let png = try XCTUnwrap(rep.representation(using: .png, properties: [:]))
+        try png.write(to: URL(fileURLWithPath: dir).appendingPathComponent(name))
+    }
+
+    static func keys(now: Date) -> [ProviderSnapshot] {
+        func key(_ id: String, _ name: String, _ glyph: ProviderGlyph, _ windows: [LimitWindow],
+                 status: ProviderStatus = .ok) -> ProviderSnapshot {
+            ProviderSnapshot(id: id, displayName: name, glyph: glyph, fidelity: .official, status: status,
+                             windows: windows, headlineID: windows.first?.id)
+        }
+        let several = APIReading.several([.balance(7.5, .money("USD")), .spend(3.2, .money("USD"), .month),
+                                          .spend(41, .money("USD"), .total)])
+        let glmKey = ProviderGlyph.forProvider("glm") ?? .apiKey
+        return [
+            key("apikey_openrouter-k00001", "OpenRouter · Work", APICatalog.entry(id: "openrouter")?.glyph ?? .apiKey,
+                several.windows(providerName: "OpenRouter", currency: nil)),
+            key("glm", "GLM", glmKey, [
+                LimitWindow(id: "five-hour", label: "5-hour", usedFraction: 0.82, resetsAt: now.addingTimeInterval(2 * 3600)),
+                LimitWindow(id: "weekly", label: "Weekly", usedFraction: 0.41, resetsAt: now.addingTimeInterval(4 * 86400)),
+            ]),
+            key("apikey_elevenlabs-k00003", "ElevenLabs · Voice", APICatalog.entry(id: "elevenlabs")?.glyph ?? .apiKey,
+                [APIReading.used(3200, of: 10000, .characters, resetsAt: nil).window(providerName: "ElevenLabs", currency: nil)]),
+            key("apikey_groq-k00004", "Groq · Key 1", APICatalog.entry(id: "groq")?.glyph ?? .apiKey,
+                [APIReading.keyWorks(.requestsLeft(remaining: 14399, limit: 14400, today: true))
+                    .window(providerName: "Groq", currency: nil)],
+                status: .stale(since: now.addingTimeInterval(-7 * 60))),
+            key("apikey_openai-k00005", "OpenAI · Org", .openai, [], status: .needsAuth),
+        ]
+    }
+
+    func testTheCellAndItsCardDraw() throws {
+        let now = Date()
+        let group = APIKeyGroup.snapshot(members: Self.keys(now: now))
+        XCTAssertEqual(group.usedFraction, 0.82, "the GLM key's five hours are closest to running out")
+        XCTAssertTrue(group.status.isStale, "the refused OpenAI key dims the cell")
+
+        // The whole notch, the cell among the agents, its card open.
+        let model = NotchViewModel()
+        model.updateSnapshots([
+            ProviderSnapshot(id: "claude", displayName: "Claude", glyph: .claude, fidelity: .official, status: .ok,
+                             windows: [LimitWindow(id: "session", label: "Session", usedFraction: 0.31)]),
+            group,
+            ProviderSnapshot(id: "codex", displayName: "Codex", glyph: .openai, fidelity: .official, status: .ok,
+                             windows: [LimitWindow(id: "session", label: "Session", usedFraction: 0.12)]),
+        ])
+        model.now = now
+        model.isExpanded = true
+        model.surfaceStyle = .solid
+        model.hoveredIndex = 1
+        let size = model.panelSize
+        let notch = NotchRootView(model: model)
+            .frame(width: size.width, height: size.height)
+            .background(Color(white: 0.55))
+        try write(try render(notch, dark: true), "notch-apikeys.png")
+
+        let plan = NotchLayout.keyGroupPlan(group.keyGroup!)
+        let budgeted = NotchLayout.cardHeight(windowCount: 1, keyGroupBody: plan.body)
+        let solid = try render(TooltipCard(snapshot: group, now: now).padding(20).background(Color(white: 0.16))
+            .environment(\.notchSurfaceStyle, .solid), dark: true)
+        XCTAssertEqual(solid.size.height - 40, budgeted, accuracy: 3, "the card is as tall as it was budgeted")
+        try write(solid, "apikeys-tooltip-dark.png")
+
+        // Light is the glass style's, which only a real window draws.
+        try windowSnapshot(TooltipCard(snapshot: group, now: now)
+                            .padding(20)
+                            .environment(\.notchSurfaceStyle, .glass)
+                            // Nothing behind an offscreen window to see:
+                            // the card's own frosted tint.
+                            .environment(\.cardGlassSeesBehind, false),
+                           size: CGSize(width: NotchLayout.cardWidth + NotchLayout.tailLength + 40, height: budgeted + 40),
+                           name: "apikeys-tooltip-light.png", dark: false)
+
+        // A list longer than the card, cut short and counted.
+        let many = (0..<14).map { i in
+            ProviderSnapshot(id: "apikey_openrouter-k\(String(format: "%05x", i))", displayName: "OpenRouter · Key \(i + 1)",
+                             glyph: .apiKey, fidelity: .official, status: .ok,
+                             windows: [APIReading.left(Double(20 - i), of: 20, .money("USD"), resetsAt: nil)
+                                .window(providerName: "OpenRouter", currency: nil)])
+        }
+        let long = TooltipCard(snapshot: APIKeyGroup.snapshot(members: many), now: now)
+            .padding(20).background(Color(white: 0.16))
+            .environment(\.notchSurfaceStyle, .solid)
+        let image = try render(long, dark: true)
+        XCTAssertLessThanOrEqual(image.size.height - 40, NotchLayout.defaultMaxCardHeight + 1)
+        try write(image, "apikeys-tooltip-long.png")
+    }
+}
+
 @MainActor
 final class TooltipSessionsTests: XCTestCase {
     private func session(_ name: String, _ state: AgentSession.State, ago: TimeInterval) -> AgentSession {

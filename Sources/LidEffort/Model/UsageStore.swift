@@ -26,7 +26,81 @@ final class UsageStore: ObservableObject {
     /// would reproduce the bug.
     @Published private(set) var needsRenewal: Set<String> = []
 
-    private let providers: [UsageProvider]
+    /// A `var` for one reason: custom endpoints come and go while the app
+    /// runs, and `registerCustomProviders` swaps them in place.
+    private var providers: [UsageProvider]
+
+    /// Replaces every custom endpoint provider with this list — what Settings
+    /// has just saved. The built-in providers are untouched.
+    func registerCustomProviders(_ custom: [UsageProvider]) {
+        let previous = Set(providers.map(\.id).filter { $0.hasPrefix("custom-endpoint-") })
+        providers.removeAll { $0.id.hasPrefix("custom-endpoint-") }
+        providers.append(contentsOf: custom)
+        let current = Set(custom.map(\.id))
+        for id in previous.subtracting(current) { cancelRefresh(providerID: id) }
+        snapshots.removeAll { previous.subtracting(current).contains($0.id) }
+        for provider in custom {
+            publish(Self.placeholder(provider))
+        }
+        refreshNow()
+    }
+    /// Bumped whenever the set of providers changes while the app runs —
+    /// an extra key added, renamed or removed — so Settings knows to read
+    /// its rows again. Readings alone never move it.
+    @Published private(set) var providerListRevision = 0
+
+    /// Replaces every extra-key provider with this list — what Settings has
+    /// just saved — matched by id. A key that stayed keeps its reading (under
+    /// its new name, if it was renamed); one that went takes its reading and
+    /// its archive entry with it; one that arrived is drawn at once and read.
+    func registerExtraKeyProviders(_ extra: [UsageProvider]) {
+        let isExtra: (String) -> Bool = { ExtraKey.isExtraKey(providerID: $0) }
+        let previous = Set(providers.map(\.id).filter(isExtra))
+        let current = Set(extra.map(\.id))
+        let removed = previous.subtracting(current)
+        let added = current.subtracting(previous)
+
+        providers.removeAll { isExtra($0.id) }
+        providers.append(contentsOf: extra)
+
+        for id in removed {
+            cancelRefresh(providerID: id)
+            refusedAccess.remove(id)
+            needsRenewal.remove(id)
+            lastGood.removeValue(forKey: id)
+            archive.forget(id)
+            archive.saveBackoffUntil(nil, providerID: id)
+        }
+        snapshots.removeAll { removed.contains($0.id) }
+
+        // A rename: the provider was rebuilt with its new name, and the
+        // reading on screen is still true — only its title changes.
+        for provider in extra where !added.contains(provider.id) {
+            // Whatever the replaced instance is still fetching would land
+            // under the old name; the next pass asks the new one.
+            if fetchTasks[provider.id] != nil { cancelRefresh(providerID: provider.id) }
+            if var held = lastGood[provider.id], held.snapshot.displayName != provider.displayName {
+                held.snapshot.displayName = provider.displayName
+                lastGood[provider.id] = held
+                archive.save(lastGood)
+            }
+            if let index = snapshots.firstIndex(where: { $0.id == provider.id }),
+               snapshots[index].displayName != provider.displayName {
+                snapshots[index].displayName = provider.displayName
+            }
+        }
+
+        for provider in extra where added.contains(provider.id) {
+            publish(Self.placeholder(provider))
+            refresh(providerID: provider.id)
+        }
+        providerListRevision += 1
+    }
+
+    /// Every provider's id, in the user's order — for tests and for Settings
+    /// to tell whether its rows are behind the store.
+    var providerIDs: [String] { orderedProviders.map(\.id) }
+
     /// Provider IDs block fetching before credential access. Model IDs only hide
     /// their cells so disabling one model does not stop the shared runtime.
     @Published var disconnected: Set<String> = [] {
@@ -103,6 +177,9 @@ final class UsageStore: ObservableObject {
     private var lastGood: [String: (snapshot: ProviderSnapshot, fetchedAt: Date)] = [:]
     private var timer: Timer?
     private var localTimer: Timer?
+    private var signInTimer: Timer?
+    /// Each provider's sign-in files, as last seen — see `readNewSignIns`.
+    private var signInStamps: [String: Date] = [:]
     private var fetchTasks: [String: Task<Void, Never>] = [:]
     private var generations: [String: Int] = [:]
     private var refreshTask: Task<Void, Never>?
@@ -196,7 +273,12 @@ final class UsageStore: ObservableObject {
 
     private func updateNotchSnapshots() {
         let cells = ProviderOrder.cells(from: snapshots, keeping: notchSnapshots)
-        notchSnapshots = ProviderOrder.arrange(cells, by: order, id: \.id)
+            .filter { !disconnected.contains($0.id) }
+        // Every API key is drawn in one cell, the keys in the order they were
+        // added — which is the order they were registered in. A key that can
+        // only be checked has no ring of its own, but it has a line there.
+        let grouped = APIKeyGroup.collapse(cells, memberOrder: providers.map(\.id))
+        notchSnapshots = ProviderOrder.arrange(grouped, by: APIKeyGroup.groupedOrder(order), id: \.id)
             .filter { !disconnected.contains($0.id) }
     }
 
@@ -218,8 +300,10 @@ final class UsageStore: ObservableObject {
         let summaries = orderedProviders.flatMap { provider in
             let summary = ProviderSummary(kind: provider.kind, id: provider.id, name: provider.displayName,
                             glyph: provider.glyph,
+                            customIconFilename: provider.customIconFilename,
                             account: disconnected.contains(provider.id) ? nil : provider.account(),
                             signIn: provider.signInRoute,
+                            signInCommand: provider.signInCommand,
                             wasRefusedAccess: refusedAccess.contains(provider.id),
                             needsSignInRenewal: needsRenewal.contains(provider.id))
             return [summary] + models.filter { $0.sourceProviderID == provider.id }
@@ -241,6 +325,12 @@ final class UsageStore: ObservableObject {
         }
         RunLoop.main.add(localTimer, forMode: .common)
         self.localTimer = localTimer
+
+        let signInTimer = Timer(timeInterval: 3, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.readNewSignIns() }
+        }
+        RunLoop.main.add(signInTimer, forMode: .common)
+        self.signInTimer = signInTimer
 
         // Waking up is the one moment the numbers are guaranteed to be wrong.
         wakeObserver = NSWorkspace.shared.notificationCenter.addObserver(
@@ -265,6 +355,8 @@ final class UsageStore: ObservableObject {
     func stop() {
         timer?.invalidate()
         timer = nil
+        signInTimer?.invalidate()
+        signInTimer = nil
         localTimer?.invalidate()
         localTimer = nil
         refreshTask?.cancel()
@@ -402,6 +494,29 @@ final class UsageStore: ObservableObject {
         return beginRefresh(provider, holdIndicator: true)
     }
 
+    /// One reading taken now, outside the schedule and whether or not the
+    /// provider is switched on — how Settings learns that an account can
+    /// really be read before it calls it connected. The status that reading
+    /// would have shown: `.ok` for a good one, the failure otherwise.
+    func probe(providerID: String) async -> ProviderStatus {
+        await probeReading(providerID: providerID).status
+    }
+
+    /// The same check, with the reading itself when there was one — for a
+    /// row that says what it found ("3 models loaded").
+    func probeReading(providerID: String) async -> (status: ProviderStatus, snapshot: ProviderSnapshot?) {
+        guard let provider = providers.first(where: { $0.id == providerID }) else {
+            return (.error(L10n.t("spyx doesn't know this provider")), nil)
+        }
+        provider.forgetCachedCredential()
+        do {
+            let snapshot = try await provider.fetchSnapshot(freshness: .fromSource)
+            return (snapshot.status, snapshot)
+        } catch {
+            return (Self.status(for: error), nil)
+        }
+    }
+
     func refreshLocalRuntimes() {
         for provider in providers where provider.kind == .localRuntime && !disconnected.contains(provider.id) {
             _ = beginRefresh(provider)
@@ -499,7 +614,9 @@ final class UsageStore: ObservableObject {
     /// seen to, keyed by notch cell id, and what to offer for each.
     func connectNeeds() -> [String: ConnectNeed] {
         var needs: [String: ConnectNeed] = [:]
-        for snapshot in notchSnapshots where snapshot.localModel == nil {
+        // The keys in the API keys cell are each their own provider, with
+        // their own way in — GLM's setup, MiniMax's sign-in.
+        for snapshot in notchSnapshots.flatMap({ $0.keyGroup ?? [$0] }) where snapshot.localModel == nil {
             guard let provider = providers.first(where: { $0.id == snapshot.id }),
                   let need = ConnectNeed.need(status: snapshot.status, expired: needsRenewal.contains(provider.id),
                                               route: provider.signInRoute, command: provider.signInCommand,
@@ -521,6 +638,39 @@ final class UsageStore: ObservableObject {
         case .terminal(let command): ConnectNeed.runInTerminal(command); started = true
         case .allowAccess: reauthorize(providerID: providerID); started = true
         case .settings: started = false
+        }
+        if started { followUp(providerID: providerID) }
+        return started
+    }
+
+    /// What Settings' Connect button does, for a provider that may have only
+    /// just been switched on.
+    ///
+    /// Not `connect(providerID:)`: that works from `connectNeeds()`, which only
+    /// knows providers already on the notch, and one switched on a moment ago
+    /// is not there yet. Not `signIn(providerID:)` either: the key fields' Save
+    /// buttons call that, and they must never end in a Terminal window. This
+    /// one is only ever reached from a click, so it may run the sign-in
+    /// command when there is no window or app to open.
+    ///
+    /// Returns whether anything was started; false leaves the row's own
+    /// guidance or key field as the way forward.
+    @discardableResult
+    func beginConnect(providerID: String) -> Bool {
+        guard let provider = providers.first(where: { $0.id == providerID }) else { return false }
+        // Already holding a credential: switching on was the whole job.
+        if provider.account() != nil {
+            refresh(providerID: providerID)
+            return true
+        }
+        let started: Bool
+        if openAccountSource(providerID: providerID) {
+            started = true
+        } else if let command = provider.signInCommand {
+            ConnectNeed.runInTerminal(command)
+            started = true
+        } else {
+            started = false
         }
         if started { followUp(providerID: providerID) }
         return started
@@ -580,6 +730,39 @@ final class UsageStore: ObservableObject {
     /// first is the part that matters: a plain refresh is served from the cache
     /// whenever the token is still valid, so the keychain is never touched and
     /// the prompt never returns — the button would appear to do nothing.
+    /// Reads again, at once, a provider whose sign-in file has just been
+    /// rewritten while it was failing — someone ran `grok login` after it
+    /// expired. Before this the ring stayed "needs renewing" until the next
+    /// scheduled pass, however long after signing in that was; the only
+    /// thing that clears the warning is a reading that comes back.
+    ///
+    /// Only the files' dates are looked at, every few seconds, and only a
+    /// failing provider is read — a working one picks the change up on its
+    /// own schedule.
+    func readNewSignIns() {
+        for provider in providers where !disconnected.contains(provider.id) && !provider.credentialFiles.isEmpty {
+            let stamp = provider.credentialFiles.compactMap(Self.modified).max()
+            let previous = signInStamps[provider.id]
+            signInStamps[provider.id] = stamp
+            guard let stamp, let previous, stamp > previous, isFailing(provider.id) else { continue }
+            Log.usage.notice("\(provider.id, privacy: .public): signed in again — reading now")
+            reauthorize(providerID: provider.id)
+        }
+    }
+
+    /// Expired, signed out, refused — anything a new sign-in could mend.
+    func isFailing(_ providerID: String) -> Bool {
+        if needsRenewal.contains(providerID) || refusedAccess.contains(providerID) { return true }
+        switch snapshots.first(where: { $0.id == providerID })?.status {
+        case .needsAuth?, .accessDenied?, .signedOutByOwner?, .error?: return true
+        default: return false
+        }
+    }
+
+    nonisolated static func modified(_ url: URL) -> Date? {
+        (try? FileManager.default.attributesOfItem(atPath: url.path))?[.modificationDate] as? Date
+    }
+
     func reauthorize(providerID: String) {
         providers.first { $0.id == providerID }?.forgetCachedCredential()
         refresh(providerID: providerID)
@@ -762,6 +945,10 @@ final class UsageStore: ObservableObject {
     /// failure looks like is worth pinning down.
     static func statusForTesting(_ error: Error) -> ProviderStatus { status(for: error) }
 
+    /// What a failed fetch would show, for a check made outside the store —
+    /// Settings verifying a key before it is kept.
+    static func providerStatus(for error: Error) -> ProviderStatus { status(for: error) }
+
     /// Exposed so a test can hold the shipped defaults to the margin they are
     /// supposed to keep, without re-typing the numbers on both sides.
     var staleAfterForTesting: TimeInterval { staleAfter }
@@ -792,18 +979,30 @@ final class UsageStore: ObservableObject {
             // Nothing is known about the account, so a remembered reading stays
             // and simply ages. `degraded` handles that; this is only what a
             // provider with nothing to show says.
-            return .error("no response")
+            return .error(L10n.t("no reply — check your connection; spyx will try again"))
         case UsageProviderError.nothingMetered(let why):
             return .unsupported(why)
+        case UsageProviderError.apiError(let message):
+            // The server's own words, or ours about a file we could not read.
+            return .error(message)
         case UsageProviderError.badResponse(let code):
-            return .error("HTTP \(code)")
+            // Said as what it means, with the code kept for a bug report.
+            switch code {
+            case 429: return .error(L10n.t("too many checks for now; spyx will try again in a few minutes"))
+            case 500...: return .error(L10n.t("its server is having trouble (\(code)); spyx will try again"))
+            default: return .error(L10n.t("an unexpected answer (\(code)); spyx will try again"))
+            }
+        case UsageProviderError.apiError(let name):
+            // The server's own words. It is the only part of such a failure
+            // that says what went wrong — the status is 200 either way.
+            return .error(name)
         default:
             return .error((error as NSError).localizedDescription)
         }
     }
 
     private static func placeholder(_ provider: UsageProvider) -> ProviderSnapshot {
-        ProviderSnapshot(
+        var snapshot = ProviderSnapshot(
             id: provider.id,
             displayName: provider.displayName,
             glyph: provider.glyph,
@@ -812,5 +1011,7 @@ final class UsageStore: ObservableObject {
             windows: [],
             kind: provider.kind
         )
+        snapshot.customIconFilename = provider.customIconFilename
+        return snapshot
     }
 }

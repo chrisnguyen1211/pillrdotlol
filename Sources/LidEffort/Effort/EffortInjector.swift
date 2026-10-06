@@ -140,19 +140,17 @@ enum EffortInjector {
         }
     }
 
-    /// `/effort <value>` and nothing else: what is typed into a session is
-    /// sent by it, so a command that is not exactly this is not typed.
-    static func isEffortCommand(_ command: String) -> Bool {
-        command.hasPrefix("/effort ") && EffortValue.isPlain(String(command.dropFirst("/effort ".count)))
-    }
-
-    private static func send(_ command: String, tty: String) -> Outcome {
-        guard isEffortCommand(command),
-              tty.range(of: #"^ttys?[0-9]+$"#, options: .regularExpression) != nil else {
-            log.error("refused to type \(command, privacy: .public) into \(tty, privacy: .public)")
-            return .appleScriptError("refused")
-        }
-        let ttyLiteral = tty
+    /// A message you wrote in spyx, typed into the session's Terminal tab —
+    /// only at an idle, empty prompt, the same rule as `/effort`. One line:
+    /// a line break would send the first half on its own.
+    static func typeMessage(_ text: String, tty: String) -> Outcome {
+        guard let line = SessionCommander.oneLine(text) else { return .appleScriptError("empty") }
+        guard tty.range(of: #"^ttys?[0-9]+$"#, options: .regularExpression) != nil else { return .noTTY }
+        let tabs = readAllTabs()
+        guard let match = tabs.first(where: { $0.tty == tty }) else { return .tabNotFound }
+        if match.contents.hasPrefix("\u{3}") { return .contentUnreadable(String(match.contents.dropFirst())) }
+        guard PromptIdleDetector.isIdle(screenText: match.contents) else { return .promptNotIdle }
+        let literal = SessionCommander.appleScriptLiteral(line)
         let script = """
         tell application "Terminal"
             set wCount to count of windows
@@ -161,8 +159,8 @@ enum EffortInjector {
                     set tCount to count of tabs of window wi
                     repeat with ti from 1 to tCount
                         try
-                            if (tty of tab ti of window wi) contains "\(ttyLiteral)" then
-                                do script "\(command)" in tab ti of window wi
+                            if (tty of tab ti of window wi) is "/dev/\(tty)" then
+                                do script \(literal) in tab ti of window wi
                                 return "sent"
                             end if
                         end try
@@ -174,6 +172,30 @@ enum EffortInjector {
         """
         switch runAppleScript(script) {
         case "sent":
+            log.notice("message (\(line.count, privacy: .public) chars) -> \(tty, privacy: .public)")
+            return .sent
+        case let other:
+            return other == "not-found" ? .tabNotFound : .appleScriptError(other ?? "no result")
+        }
+    }
+
+    /// `/effort <value>` and nothing else: what is typed into a session is
+    /// sent by it, so a command that is not exactly this is not typed.
+    static func isEffortCommand(_ command: String) -> Bool {
+        // The one two-word form: switching the Claude app's ultracode off.
+        if command == "/effort ultracode off" { return true }
+        return command.hasPrefix("/effort ") && EffortValue.isPlain(String(command.dropFirst("/effort ".count)))
+    }
+
+    private static func send(_ command: String, tty: String) -> Outcome {
+        guard isEffortCommand(command),
+              tty.range(of: #"^ttys?[0-9]+$"#, options: .regularExpression) != nil else {
+            log.error("refused to type \(command, privacy: .public) into \(tty, privacy: .public)")
+            return .appleScriptError("refused")
+        }
+        let script = effortScript(command, tty: tty)
+        switch runAppleScript(script) {
+        case "sent":
             log.notice("live \(command, privacy: .public) -> \(tty, privacy: .public)")
             return .sent
         case let other:
@@ -181,7 +203,52 @@ enum EffortInjector {
         }
     }
 
+    /// Whether macOS already lets spyx script Terminal — asked without a
+    /// dialog. A lid gesture is no moment for macOS's consent prompt; that
+    /// is asked in Setup → Terminals, with the reason beside it.
+    /// The script that types `/effort …` into the tab on `tty` — that tab
+    /// only. The tty is matched whole: `contains` let `ttys01` match
+    /// `/dev/ttys010` too, and typed into a stranger's tab.
+    static func effortScript(_ command: String, tty: String) -> String {
+        """
+        tell application "Terminal"
+            set wCount to count of windows
+            repeat with wi from 1 to wCount
+                try
+                    set tCount to count of tabs of window wi
+                    repeat with ti from 1 to tCount
+                        try
+                            if (tty of tab ti of window wi) is "/dev/\(tty)" then
+                                do script "\(command)" in tab ti of window wi
+                                return "sent"
+                            end if
+                        end try
+                    end repeat
+                end try
+            end repeat
+            return "not-found"
+        end tell
+        """
+    }
+
+    static var terminalAllowed: Bool { allowed("com.apple.Terminal") }
+
+    /// iTerm2 answers Apple Events only once you have allowed spyx — asked
+    /// first, so a reply says so rather than raising macOS's prompt halfway
+    /// through, or reading as a tab that could not be found.
+    static var itermAllowed: Bool { allowed("com.googlecode.iterm2") }
+
+    private static func allowed(_ bundleID: String) -> Bool {
+        if let cached = allowedCache[bundleID], cached.until > Date() { return cached.value }
+        let target = AutomationTarget.all.first { $0.bundleID == bundleID }
+        let value = target.map { AutomationAccess.status(of: $0, ask: false) == .granted } ?? false
+        allowedCache[bundleID] = (value, Date().addingTimeInterval(value ? 60 : 5))
+        return value
+    }
+    nonisolated(unsafe) private static var allowedCache: [String: (value: Bool, until: Date)] = [:]
+
     private static func runAppleScript(_ source: String) -> String? {
+        guard terminalAllowed else { return nil }
         guard let script = NSAppleScript(source: source) else { return nil }
         var error: NSDictionary?
         let result = script.executeAndReturnError(&error)

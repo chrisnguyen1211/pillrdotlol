@@ -63,4 +63,23 @@ final class WebSessionSignInTests: XCTestCase {
             XCTAssertFalse(WebSessionProvider.matchesOrigin(url, expected: origin), value)
         }
     }
+
+    /// DeepSeek and MiniMax confirm a sign-in once, when the window closes
+    /// (#172): their probes are real API calls to endpoints that have
+    /// throttled the app. Polling them while someone types a password came
+    /// back once, with a new site that needed it; only that site polls.
+    func testOnlyQianwenPollsWhileItsSignInWindowIsOpen() {
+        XCTAssertFalse(Sites.deepSeek.pollsDuringSignIn)
+        for region in MiniMaxRegion.allCases {
+            XCTAssertFalse(Sites.minimax(region: region).pollsDuringSignIn)
+        }
+        XCTAssertFalse(Sites.perplexity.pollsDuringSignIn)
+        XCTAssertTrue(Sites.qianwen.pollsDuringSignIn)
+    }
+
+    /// Signing out of QianwenAI also has to drop the Aliyun SSO cookie, or the
+    /// next sign-in walks straight back in as the old account.
+    func testQianwenSignOutClearsTheAliyunSignIn() {
+        XCTAssertTrue(Sites.qianwen.associatedHosts.contains("account.aliyun.com"))
+    }
 }

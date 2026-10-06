@@ -4,32 +4,38 @@ import SwiftUI
 
 final class SetupPlanTests: XCTestCase {
     func testEveryStepWhenTheMacNeedsThemAll() {
-        let plan = SetupPlan(needsMove: true, claudeDesktopInstalled: true)
+        let plan = SetupPlan(needsMove: true, desktopAppInstalled: true)
         XCTAssertEqual(plan.steps, SetupStep.allCases)
     }
 
-    func testInstalledCopyWithoutClaudeDesktopSkipsThosePages() {
-        let plan = SetupPlan(needsMove: false, claudeDesktopInstalled: false)
+    func testInstalledCopyWithoutADesktopAppSkipsThosePages() {
+        let plan = SetupPlan(needsMove: false, desktopAppInstalled: false)
         XCTAssertFalse(plan.steps.contains(.move))
-        XCTAssertFalse(plan.steps.contains(.claudeDesktop))
+        XCTAssertFalse(plan.steps.contains(.desktopApps))
         XCTAssertEqual(plan.steps.first, .welcome)
         XCTAssertEqual(plan.steps.last, .ready)
     }
 
     func testNavigationStopsAtTheEnds() {
-        let plan = SetupPlan(needsMove: false, claudeDesktopInstalled: false)
+        let plan = SetupPlan(needsMove: false, desktopAppInstalled: false)
         XCTAssertNil(plan.previous(before: .welcome))
         XCTAssertNil(plan.next(after: .ready))
-        XCTAssertEqual(plan.next(after: .welcome), .claude)
-        XCTAssertEqual(plan.next(after: .terminals), .agents, "skips the Claude Desktop page it doesn't have")
-        XCTAssertEqual(plan.previous(before: .agents), .terminals)
+        XCTAssertEqual(plan.next(after: .welcome), .agents, "every agent first, none ahead of the others")
+        XCTAssertEqual(plan.next(after: .terminals), .ready, "skips the desktop-apps page it doesn't have")
+        XCTAssertEqual(plan.previous(before: .hooks), .agents)
     }
 
     func testPositionCountsFromOne() {
-        let plan = SetupPlan(needsMove: true, claudeDesktopInstalled: false)
+        let plan = SetupPlan(needsMove: true, desktopAppInstalled: false)
         XCTAssertEqual(plan.position(of: .welcome).current, 1)
         XCTAssertEqual(plan.position(of: .ready).current, plan.steps.count)
         XCTAssertEqual(plan.position(of: .move).total, 6)
+    }
+
+    func testNoStepBelongsToOneAgent() {
+        let names = SetupStep.allCases.map { $0.title + $0.shortTitle }.joined()
+        XCTAssertFalse(names.contains("Claude"))
+        XCTAssertFalse(names.contains("Codex"))
     }
 
     func testOnlyMovingIsNotOptional() {

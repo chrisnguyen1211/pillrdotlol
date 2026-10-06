@@ -74,7 +74,10 @@ enum ResetCheer {
     /// is what a person calls it; any other label is used as the vendor
     /// wrote it — "5-hour limit", "All models limit".
     static func limitPhrase(_ window: String) -> String {
-        if window.lowercased().contains("session") { return L10n.t("Session limit") }
+        let lower = window.lowercased()
+        if lower.contains("session") { return L10n.t("Session limit") }
+        // "Weekly limit" is already a limit — never "Weekly limit limit".
+        if lower.contains("limit") || lower.contains("quota") { return window }
         return L10n.t("\(window) limit")
     }
 

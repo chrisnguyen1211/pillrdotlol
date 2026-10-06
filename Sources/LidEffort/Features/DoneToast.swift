@@ -51,10 +51,19 @@ struct DoneToast: Equatable, Identifiable {
     /// The session, and where it runs — "effort-lid · Terminal · Effort Lid".
     let subtitle: String
     /// What that means for you, on the status line.
-    let status: String
+    var status: String {
+        guard let changes, !isBlocked else { return line }
+        return "\(changes) · \(line)"
+    }
+    /// The cheer, or the question it is asking.
+    private let line: String
+    /// What is changed in its folder, once git has said — "3 files · +42 −7".
+    var changes: String?
     let glyph: ProviderGlyph
     let isBlocked: Bool
     let pid: pid_t?
+    /// The session itself, for ⌥-click → reply.
+    let session: AgentSession
 
     init(event: SessionCompletionWatcher.Event, glyph: ProviderGlyph) {
         let session = event.session
@@ -64,12 +73,13 @@ struct DoneToast: Equatable, Identifiable {
         subtitle = session.detail.isEmpty ? session.name : "\(session.name) · \(session.detail)"
         // The question itself beats any line about there being one.
         if isBlocked, let question = session.waitingFor, !question.isEmpty {
-            status = L10n.t("Asking: \(question)")
+            self.line = L10n.t("Asking: \(question)")
         } else {
-            status = line.status
+            self.line = line.status
         }
         self.glyph = glyph
         pid = session.processID
+        self.session = session
     }
 
     static func == (lhs: DoneToast, rhs: DoneToast) -> Bool { lhs.id == rhs.id }
@@ -90,15 +100,100 @@ struct DoneToastView: View {
 
     private var tone: Color { toast.isBlocked ? Palette.watch : Palette.ample }
 
+    static func canReply(_ toast: DoneToast) -> Bool { SessionCommander.reach(toast.session) != .none }
+
+    /// The round Reply button beside the card: its size and its gap from
+    /// the card, before the card scale.
+    static let replyBubble = Design.px(80)
+    static let replyBubbleGap = Design.px(16)
+
+    /// Where the bubble sits, as (along, across) centre offsets the root
+    /// view and the controller share: just past the card's end along the
+    /// edge, level with the card's body across it.
+    static func replyBubbleCentre(edge: NotchEdge, scale: CGFloat, restingDepth: CGFloat,
+                                  alongCentre: CGFloat) -> (along: CGFloat, across: CGFloat) {
+        let cardAlong = (edge.isVertical ? cardHeight : NotchLayout.cardWidth) * scale
+        let cardAcross = (edge.isVertical ? NotchLayout.cardWidth : cardHeight) * scale
+        let along = alongCentre + cardAlong / 2 + (replyBubbleGap + replyBubble / 2) * scale
+        let across = restingDepth + NotchLayout.tailGap + NotchLayout.tailLength * scale + cardAcross / 2
+        return (along, across)
+    }
+
     var body: some View {
         NotchCardChrome(height: Self.cardHeight, direction: direction, tailOffset: tailOffset) {
             VStack(alignment: .leading, spacing: 0) {
                 NotchCardHeader(glyph: toast.glyph, title: toast.title, subtitle: toast.subtitle)
-                NotchCardStatus(tone: tone, text: toast.status, trailing: L10n.t("Click to open"))
+                // "Click to open" only where a click opens something, and
+                // not over what the session changed, which matters more.
+                NotchCardStatus(tone: tone, text: toast.status,
+                                trailing: toast.pid != nil && toast.changes == nil ? L10n.t("Click to open") : nil)
                     .padding(.top, NotchLayout.headerToBlock)
             }
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel("\(toast.title), \(toast.subtitle), \(toast.status)")
+    }
+}
+
+/// The round Reply button that stands beside the done card — a separate
+/// piece of glass, not part of the card, with the reply arrow on it.
+struct ReplyBubble: View {
+    @Environment(\.notchSurfaceStyle) private var surfaceStyle
+    @Environment(\.notchReduceTransparency) private var reduceTransparency
+
+    /// The card's own surface: glass beside a glass card, solid beside a solid one.
+    private var glassy: Bool { surfaceStyle.effective == .glass && !reduceTransparency }
+
+    var body: some View {
+        ZStack {
+            if glassy {
+                GlassShape(corner: DoneToastView.replyBubble / 2)
+            } else {
+                Circle().fill(Palette.card)
+                    .overlay(Circle().strokeBorder(Palette.ringTrack.opacity(reduceTransparency ? 1 : 0), lineWidth: 1))
+            }
+            Image(systemName: "arrowshape.turn.up.left.fill")
+                .font(.system(size: Design.px(28), weight: .semibold))
+                .foregroundStyle(Palette.textPrimary)
+        }
+        .frame(width: DoneToastView.replyBubble, height: DoneToastView.replyBubble)
+        // A ring breathing out of it while the card is up: the session
+        // is waiting for its next instruction, and this is where it goes.
+        .background { ReplyPulse(size: DoneToastView.replyBubble) }
+        .help(L10n.t("Reply"))
+        .accessibilityLabel(L10n.t("Reply"))
+    }
+}
+
+/// Two soft rings swelling out of the Reply button and fading, one after
+/// the other — "this is the next thing to do". Still, with Reduce Motion:
+/// one quiet ring instead.
+private struct ReplyPulse: View {
+    let size: CGFloat
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        if reduceMotion {
+            Circle().strokeBorder(Palette.ample.opacity(0.55), lineWidth: Design.px(3))
+                .frame(width: size + Design.px(10), height: size + Design.px(10))
+        } else {
+            TimelineView(.animation) { context in
+                let t = context.date.timeIntervalSinceReferenceDate
+                ZStack {
+                    ForEach(0..<2) { ring in
+                        let phase = (t / 1.6 + Double(ring) * 0.5).truncatingRemainder(dividingBy: 1)
+                        Circle()
+                            .strokeBorder(Palette.ample.opacity(0.7 * (1 - phase)), lineWidth: Design.px(3))
+                            .frame(width: size, height: size)
+                            .scaleEffect(1 + 0.55 * phase)
+                    }
+                    Circle()
+                        .fill(Palette.ample.opacity(0.18 + 0.1 * sin(t * 3.9)))
+                        .frame(width: size, height: size)
+                        .blur(radius: Design.px(8))
+                }
+            }
+            .allowsHitTesting(false)
+        }
     }
 }

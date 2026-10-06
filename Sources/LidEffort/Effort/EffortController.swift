@@ -31,6 +31,8 @@ final class EffortController: ObservableObject {
         let isLive: Bool
         /// The agent whose session is in view — the ring the card comes from.
         var agent: String? = nil
+        /// The session it would reach and its model; nil for new sessions only.
+        var aim: EffortAim? = nil
     }
     /// Claude sessions the notch currently knows, any profile.
     var claudeSessions: () -> [AgentSession] = { [] }
@@ -50,6 +52,9 @@ final class EffortController: ObservableObject {
     static let closedBelow: Double = 60
     static let wakeGrace: TimeInterval = 2
     private static let levelKey = "effort.level"
+    private static let lastAgentKey = "effort.lastAgent"
+    /// The agent this gesture is for, decided when ⌘ went down.
+    private var gestureAgent: String?
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -67,6 +72,7 @@ final class EffortController: ObservableObject {
             if let value = result.value { state.values[result.targetID] = value }
             if let model = result.model { state.models[result.targetID] = model }
             state.scales[result.targetID] = result.scale
+            state.liveOnly[result.targetID] = result.liveOnly
         }
     }
 
@@ -118,21 +124,83 @@ final class EffortController: ObservableObject {
     /// band reaches is the neighbour. Where the lid rests now becomes neutral
     /// again, so the next push steps from here rather than from wherever the
     /// last gesture left it.
+    ///
+    /// A value no lid level types — Claude Code's `ultracode`, past `max` —
+    /// is not a level at all: it is typed into the session in view as it
+    /// is, and nothing else changes — no config, not the lid's level.
+    /// Claude app sessions spyx switched ultracode on in — the app keeps it
+    /// on through every /effort level until `/effort ultracode off`.
+    private var ultracodeOn: Set<pid_t> = []
+
     func set(scaleIndex: Int, forTargetID id: String) {
         guard let scale = state.scales[id], scale.indices.contains(scaleIndex) else { return }
         let target = EffortTargetWriter.loadTargets().first { $0.id == id }
-        let level = target?.level(reaching: scale[scaleIndex], model: state.models[id])
+        let value = scale[scaleIndex]
+        if let target, Self.isLiveChoice(value, agent: id, model: state.models[id], target: target) {
+            // In the Claude app ultracode is a switch, and spyx is the one
+            // who turned it on: picked again, it is switched off.
+            let inView = Self.desktopSessionInView(liveSessions())?.info.pid
+            if value == "ultracode", let pid = inView, ultracodeOn.contains(pid) {
+                apply(state.level, choice: "ultracode off", agent: id)
+            } else {
+                apply(state.level, choice: value, agent: id)
+            }
+            return
+        }
+        let level = target?.level(reaching: value, model: state.models[id])
             ?? EffortController.proportionalLevel(index: scaleIndex, count: scale.count)
-        set(level: level)
+        set(level: level, agent: id)
+    }
+
+    /// Whether `value` is one only a live session takes and no lid level
+    /// types — `ultracode` — rather than `max`, which the lid's top types.
+    static func isLiveChoice(_ value: String, agent: String, model: String?, target: EffortTarget) -> Bool {
+        guard target.liveOnly(for: model).contains(value) else { return false }
+        let typedByLid = EffortLevel.allCases.compactMap { command(agent: agent, model: model, level: $0, target: target) }
+        return !typedByLid.contains("/effort \(value)")
     }
 
     /// A lid level chosen by hand — the bar on the card let go on it.
-    func set(level: EffortLevel) {
+    /// A level for one agent — `agent`, or the one being worked with.
+    func set(level: EffortLevel, reason: String? = nil, agent: String? = nil) {
         step.set(level: level)
         step.reanchor()
         motion.reset()
         clearPreview()
-        apply(level)
+        apply(level, reason: reason, agent: agent)
+    }
+
+    /// One level below where `agent` is now — Auto-eco, for the agent that
+    /// is running out, and for nobody else.
+    func stepDown(agent: String, reason: String) {
+        guard let current = currentLevel(of: agent),
+              let lower = EffortLevel(rawValue: current.rawValue - 1) else { return }
+        set(level: lower, reason: reason, agent: agent)
+    }
+
+    /// The agent the lid is for right now: the session in view (a Terminal
+    /// tab, the Claude app's session), else Codex in front, else whichever
+    /// app in front runs an agent, else the one the lid last changed.
+    func focusAgent() -> String {
+        let live = liveSessions()
+        let focus = EffortInjector.focus()
+        let inView = AutoScope.injectTTYs(sessions: live.map(\.ref), focus: focus)
+        if let session = live.first(where: { $0.ref.tty.map(inView.contains) ?? false }) {
+            return session.ref.agent
+        }
+        if NSWorkspace.shared.frontmostApplication?.bundleIdentifier == ClaudeDesktopComposer.bundleID {
+            return "claude"
+        }
+        if codexNote(focus: focus, value: nil) != nil { return "codex" }
+        if let agent = Self.agentInView(live, focus: focus) { return agent }
+        return defaults.string(forKey: EffortController.lastAgentKey) ?? "claude"
+    }
+
+    /// The lid level an agent's own config is at now, on its model's scale.
+    private func currentLevel(of agent: String) -> EffortLevel? {
+        guard let value = state.values[agent],
+              let target = EffortTargetWriter.loadTargets().first(where: { $0.id == agent }) else { return nil }
+        return target.level(reaching: value, model: state.models[agent])
     }
 
     /// The lid level at the same fraction of the way up a scale of `count`.
@@ -181,9 +249,19 @@ final class EffortController: ObservableObject {
         if state.armed != armed { state.armed = armed }
         // The moment ⌘ goes down is where the gesture starts: travel before
         // it — a lid moved without ⌘, then ⌘ pressed — is not part of it.
-        if armed, !wasArmed, step.anchor != nil {
-            step.reanchor()
-            step.settle(at: angle)
+        if armed, !wasArmed {
+            // The gesture is for one agent — the one being worked with — and
+            // starts from where that agent is, so one notch up is one level
+            // above its own effort, not above some other agent's.
+            let agent = focusAgent()
+            gestureAgent = agent
+            if let level = currentLevel(of: agent), level != step.level {
+                step.set(level: level)
+            }
+            if step.anchor != nil {
+                step.reanchor()
+                step.settle(at: angle)
+            }
         }
         wasArmed = armed
         guard armed else {
@@ -242,8 +320,10 @@ final class EffortController: ObservableObject {
         // will, the agent of whatever is in front.
         let agent = reached.first?.ref.agent ?? Self.agentInView(live, focus: focus)
         let names = reached.map(\.name)
-        if !names.isEmpty {
-            return EffortTargetNote(text: L10n.t("Live → \(names.joined(separator: ", "))"), isLive: true, agent: agent)
+        if !names.isEmpty, let first = reached.first {
+            let aim = EffortAim(agent: first.ref.agent, session: first.name,
+                                model: first.model ?? state.models[first.ref.agent])
+            return EffortTargetNote(text: L10n.t("Live → \(names.joined(separator: ", "))"), isLive: true, agent: agent, aim: aim)
         }
         // The Claude app in front: what letting go will do there.
         if NSWorkspace.shared.frontmostApplication?.bundleIdentifier == ClaudeDesktopComposer.bundleID {
@@ -254,7 +334,8 @@ final class EffortController: ObservableObject {
             let note = desktop.info.isIdle
                 ? EffortNotes.Note(text: L10n.t("Live → \(desktop.name)"), isLive: true)
                 : EffortNotes.claudeApp(nil, session: desktop.name)
-            return EffortTargetNote(text: note.text, isLive: note.isLive, agent: "claude")
+            let aim = EffortAim(agent: "claude", session: desktop.name, model: desktop.info.model ?? state.models["claude"])
+            return EffortTargetNote(text: note.text, isLive: note.isLive, agent: "claude", aim: aim)
         }
         if let codex = codexNote(focus: focus, value: state.values["codex"]) {
             return EffortTargetNote(text: codex.text, isLive: false, agent: "codex")
@@ -296,25 +377,44 @@ final class EffortController: ObservableObject {
         onPreview?(nil, step.level, nil)
     }
 
-    private func apply(_ level: EffortLevel) {
-        defaults.set(level.description, forKey: EffortController.levelKey)
-        log.notice("lid level -> \(level.description, privacy: .public)")
-
-        // Configs are defaults for the *next* session: always every agent.
-        let results = EffortTargetWriter.apply(level: level)
+    /// `choice`: a value only a live session takes (`ultracode`), typed
+    /// into the session in view instead of the level's own — the configs,
+    /// the stored level and the lid's level are all left as they are.
+    private func apply(_ level: EffortLevel, reason: String? = nil, choice: String? = nil, agent: String? = nil) {
+        // One agent: the one named, else the gesture's, else whichever is
+        // being worked with now. The others keep their own level.
+        let agent = agent ?? gestureAgent ?? focusAgent()
+        gestureAgent = nil
+        defaults.set(agent, forKey: EffortController.lastAgentKey)
+        let results: [EffortTargetWriter.Result]
+        if let choice {
+            log.notice("live-only choice -> \(choice, privacy: .public)")
+            results = EffortTargetWriter.currentValues()
+        } else {
+            defaults.set(level.description, forKey: EffortController.levelKey)
+            log.notice("lid level -> \(level.description, privacy: .public) for \(agent, privacy: .public)")
+            // That agent's default for its *next* session; its session in
+            // view, if any, gets it live below.
+            results = EffortTargetWriter.apply(level: level, only: agent)
+        }
         var values: [String: String] = [:]
         var models: [String: String] = [:]
         var scales: [String: [String]] = [:]
+        var liveOnly: [String: [String]] = [:]
         for result in results {
             if let value = result.value { values[result.targetID] = value }
             if let model = result.model { models[result.targetID] = model }
             scales[result.targetID] = result.scale
+            liveOnly[result.targetID] = result.liveOnly
         }
-        state.level = level
-        state.values = values
-        state.models = models
-        state.scales = scales
-        state.lastChange = Date()
+        if choice == nil {
+            state.level = level
+            state.values = values
+            state.models = models
+            state.scales = scales
+            state.liveOnly = liveOnly
+            state.lastChange = Date()
+        }
 
         // One session only: the one you are looking at — the selected tab of
         // Terminal in front, Claude Code or Grok. The others keep their
@@ -326,16 +426,20 @@ final class EffortController: ObservableObject {
         let focus = EffortInjector.focus()
         let inView = AutoScope.injectTTYs(sessions: refs, focus: focus)
         let configs = Dictionary(EffortTargetWriter.loadTargets().map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
-        let targets = live.filter { $0.ref.tty.map(inView.contains) ?? false }
-            .prefix(1)
-            .map { session in
+        let inViewSession = live.first { ($0.ref.tty.map(inView.contains) ?? false) && $0.ref.agent == agent }
+        let targets = [inViewSession].compactMap { $0 }
+            .compactMap { session -> EffortInjector.Target? in
                 // The value for the model this session is running — which
                 // need not be the config's default — else the config's.
                 let model = session.model ?? models[session.ref.agent]
-                return EffortInjector.Target(session: session.ref,
-                                             command: Self.command(agent: session.ref.agent, model: model, level: level,
-                                                                   target: configs[session.ref.agent]))
+                guard let command = Self.command(agent: session.ref.agent, model: model, level: level,
+                                                 target: configs[session.ref.agent], choice: choice) else { return nil }
+                return EffortInjector.Target(session: session.ref, command: command)
             }
+        // In view, but its model has no effort to set.
+        let noEffort: EffortAim? = targets.isEmpty ? inViewSession.map {
+            EffortAim(agent: $0.ref.agent, session: $0.name, model: $0.model ?? models[$0.ref.agent])
+        } : nil
         func name(of pid: pid_t) -> String {
             live.first { $0.ref.pid == pid }?.name ?? "pid \(pid)"
         }
@@ -345,7 +449,7 @@ final class EffortController: ObservableObject {
         for attempt in attempts where attempt.outcome != .sent {
             log.notice("live inject skipped pid \(attempt.pid, privacy: .public): \(String(describing: attempt.outcome), privacy: .public)")
             if attempt.outcome == .promptNotIdle, let target = targets.first(where: { $0.session.pid == attempt.pid }) {
-                pending[attempt.pid] = PendingLive(target: target, name: name(of: attempt.pid), level: level,
+                pending[attempt.pid] = PendingLive(target: target, name: name(of: attempt.pid), level: choice == nil ? level : .max,
                                                    until: Date().addingTimeInterval(Self.pendingFor))
             }
         }
@@ -361,13 +465,24 @@ final class EffortController: ObservableObject {
         // what the card names instead of every agent's new default.
         var liveCommand: (agent: String, command: String)? = targets.first.map { ($0.session.agent, $0.command) }
         var codexInView = false
+        // Which session, and on which model, the card names.
+        var aim: EffortAim? = targets.first.flatMap { target in
+            live.first { $0.ref.pid == target.session.pid }.map { session in
+                EffortAim(agent: session.ref.agent, session: session.name, model: session.model ?? models[session.ref.agent])
+            }
+        }
         let sent = attempts.filter { $0.outcome == .sent }.map { name(of: $0.pid) }
-        if !sent.isEmpty {
+        var namesWithoutLive = noEffort != nil
+        if let noEffort {
+            note = choice.map { L10n.t("\(noEffort.text) · no \($0) on this model") }
+                ?? L10n.t("\(noEffort.text) · this model has no effort level")
+            aim = noEffort
+        } else if !sent.isEmpty {
             note = L10n.t("Live → \(sent.joined(separator: ", "))")
             noteIsLive = true
         } else if let attempt = attempts.first(where: { $0.outcome == .promptNotIdle }) ?? attempts.first {
             note = L10n.t("\(name(of: attempt.pid)) · busy · applies next turn")
-        } else if let desktop = Self.desktopSessionInView(live),
+        } else if agent == "claude", let desktop = Self.desktopSessionInView(live),
                   ClaudeDesktopComposer.isEnabled(defaults) {
             // Claude Desktop in front: the session it is showing. Desktop
             // takes `/effort` in its composer; its stdin is its own, so this
@@ -375,17 +490,47 @@ final class EffortController: ObservableObject {
             // as soon as it is (see `retryPending`). The card says which,
             // and why not yet: in an app you are looking at, a change that
             // silently waits looks like one that failed.
-            let command = Self.command(agent: "claude", model: desktop.info.model ?? models["claude"],
-                                       level: level, target: configs["claude"])
-            liveCommand = ("claude", command)
-            let outcome = desktop.info.isIdle ? ClaudeDesktopComposer.type(command: command) : nil
-            let desktopNote = EffortNotes.claudeApp(outcome, session: desktop.name)
-            note = desktopNote.text
-            noteIsLive = desktopNote.isLive
-            if desktopNote.waits {
-                pendingDesktop = PendingDesktop(pid: desktop.info.pid, command: command, name: desktop.name,
-                                                level: level, until: Date().addingTimeInterval(Self.pendingFor))
-                schedulePendingRetry()
+            let desktopModel = desktop.info.model ?? models["claude"]
+            aim = EffortAim(agent: "claude", session: desktop.name, model: desktopModel)
+            if let command = Self.command(agent: "claude", model: desktopModel, level: level, target: configs["claude"], choice: choice) {
+                liveCommand = ("claude", command)
+                let outcome = desktop.info.isIdle ? ClaudeDesktopComposer.type(command: command) : nil
+                let desktopNote = EffortNotes.claudeApp(outcome, session: desktop.name)
+                note = desktopNote.text
+                noteIsLive = desktopNote.isLive
+                if let choice, outcome == .notSent {
+                    // Nothing was written anywhere: "next session" would be untrue.
+                    note = L10n.t("Claude app didn't take /effort \(choice) · nothing was sent")
+                }
+                // The Claude app keeps ultracode on through any /effort level
+                // until told otherwise: remembered, so the card can say so and
+                // picking it again switches it off.
+                if outcome == .sent {
+                    if choice == "ultracode" { ultracodeOn.insert(desktop.info.pid) }
+                    if choice == "ultracode off" { ultracodeOn.remove(desktop.info.pid) }
+                }
+                if choice == nil, ultracodeOn.contains(desktop.info.pid), let current = note {
+                    note = L10n.t("\(current) · ultracode is still on — pick it again in the ring's tooltip to switch it off")
+                }
+                if desktopNote.waits {
+                    pendingDesktop = PendingDesktop(pid: desktop.info.pid, command: command, name: desktop.name,
+                                                    level: choice == nil ? level : .max, until: Date().addingTimeInterval(Self.pendingFor))
+                    schedulePendingRetry()
+                }
+            } else {
+                note = choice.map { L10n.t("\(aim?.text ?? desktop.name) · no \($0) on this model") }
+                    ?? L10n.t("\(aim?.text ?? desktop.name) · this model has no effort level")
+                namesWithoutLive = true
+            }
+        } else if let choice {
+            // Nothing in view to type it into, and no config to fall back
+            // on: every "applies next session" below would be untrue. With the
+            // Claude app in front, the reason is the switch in Settings.
+            if NSWorkspace.shared.frontmostApplication?.bundleIdentifier == ClaudeDesktopComposer.bundleID,
+               !ClaudeDesktopComposer.isEnabled(defaults) {
+                note = L10n.t("Typing into the Claude app is off in Settings · \(choice) was not sent")
+            } else {
+                note = L10n.t("No Claude Code session in view · \(choice) is only typed live, nothing was sent")
             }
         } else if NSWorkspace.shared.frontmostApplication?.bundleIdentifier == ClaudeDesktopComposer.bundleID {
             note = EffortNotes.claudeAppUnreached(typingOn: ClaudeDesktopComposer.isEnabled(defaults)).text
@@ -394,33 +539,54 @@ final class EffortController: ObservableObject {
             codexInView = true
         } else if let superset = supersetLive(level: level, values: values, sessions: sessions, results: results) {
             note = superset
+        } else if NSWorkspace.shared.frontmostApplication?.bundleIdentifier == "com.apple.Terminal",
+                  !EffortInjector.terminalAllowed {
+            note = L10n.t("Terminal · allow spyx in Setup → Terminals to apply it live")
         } else if let host = AutoScope.unreachableHost(sessions: refs, focus: focus) {
             note = L10n.t("\(host) · applies next session")
         } else {
-            note = L10n.t("No session in view · applies next session")
+            // No session of its own in view: its default, said by name.
+            let name = results.first { $0.targetID == agent }?.displayName ?? agent.capitalized
+            note = L10n.t("\(name) · applies next session")
         }
 
         // A session in view: the card names it and the value it got. None:
         // every agent's new default, which is what changed.
-        let allDefaults = results.compactMap { result in result.value.map { (name: result.displayName, value: $0) } }
+        // Every agent's new default, with the model it is for.
+        let allDefaults = results.compactMap { result in
+            result.value.map { value in
+                (name: result.model.map { model -> String in
+                    // "Grok (4.7)", not "Grok (Grok 4.7)".
+                    let pretty = ModelName.pretty(model)
+                    let short = pretty.hasPrefix(result.displayName + " ") ? String(pretty.dropFirst(result.displayName.count + 1)) : pretty
+                    return "\(result.displayName) (\(short))"
+                } ?? result.displayName, value: value)
+            }
+        }
         let shown: [(name: String, value: String)]
         if let live = liveCommand, let target = results.first(where: { $0.targetID == live.agent }) {
             shown = [(target.displayName, String(live.command.dropFirst("/effort ".count)))]
         } else {
-            shown = allDefaults
+            // Only the agent the lid was for: the others did not change.
+            let mine = results.first { $0.targetID == agent }.map(\.displayName)
+            shown = allDefaults.filter { entry in mine.map { entry.name.hasPrefix($0) } ?? false }
         }
         onChange?(EffortChangeEvent(
-            level: level,
+            // A choice past the lid's levels sits at the bar's top.
+            level: choice == nil ? level : .max,
             values: shown,
             at: Date(),
             forSession: liveCommand != nil,
             note: note,
             noteIsLive: noteIsLive,
+            reason: choice.flatMap(EffortNotes.choiceDetail) ?? reason,
             // The card comes out of the ring of a session that took the new
             // level — Grok's, when Grok's session got it — not of whichever
             // app happened to be in front. Only when none took it live does
             // the app in view decide.
-            agent: codexInView ? "codex" : Self.cardAgent(attempts: attempts, live: live, focus: focus)
+            agent: codexInView ? "codex" : Self.cardAgent(attempts: attempts, live: live, focus: focus),
+            aim: liveCommand == nil && !namesWithoutLive ? nil : aim,
+            choice: choice
         ))
     }
 
@@ -474,10 +640,23 @@ final class EffortController: ObservableObject {
 
     /// What to type into a session of `agent` running `model`: the value
     /// that model's scale gives this level. Claude Code's top band is `max`
-    /// live — its CLI takes it; only settings.json drops it to `xhigh`.
-    static func command(agent: String, model: String?, level: EffortLevel, target: EffortTarget?) -> String {
-        let value = target?.value(for: level, model: model) ?? level.description
-        if agent == "claude", level == .max { return "/effort max" }
+    /// live, on a model that has it — its CLI takes it; only settings.json
+    /// drops it to `xhigh`. Nil for a model that takes no effort level
+    /// (Haiku 4.5): nothing is typed into it.
+    ///
+    /// `choice`, a value only a live session takes (`ultracode`), is typed
+    /// as it is in place of the level's — and only into a model whose scale
+    /// has it: nil for another agent, or an older Claude model.
+    static func command(agent: String, model: String?, level: EffortLevel, target: EffortTarget?,
+                        choice: String? = nil) -> String? {
+        if let choice {
+            if choice == "ultracode off", agent == "claude" { return "/effort ultracode off" }
+            guard let target, target.id == agent, target.liveOnly(for: model).contains(choice) else { return nil }
+            return "/effort \(choice)"
+        }
+        guard let target else { return "/effort \(level.description)" }
+        guard let value = target.value(for: level, model: model) else { return nil }
+        if agent == "claude", level == .max, target.liveOnly(for: model).contains("max") { return "/effort max" }
         return "/effort \(value)"
     }
 
@@ -539,10 +718,16 @@ final class EffortController: ObservableObject {
     /// from the ring of the agent that took it, naming the value it got.
     private func delivered(_ command: String, agent: String, name: String, level: EffortLevel) {
         let display = EffortTargetWriter.loadTargets().first { $0.id == agent }?.displayName ?? name
+        let value = String(command.dropFirst("/effort ".count))
+        // A choice past the levels (`ultracode`) comes back named as itself.
+        let detail = EffortNotes.choiceDetail(value)
         onChange?(EffortChangeEvent(level: level,
-                                    values: [(display, String(command.dropFirst("/effort ".count)))],
+                                    values: [(display, value)],
                                     at: Date(), forSession: true,
-                                    note: EffortNotes.delivered(to: name), noteIsLive: true, agent: agent))
+                                    note: EffortNotes.delivered(to: name), noteIsLive: true,
+                                    reason: detail, agent: agent,
+                                    aim: EffortAim(agent: agent, session: name, model: nil),
+                                    choice: detail == nil ? nil : value))
     }
 
     /// The session Claude Desktop is showing, when Desktop is in front: the

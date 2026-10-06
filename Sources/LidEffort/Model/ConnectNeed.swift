@@ -64,3 +64,60 @@ struct ConnectNeed: Equatable {
         if let error { Log.usage.error("sign-in command failed to start: \(error, privacy: .public)") }
     }
 }
+
+/// What a row in Settings → Accounts offers at its trailing end, in place of
+/// the on/off switch every row used to have.
+///
+/// A switch read as "turn this on", not "sign in to this", and an agent that
+/// was not signed in looked the same either way round. So each row now says
+/// which of four states it is in and offers the one control that moves it on.
+enum AccountRowState: Equatable {
+    /// A local model: the switch stays, because it only shows or hides the
+    /// model in the notch — there is nothing to sign in to.
+    case toggle
+    /// Switched off. One Connect button, which switches it on and starts
+    /// whatever sign-in it needs.
+    case connect
+    /// Switched on but not readable yet, and what would fix it. Its button is
+    /// shown only when it does something from here (`offersButton`).
+    case needs(ConnectNeed)
+    /// Switched on and reading.
+    case reading
+
+    static func resolve(isLocalModel: Bool, isConnected: Bool, need: ConnectNeed?) -> AccountRowState {
+        if isLocalModel { return .toggle }
+        guard isConnected else { return .connect }
+        if let need { return .needs(need) }
+        return .reading
+    }
+
+    /// The need to show for a connected row.
+    ///
+    /// The store's own answer (`UsageStore.connectNeeds()`) wins whenever the
+    /// provider is on the notch: it follows each reading, so it clears the
+    /// moment a sign-in lands. A provider not there yet — switched on a moment
+    /// ago, or a sheet with no store — is judged from its summary instead.
+    /// A refusal is taken from the summary either way: it leaves the last
+    /// reading's status untouched, so the store's snapshot never says so.
+    static func need(live: ConnectNeed?, isOnNotch: Bool, summary: ProviderSummary,
+                     appInstalled: (String) -> Bool) -> ConnectNeed? {
+        // A refusal first, whatever else the store still says: an old
+        // "expired" can outlive it, and only Allow access… fixes a refusal.
+        if summary.wasRefusedAccess {
+            return ConnectNeed.need(status: .accessDenied, expired: false, route: summary.signIn,
+                                    command: summary.signInCommand, appInstalled: appInstalled)
+        }
+        if isOnNotch, let live { return live }
+        guard !isOnNotch else { return nil }
+        let status: ProviderStatus = summary.account == nil && summary.kind == .usage ? .needsAuth : .ok
+        return ConnectNeed.need(status: status, expired: summary.needsSignInRenewal, route: summary.signIn,
+                                command: summary.signInCommand, appInstalled: appInstalled)
+    }
+}
+
+extension ConnectNeed {
+    /// Whether the need has a button in Settings. `.settings` means "open
+    /// Settings", which is where the row already is — its guidance or key
+    /// field is the answer there.
+    var offersButton: Bool { action != .settings }
+}

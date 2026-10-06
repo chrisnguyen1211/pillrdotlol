@@ -23,6 +23,9 @@ actor KimiProvider: UsageProvider {
         self.authURL = authURL
     }
 
+    /// Where the sign-in lives: a new one written there is read at once.
+    nonisolated var credentialFiles: [URL] { [KimiCredentials.authURL] }
+
     nonisolated var signInRoute: SignInRoute {
         .guidance(L10n.t("Run kimi and sign in with /login — it writes and refreshes the token this reads."))
     }
@@ -34,7 +37,7 @@ actor KimiProvider: UsageProvider {
         if credentials.isExpired { throw UsageProviderError.credentialExpired }
 
         let body = try await fetch(token: credentials.accessToken)
-        Log.usage.debug("kimi usages -> \(body.prefix(400), privacy: .public)")
+        Log.usage.debug("kimi usages -> \(body.prefix(400), privacy: .private)")
         let read = try KimiUsage.read(fromJSON: body)
 
         return ProviderSnapshot(

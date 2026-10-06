@@ -97,11 +97,20 @@ enum AccessibilityAccess {
 
     /// Adds spyx to the list, switched off, and opens the pane it is in:
     /// Accessibility is the one permission macOS never grants from a dialog.
-    static func request() {
+    /// The first time, macOS's own alert — which adds spyx to the list and
+    /// offers the way there. After that the alert no longer appears, so the
+    /// pane itself is opened. Never both at once.
+    static func request(_ defaults: UserDefaults = .standard) {
+        if defaults.bool(forKey: askedKey) {
+            NSWorkspace.shared.open(settingsURL)
+            return
+        }
+        defaults.set(true, forKey: askedKey)
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
         _ = AXIsProcessTrustedWithOptions(options)
-        NSWorkspace.shared.open(settingsURL)
     }
+
+    static let askedKey = "accessibility.asked"
 
     static let settingsURL = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!
 }

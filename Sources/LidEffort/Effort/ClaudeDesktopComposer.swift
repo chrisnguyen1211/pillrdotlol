@@ -42,6 +42,8 @@ enum ClaudeDesktopComposer {
         case userTyping
         /// Typed, Return pressed, and the box never emptied.
         case notSent
+        /// The window is showing a different session than the one meant.
+        case otherSession
     }
 
     /// Types the command and presses Return, or says why it did not.
@@ -51,6 +53,31 @@ enum ClaudeDesktopComposer {
             log.error("composer: refused \(command, privacy: .public)")
             return .notSent
         }
+        return deliver(command, askForTrust: askForTrust)
+    }
+
+    /// A message you wrote in spyx, sent into the Claude app session it is
+    /// for — only while the window is showing that very session, into an
+    /// empty box, and sent only once the box reads back exactly the message.
+    @MainActor
+    static func send(message: String, toHostSession id: String) -> Outcome {
+        guard let line = SessionCommander.oneLine(message) else { return .notSent }
+        guard view() == .session(id) else {
+            log.notice("composer: another session is on screen")
+            return .otherSession
+        }
+        // Just brought to the front from spyx's panel: the window may still
+        // be redrawing its message box. Once more, from a fresh look, if the
+        // first try could not put the message in.
+        let first = deliver(line, askForTrust: false)
+        guard first == .notSent else { return first }
+        usleep(500_000)
+        log.notice("composer: second try with a fresh message box")
+        return deliver(line, askForTrust: false)
+    }
+
+    @MainActor
+    private static func deliver(_ command: String, askForTrust: Bool) -> Outcome {
         guard let app = NSWorkspace.shared.frontmostApplication,
               app.bundleIdentifier == bundleID else {
             log.notice("composer: Claude Desktop is not in front")
@@ -108,7 +135,7 @@ enum ClaudeDesktopComposer {
         // and a mangled command was sent as a message.
         guard insert(command, into: focused) else {
             clear(focused, ifItHolds: command)
-            log.notice("composer: \(command, privacy: .public) could not be put in the box intact")
+            log.notice("composer: \(command.count, privacy: .public) chars could not be put in the box intact")
             return .notSent
         }
         // Typing `/` opens the command menu, where a first Return can go to
@@ -116,15 +143,19 @@ enum ClaudeDesktopComposer {
         // empty.
         for attempt in 1...Self.returnAttempts {
             post(key: 36)   // Return
-            usleep(Self.settle)
-            let now = value(of: focused)
+            // Sent is the box emptying; give it up to a second to show it.
+            var now = value(of: focused)
+            for _ in 0..<Self.readBackTries where !now.isEmpty {
+                usleep(Self.readBackWait)
+                now = value(of: focused)
+            }
             if now.isEmpty {
-                log.notice("composer: sent \(command, privacy: .public) (return \(attempt, privacy: .public))")
+                log.notice("composer: sent \(command.count, privacy: .public) chars (return \(attempt, privacy: .public))")
                 return .sent
             }
-            // Something other than our command is in the box now: the user
-            // is typing. Stop, and leave it alone.
-            guard now.hasPrefix("/") else {
+            // Something other than what we put there is in the box now: the
+            // user is typing. Stop, and leave it alone.
+            guard Self.isOurs(now, command) || now.hasPrefix("/") else {
                 log.notice("composer: the composer changed under us; stopping")
                 return .userTyping
             }
@@ -138,7 +169,7 @@ enum ClaudeDesktopComposer {
         }
         // Not sent: take back only what we put there, so no stray command is left.
         clear(focused, ifItHolds: command)
-        log.notice("composer: \(command, privacy: .public) was typed but not sent")
+        log.notice("composer: \(command.count, privacy: .public) chars typed but not sent")
         return .notSent
     }
 
@@ -156,17 +187,50 @@ enum ClaudeDesktopComposer {
     /// take that, pasted — the clipboard put back as it was. True only when
     /// the box then reads back exactly the command.
     private static func insert(_ command: String, into element: AXUIElement) -> Bool {
-        AXUIElementSetAttributeValue(element, kAXSelectedTextAttribute as CFString, command as CFString)
-        usleep(Self.settle)
-        if holdsExactly(value(of: element), command) { return true }
-        // Accessibility put nothing, or something else: start from empty.
-        if !value(of: element).isEmpty {
-            guard value(of: element).hasPrefix("/") else { return false }
+        let set = AXUIElementSetAttributeValue(element, kAXSelectedTextAttribute as CFString, command as CFString)
+        defer { log.notice("composer: insert \(Self.describe(value(of: element), command), privacy: .public); AX set \(set.rawValue, privacy: .public)") }
+        // The box catches up a beat after it is told — longer for a message
+        // than for a short command. Reading it once too early took a slow
+        // insert for a failed one, pasted again, and left "hihi".
+        if waitUntil(element, holds: command) { return true }
+        // Whatever is in there now came from us — the box was empty a moment
+        // ago — unless it is something else entirely: then someone is typing.
+        let now = value(of: element)
+        if !now.isEmpty {
+            guard isOurs(now, command) else { return false }
             deleteAll(element)
         }
         paste(command)
-        usleep(Self.settle)
-        return holdsExactly(value(of: element), command)
+        return waitUntil(element, holds: command)
+    }
+
+    /// Reads the box until it holds exactly `command`, for up to a second.
+    private static func waitUntil(_ element: AXUIElement, holds command: String) -> Bool {
+        for _ in 0..<Self.readBackTries {
+            usleep(Self.readBackWait)
+            if holdsExactly(value(of: element), command) { return true }
+        }
+        return false
+    }
+
+    static let readBackTries = 7
+    static let readBackWait: useconds_t = 150_000
+
+    /// What the box holds next to what was meant, without its text:
+    /// lengths, whether it contains the message, and the code points of
+    /// anything extra — what a log may say about someone's message.
+    static func describe(_ value: String, _ command: String) -> String {
+        var extra = value
+        if let range = extra.range(of: command) { extra.removeSubrange(range) }
+        let codes = extra.unicodeScalars.prefix(8).map { String(format: "U+%04X", $0.value) }.joined(separator: ",")
+        return "len \(value.count)/\(command.count), contains \(value.contains(command)), extra [\(codes)]"
+    }
+
+    /// Text spyx put there: the command, part of it, or it twice over.
+    static func isOurs(_ text: String, _ command: String) -> Bool {
+        let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return false }
+        return command.hasPrefix(text) || text.hasPrefix(command) || text == command + command
     }
 
     /// ⌘V with the command on the clipboard, then the clipboard as it was.
@@ -197,8 +261,7 @@ enum ClaudeDesktopComposer {
     /// Deletes what is in the box only when it is (part of) our command —
     /// never a draft of the person's.
     private static func clear(_ element: AXUIElement, ifItHolds command: String) {
-        let left = value(of: element)
-        guard !left.isEmpty, left.hasPrefix("/"), command.hasPrefix(left) || left.hasPrefix(command) else { return }
+        guard isOurs(value(of: element), command) else { return }
         deleteAll(element)
     }
 
@@ -223,8 +286,14 @@ enum ClaudeDesktopComposer {
     /// has its id in its address — `claude.ai/epitaxy/local_…`.
     @MainActor
     static func view() -> View {
-        guard let app = NSWorkspace.shared.frontmostApplication, app.bundleIdentifier == bundleID,
-              AXIsProcessTrusted() else { return .unknown }
+        guard let app = NSWorkspace.shared.frontmostApplication, app.bundleIdentifier == bundleID else { return .unknown }
+        return view(of: app)
+    }
+
+    /// What a Claude app window is showing, in front or not.
+    @MainActor
+    static func view(of app: NSRunningApplication) -> View {
+        guard AXIsProcessTrusted() else { return .unknown }
         let axApp = prepare(pid: app.processIdentifier)
         guard let window = element(axApp, kAXFocusedWindowAttribute) ?? element(axApp, kAXMainWindowAttribute) else {
             return .unknown
@@ -260,6 +329,99 @@ enum ClaudeDesktopComposer {
         return String(address[range])
     }
 
+    // MARK: In the background
+
+    static var runningApp: NSRunningApplication? {
+        NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).first
+    }
+
+    /// A message into the session the Claude app's window is showing, with
+    /// the app left where it is: the box filled through Accessibility and
+    /// its own Send button pressed — no keys, no focus, nothing brought to
+    /// the front. `.notSent` (the box put back as it was) when the window
+    /// will not take it that way; the caller then brings it forward.
+    @MainActor
+    static func sendInBackground(message: String, toHostSession id: String) -> Outcome {
+        guard let line = SessionCommander.oneLine(message), let app = runningApp else { return .notSent }
+        guard AXIsProcessTrusted() else { return .notTrusted }
+        let shown = view(of: app)
+        guard shown == .session(id) else {
+            log.notice("composer (background): window shows \(String(describing: shown), privacy: .public)")
+            return .otherSession
+        }
+        guard let composer = composer(of: app) else {
+            log.notice("composer (background): no message box")
+            return .noComposer
+        }
+        guard value(of: composer).isEmpty else {
+            log.notice("composer (background): the box has a draft")
+            return .draft
+        }
+        AXUIElementSetAttributeValue(composer, kAXValueAttribute as CFString, line as CFString)
+        guard waitUntil(composer, holds: line) else {
+            log.notice("composer (background): \(Self.describe(value(of: composer), line), privacy: .public)")
+            clear(composer, ifItHolds: line)
+            return .notSent
+        }
+        guard let send = button(near: composer, matching: ["send"]) else {
+            log.notice("composer (background): no Send button")
+            clear(composer, ifItHolds: line)
+            return .notSent
+        }
+        AXUIElementPerformAction(send, kAXPressAction as CFString)
+        var now = value(of: composer)
+        for _ in 0..<Self.readBackTries where !now.isEmpty {
+            usleep(Self.readBackWait)
+            now = value(of: composer)
+        }
+        if now.isEmpty {
+            log.notice("composer (background): sent \(line.count, privacy: .public) chars")
+            return .sent
+        }
+        clear(composer, ifItHolds: line)
+        return .notSent
+    }
+
+    /// Presses the Claude app's own Stop for the session its window shows,
+    /// in the background. False when that is not the session, or there is
+    /// no Stop to press (it is not working).
+    @MainActor
+    static func stopInBackground(hostSession id: String) -> Bool {
+        guard let app = runningApp, AXIsProcessTrusted(), view(of: app) == .session(id),
+              let composer = composer(of: app),
+              let stop = button(near: composer, matching: ["stop"]) else { return false }
+        let pressed = AXUIElementPerformAction(stop, kAXPressAction as CFString) == .success
+        log.notice("composer: Stop pressed \(pressed, privacy: .public)")
+        return pressed
+    }
+
+    @MainActor
+    private static func composer(of app: NSRunningApplication) -> AXUIElement? {
+        let axApp = prepare(pid: app.processIdentifier)
+        guard let window = element(axApp, kAXMainWindowAttribute) ?? element(axApp, kAXFocusedWindowAttribute) else { return nil }
+        return findComposer(in: window)
+    }
+
+    /// A button in the message box's neighbourhood whose label contains one
+    /// of `words` — "Send message", "Stop".
+    private static func button(near composer: AXUIElement, matching words: [String]) -> AXUIElement? {
+        var box = composer
+        for _ in 0..<6 { if let parent = element(box, kAXParentAttribute) { box = parent } }
+        var stack = [box]
+        var visited = 0
+        while let node = stack.popLast(), visited < 3000 {
+            visited += 1
+            if string(node, kAXRoleAttribute) == kAXButtonRole {
+                let label = ((string(node, kAXDescriptionAttribute) ?? "") + " " + (string(node, kAXTitleAttribute) ?? "")).lowercased()
+                if words.contains(where: { label.contains($0) }) { return node }
+            }
+            var children: CFTypeRef?
+            if AXUIElementCopyAttributeValue(node, kAXChildrenAttribute as CFString, &children) == .success,
+               let list = children as? [AXUIElement] { stack.append(contentsOf: list) }
+        }
+        return nil
+    }
+
     /// Asks Claude Desktop for its accessibility tree. Electron builds one
     /// only when told an assistive client wants it, and builds it a beat
     /// later — so this is also called as Claude Desktop comes to the front,
@@ -267,6 +429,8 @@ enum ClaudeDesktopComposer {
     @discardableResult
     static func prepare(pid: pid_t) -> AXUIElement {
         let axApp = AXUIElementCreateApplication(pid)
+        // A busy Claude app answers late; never wait on it for long.
+        AXUIElementSetMessagingTimeout(axApp, 1.0)
         AXUIElementSetAttributeValue(axApp, "AXManualAccessibility" as CFString, kCFBooleanTrue)
         AXUIElementSetAttributeValue(axApp, "AXEnhancedUserInterface" as CFString, kCFBooleanTrue)
         return axApp

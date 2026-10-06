@@ -183,7 +183,7 @@ final class RateLimitTests: XCTestCase {
         XCTAssertEqual(UsageStore.statusForTesting(UsageProviderError.needsAuth), .needsAuth)
         XCTAssertEqual(
             UsageStore.statusForTesting(UsageProviderError.badResponse(status: 500)),
-            .error("HTTP 500")
+            .error("its server is having trouble (500); spyx will try again")
         )
     }
 }

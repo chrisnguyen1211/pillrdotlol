@@ -70,11 +70,13 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>$VERSION</string>
   <key>CFBundleVersion</key><string>$BUILD_NUMBER</string>
-  <key>LSMinimumSystemVersion</key><string>15.0</string>
+  <key>LSApplicationCategoryType</key>
+    <string>public.app-category.developer-tools</string>
+    <key>LSMinimumSystemVersion</key><string>15.0</string>
   <key>NSPrincipalClass</key><string>NSApplication</string>
   <key>NSHighResolutionCapable</key><true/>
   <key>NSAppleEventsUsageDescription</key>
-  <string>spyx types /effort into the Terminal.app tab a Claude Code session is running in, so a lid gesture updates that session live.</string>
+  <string>spyx talks to your terminal to open the session you click, send your reply or the lid&apos;s effort level to a running agent session, and run an agent&apos;s sign-in command when you ask. It never reads your keystrokes.</string>
   <key>SUFeedURL</key><string>https://github.com/chrisnguyen1211/spyxdotlol/releases/latest/download/appcast.xml</string>
   <key>SUPublicEDKey</key><string>9+PPkW+iIsKvN+uBa6Ab15KmY/D2GYiWCXuAYUC2pGQ=</string>
   <key>NSHumanReadableCopyright</key><string>© 2026 Cuong Nguyen. Open-source notices: Settings → General → Acknowledgements.</string>

@@ -122,15 +122,25 @@ struct ProviderSummary: Identifiable, Equatable {
     /// does too when the editor is signed in, but `cursor-agent` files its
     /// JWT in the login keychain — without this flag a declined prompt would
     /// have no "Allow access…" to put the dialogue back.
+    ///
+    /// Apify's CLI files its token in the login keychain too, so a Deny is
+    /// possible there — and "Allow access…" is the only way back from one.
     var usesKeychain: Bool {
         ClaudeProfile.isClaude(providerID: id) || id == "gemini" || id == "cursor"
+            || id == "apify"
     }
 
     let id: String
     let name: String
     let glyph: ProviderGlyph
+    /// A custom endpoint's own icon, drawn in place of the glyph.
+    var customIconFilename: String? = nil
     let account: ProviderAccount?
     let signIn: SignInRoute
+    /// The command that signs this provider in from a terminal, when there is
+    /// one — what Settings' Connect falls back to when there is no window or
+    /// app to open. Nil for most providers.
+    var signInCommand: String? = nil
     /// Whether macOS refused this credential on the last fetch — the one state
     /// "Allow access…" can actually repair.
     ///

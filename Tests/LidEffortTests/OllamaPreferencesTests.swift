@@ -7,6 +7,9 @@ final class OllamaPreferencesTests: XCTestCase {
         let suite = "OllamaPreferencesTests.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite)!
         addTeardownBlock { defaults.removePersistentDomain(forName: suite) }
+        // These are about Ollama's own migration: the providers added since
+        // (see `NewProviderMigrationTests`) are already introduced here.
+        defaults.set(Array(Preferences.introducedLater), forKey: "introducedProviders")
         return defaults
     }
 

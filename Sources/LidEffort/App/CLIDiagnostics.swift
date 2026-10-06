@@ -10,6 +10,13 @@ import LidEffortCore
 enum CLIDiagnostics {
     static func runIfRequested() {
         let args = CommandLine.arguments
+        if args.contains("--uninstall") {
+            let removed = AgentHooks.removeEverything()
+            print(removed.isEmpty ? "spyx had nothing in any agent's config."
+                                  : "Removed spyx from: \(removed.joined(separator: ", ")).")
+            print("You can now move spyx.app to the Trash.")
+            exit(0)
+        }
         if args.contains("--probe") {
             let sensor = LidAngleSensor()
             print(sensor.diagnostic)

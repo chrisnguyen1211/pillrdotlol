@@ -13,8 +13,16 @@ struct LidEffortMain: App {
         Settings { EmptyView() }
             .commands {
                 CommandGroup(replacing: .appSettings) {
-                    Button("Settings…") { appDelegate.openSettings() }
+                    Button(L10n.t("Settings…")) { appDelegate.openSettings() }
                         .keyboardShortcut(",", modifiers: .command)
+                }
+                CommandGroup(after: .appInfo) {
+                    Button(L10n.t("Check for Updates…")) { appDelegate.checkForUpdates() }
+                }
+                CommandGroup(replacing: .help) {
+                    Button(L10n.t("Report a Bug…")) {
+                        BugReport.open(version: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?")
+                    }
                 }
             }
     }

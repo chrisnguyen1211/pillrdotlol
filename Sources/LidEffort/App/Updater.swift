@@ -15,6 +15,9 @@ final class Updater: NSObject, ObservableObject {
         case checking
         case upToDate(Date)
         case found(String)
+        /// Downloaded and waiting for spyx to quit — which a login item that
+        /// never quits would not do on its own.
+        case ready(String)
         case unreachable
         case failed(String)
 
@@ -24,6 +27,7 @@ final class Updater: NSObject, ObservableObject {
             case .checking: return L10n.t("Checking…")
             case .upToDate: return L10n.t("spyx is up to date.")
             case .found(let v): return L10n.t("Version \(v) is available.")
+            case .ready(let v): return L10n.t("Version \(v) is ready. Restart spyx to finish updating.")
             case .unreachable: return L10n.t("Couldn't reach the update server. spyx will try again on its own — nothing is wrong with this copy.")
             case .failed(let why): return why
             }
@@ -31,6 +35,13 @@ final class Updater: NSObject, ObservableObject {
     }
 
     @Published private(set) var outcome: Outcome = .idle
+    /// Sparkle's "install it now", once an update is downloaded and waiting.
+    private var installNow: (() -> Void)?
+
+    var isReadyToInstall: Bool { installNow != nil }
+
+    /// Quits, installs and relaunches — the update, applied.
+    func restartToUpdate() { installNow?() }
     private static let automaticKey = "updater.automatic"
     private var controller: SPUStandardUpdaterController?
 
@@ -88,6 +99,18 @@ extension Updater: SPUUpdaterDelegate {
     nonisolated func updater(_ updater: SPUUpdater, didFindValidUpdate item: SUAppcastItem) {
         let version = item.displayVersionString
         Task { @MainActor in self.outcome = .found(version) }
+    }
+
+    /// Downloaded in the background: rather than wait for a quit that a
+    /// login item never makes, say it is ready and offer the restart.
+    nonisolated func updater(_ updater: SPUUpdater, willInstallUpdateOnQuit item: SUAppcastItem,
+                             immediateInstallationBlock immediateInstallHandler: @escaping () -> Void) -> Bool {
+        let version = item.displayVersionString
+        Task { @MainActor in
+            self.installNow = immediateInstallHandler
+            self.outcome = .ready(version)
+        }
+        return true
     }
 
     nonisolated func updaterDidNotFindUpdate(_ updater: SPUUpdater) {

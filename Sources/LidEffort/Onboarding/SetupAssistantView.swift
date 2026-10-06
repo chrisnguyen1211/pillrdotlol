@@ -57,7 +57,7 @@ struct SetupAssistantView: View {
                 .foregroundStyle(.tertiary)
                 .monospacedDigit()
             if model.isLast {
-                Button(L10n.t("Finish")) { finish() }
+                Button(IntroGate.seen ? L10n.t("Finish") : L10n.t("Show Me Around")) { finish() }
                     .buttonStyle(.borderedProminent)
                     .keyboardShortcut(.defaultAction)
             } else {
@@ -178,9 +178,9 @@ private struct SetupPage: View {
             switch model.step {
             case .welcome: WelcomeBody()
             case .move: MoveBody(model: model)
-            case .claude: ClaudeBody(model: model)
+            case .hooks: HooksBody(model: model)
             case .terminals: TerminalsBody(model: model)
-            case .claudeDesktop: ClaudeDesktopBody(model: model)
+            case .desktopApps: DesktopAppsBody(model: model)
             case .agents: AgentsBody(model: model, openSettings: openSettings)
             case .ready: ReadyBody(model: model, openSettings: openSettings)
             }
@@ -207,8 +207,8 @@ private struct SetupPage: View {
 
     private var tint: Color {
         switch model.step {
-        case .welcome, .move, .claudeDesktop: return .blue
-        case .claude: return .orange
+        case .welcome, .move, .desktopApps: return .blue
+        case .hooks: return .orange
         case .terminals: return Color(white: 0.25)
         case .agents: return .purple
         case .ready: return .green
@@ -218,19 +218,21 @@ private struct SetupPage: View {
     private var summary: String {
         switch model.step {
         case .welcome:
-            return L10n.t("Your coding agents' limits live in the notch, and the lid sets how hard they think. A minute of setup lets it do all of that without asking again.")
+            return L10n.t("Your coding agents' limits sit at the edge of your screen, and the lid sets how hard they think. A minute here means macOS won't interrupt you later.")
         case .move:
             return L10n.t("spyx is running from \(model.location.phrase). macOS forgets permissions given to a copy there, and won't open it at login.")
-        case .claude:
-            return L10n.t("Answer Claude Code's questions and approvals from the notch, and see how much of your plan is left.")
+        case .hooks:
+            return L10n.t("Each agent tells spyx the moment its turn ends, so the done card is never a guess. Where an agent can ask for approval through a hook, you answer it from the notch.")
         case .terminals:
             return L10n.t("spyx talks to the terminal a session runs in — to take you to it, and to set the effort level live. macOS asks you once for each app.")
-        case .claudeDesktop:
-            return L10n.t("Claude Desktop has no terminal to type into. With Accessibility, spyx types /effort into its message box — only when it's in front, idle and empty.")
+        case .desktopApps:
+            return L10n.t("An agent's desktop app has no terminal to type into. With Accessibility, spyx can reach the ones listed here; the rest pick the lid's level up next session.")
         case .agents:
-            return L10n.t("Switch on the agents you use. spyx reads each one's usage with the login it already has on this Mac, and sends nothing anywhere but that agent's own servers.")
+            return L10n.t("Every agent you use, on one list. spyx reads each one's usage with the login it already has on this Mac, and sends nothing anywhere but that agent's own servers.")
         case .ready:
-            return L10n.t("spyx lives in the notch now. Try the gesture before you go.")
+            return IntroGate.seen
+                ? L10n.t("Here is what the lid will set for each agent. Everything here can be changed later in Settings.")
+                : L10n.t("Here is what the lid will set for each agent. Next, a short tour shows where everything lives — skip it any time.")
         }
     }
 }
@@ -240,13 +242,13 @@ private struct WelcomeBody: View {
         VStack(alignment: .leading, spacing: 16) {
             Feature(icon: "circle.dashed", tint: .blue,
                     title: L10n.t("Usage in the notch"),
-                    detail: L10n.t("A ring per agent — Claude, Codex, Cursor and more — with the time until it resets."))
+                    detail: L10n.t("A ring per agent you use — Claude Code, Codex, Grok, Cursor and more — with the time until it resets."))
             Feature(icon: "laptopcomputer", tint: .orange,
                     title: L10n.t("⌘ + lid sets the effort"),
-                    detail: L10n.t("Hold ⌘ and tilt the lid: open for more thinking, close for less. Every agent follows."))
-            Feature(icon: "bubble.left.and.text.bubble.right.fill", tint: .green,
-                    title: L10n.t("Answer Claude from the notch"),
-                    detail: L10n.t("Questions and approvals appear under the session asking, wherever you are."))
+                    detail: L10n.t("Hold ⌘ and tilt the lid: open for more thinking, close for less — for the agent you're working with."))
+            Feature(icon: "bell.badge.fill", tint: .green,
+                    title: L10n.t("Know when any agent is done"),
+                    detail: L10n.t("Claude Code, Codex, Grok, Cursor: a card the moment a turn ends, with Reply beside it."))
         }
     }
 }
@@ -298,36 +300,93 @@ private struct MoveBody: View {
     }
 }
 
-private struct ClaudeBody: View {
+private struct HooksBody: View {
     @ObservedObject var model: SetupModel
 
     var body: some View {
-        if !model.claudeCodeInstalled {
-            Hint(L10n.t("Claude Code isn't on this Mac yet. When you install it, both of these start working on their own."))
-        }
         SetupCard {
-            SetupRow(icon: "bubble.left.and.text.bubble.right", title: L10n.t("Answer from the notch"),
-                     detail: model.hookInstalled
-                        ? L10n.t("Hook installed in ~/.claude/settings.json")
-                        : L10n.t("Adds one hook to ~/.claude/settings.json. Remove it any time by switching this off.")) {
-                Toggle("", isOn: Binding(
-                    get: { model.preferences.answerPromptsFromNotch },
-                    set: { model.preferences.answerPromptsFromNotch = $0 }
-                ))
-                .toggleStyle(.switch)
-                .labelsHidden()
+            SetupRow(icon: "bell.badge", title: L10n.t("Tell me when an agent is done"),
+                     detail: L10n.t("Adds spyx's own hook to each agent below. Nothing else in their configs is touched, and switching this off takes it out.")) {
+                Toggle("", isOn: Binding(get: { model.preferences.announceSessionEnd },
+                                         set: { model.preferences.announceSessionEnd = $0 }))
+                    .toggleStyle(.switch)
+                    .labelsHidden()
             }
+            if model.hookLinks.contains(where: { $0.present && $0.approvalsHooked != nil }) {
             Divider().padding(.leading, 44)
-            if model.claudeAgents.isEmpty {
-                SetupRow(icon: "key", title: L10n.t("Read your Claude usage"),
-                         detail: L10n.t("Looking for Claude's login…")) { ProgressView().controlSize(.small) }
+            SetupRow(icon: "checkmark.bubble", title: L10n.t("Answer approvals from the notch"),
+                     detail: L10n.t("Questions and permission requests, answered without switching windows — for every agent whose hooks can hold one open.")) {
+                Toggle("", isOn: Binding(get: { model.preferences.answerPromptsFromNotch },
+                                         set: { model.preferences.answerPromptsFromNotch = $0 }))
+                    .toggleStyle(.switch)
+                    .labelsHidden()
             }
-            ForEach(model.claudeAgents) { agent in
-                AgentRow(agent: agent, need: model.needs[agent.id], connect: { model.connect(agent.id) },
-                         detailWhenConnected: L10n.t("Reading usage with Claude Code's login"))
             }
         }
-        Hint(L10n.t("Claude's login is in your keychain. If macOS asks for your password, choose Always Allow so it doesn't ask again."))
+        if !HookConsent.locationAllows() {
+            Hint(L10n.t("Hooks go in once spyx is in Applications — they point at where spyx lives, and a copy on the disk image disappears."))
+        }
+        let here = model.hookLinks.filter(\.present)
+        let elsewhere = model.hookLinks.filter { !$0.present }.map(\.name)
+        if !here.isEmpty {
+            SetupCard {
+                ForEach(Array(here.enumerated()), id: \.element.id) { index, link in
+                    if index > 0 { Divider().padding(.leading, 50) }
+                    HookLinkRow(link: link, done: model.preferences.announceSessionEnd,
+                                approvals: model.preferences.answerPromptsFromNotch,
+                                retry: { model.relinkHooks() })
+                }
+            }
+        }
+        if !elsewhere.isEmpty {
+            Hint(L10n.t("Also linked when installed: \(elsewhere.joined(separator: ", ")). An agent installed later is hooked on its own the next time spyx starts."))
+        }
+    }
+}
+
+/// One agent: what it can tell spyx, and whether it is set up to.
+private struct HookLinkRow: View {
+    let link: AgentHooks.Link
+    let done: Bool
+    let approvals: Bool
+    var retry: () -> Void = {}
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Group {
+                if let glyph = ProviderGlyph.forProvider(link.id) { ProviderGlyphView(glyph: glyph, size: 18) }
+            }
+            .foregroundStyle(link.present ? .primary : .tertiary)
+            .frame(width: 26, height: 26)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(link.name).font(.system(size: 13, weight: .medium))
+                Text(detail).font(.system(size: 11)).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 12)
+            pill
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 10)
+    }
+
+    private var detail: String {
+        guard link.present else { return L10n.t("Not on this Mac") }
+        return link.approvalsHooked == nil
+            ? L10n.t("Done card · no approval hook in this agent yet")
+            : L10n.t("Done card · approvals")
+    }
+
+    @ViewBuilder private var pill: some View {
+        if !link.present {
+            StatusPill(text: L10n.t("Not installed"), color: .gray)
+        } else if (link.doneHooked || !done) && (link.approvalsHooked != false || !approvals) {
+            StatusPill(text: done ? L10n.t("Linked") : L10n.t("Off"), color: done ? .green : .gray)
+        } else if HookConsent.locationAllows() {
+            Button(L10n.t("Retry")) { retry() }
+        } else {
+            StatusPill(text: L10n.t("After the move"), color: .gray)
+        }
     }
 }
 
@@ -370,18 +429,25 @@ private struct TerminalsBody: View {
     }
 }
 
-private struct ClaudeDesktopBody: View {
+private struct DesktopAppsBody: View {
     @ObservedObject var model: SetupModel
 
     var body: some View {
         SetupCard {
-            SetupRow(appIcon: ClaudeDesktopComposer.bundleID, title: L10n.t("Type /effort into Claude Desktop"),
-                     detail: L10n.t("Experimental. Without it, Claude Desktop picks the level up next session.")) {
-                Toggle("", isOn: Binding(get: { model.typesIntoClaudeDesktop }, set: { model.typesIntoClaudeDesktop = $0 }))
-                    .toggleStyle(.switch)
-                    .labelsHidden()
+            ForEach(Array(model.desktopApps.enumerated()), id: \.element.id) { index, app in
+                if index > 0 { Divider().padding(.leading, 50) }
+                SetupRow(appIcon: app.bundleID, title: app.name,
+                         detail: app.reach ?? L10n.t("Can't be reached from outside yet — its sessions pick the lid's level up when they start.")) {
+                    if app.reach != nil {
+                        Toggle("", isOn: Binding(get: { model.typesIntoClaudeDesktop }, set: { model.typesIntoClaudeDesktop = $0 }))
+                            .toggleStyle(.switch)
+                            .labelsHidden()
+                    } else {
+                        StatusPill(text: L10n.t("Next session"), color: .gray)
+                    }
+                }
             }
-            if model.typesIntoClaudeDesktop {
+            if model.desktopApps.contains(where: { $0.reach != nil }) && model.typesIntoClaudeDesktop {
                 Divider().padding(.leading, 44)
                 SetupRow(icon: "accessibility", title: L10n.t("Accessibility"),
                          detail: model.accessibility.isGranted
@@ -413,8 +479,9 @@ private struct AgentsBody: View {
                 CatalogRow(agent: agent, model: model)
             }
         }
+        Hint(L10n.t("Some agents keep their login in your keychain. If macOS asks for your password, choose Always Allow so it doesn't ask again."))
         HStack(spacing: 4) {
-            Hint(L10n.t("Claude is on the Claude Code page. Reorder agents in"))
+            Hint(L10n.t("Reorder agents in"))
             Button(L10n.t("Settings → Accounts")) { openSettings() }
                 .buttonStyle(.link)
                 .font(.system(size: 12))
@@ -483,27 +550,17 @@ private struct ReadyBody: View {
 
     var body: some View {
         let state = model.effortState
-        SetupCard {
-            VStack(alignment: .leading, spacing: 14) {
-                HStack(spacing: 8) {
-                    Keycap("⌘")
-                    Text("+").foregroundStyle(.tertiary)
-                    Image(systemName: "laptopcomputer").font(.system(size: 16))
-                    Text(state.sensorAvailable
-                         ? (state.armed ? L10n.t("Now move the lid…") : L10n.t("Hold ⌘ and tilt the lid"))
-                         : L10n.t("No lid sensor on this Mac — set the level from the notch instead"))
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(state.armed ? Color.accentColor : .primary)
-                    Spacer()
-                    if let angle = state.angle {
-                        Text("\(Int(angle.rounded()))°")
-                            .font(.system(size: 12).monospacedDigit())
-                            .foregroundStyle(.secondary)
-                    }
+        let offers = model.offers.filter { $0.installed && $0.enabled }
+        if !offers.isEmpty {
+            SectionTitle(L10n.t("What the lid sets"))
+            SetupCard {
+                ForEach(Array(offers.enumerated()), id: \.element.id) { index, offer in
+                    if index > 0 { Divider().padding(.leading, 48) }
+                    EffortOfferRow(offer: offer, level: state.level)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
                 }
-                LevelMeter(level: state.level, preview: state.preview)
             }
-            .padding(14)
         }
         SetupCard {
             SetupRow(icon: "power", title: L10n.t("Open at login"),
@@ -605,51 +662,6 @@ private struct SetupRow<Trailing: View>: View {
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 11)
-    }
-}
-
-private struct AgentRow: View {
-    let agent: ProviderSnapshot
-    let need: ConnectNeed?
-    let connect: () -> Void
-    let detailWhenConnected: String
-
-    var body: some View {
-        HStack(spacing: 12) {
-            ProviderGlyphView(glyph: agent.glyph, size: 18)
-                .foregroundStyle(.primary)
-                .frame(width: 24, height: 24)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(agent.displayName).font(.system(size: 13, weight: .medium))
-                Text(detail).font(.system(size: 11)).foregroundStyle(.secondary)
-            }
-            Spacer(minLength: 12)
-            if let need {
-                Button(need.buttonTitle, action: connect)
-            } else if isReading {
-                AccessPill(access: .granted, grantedText: L10n.t("Connected"))
-            } else {
-                StatusPill(text: L10n.t("Waiting"), color: .gray)
-            }
-        }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 11)
-    }
-
-    private var isReading: Bool {
-        switch agent.status {
-        case .ok, .stale: return true
-        default: return false
-        }
-    }
-
-    private var detail: String {
-        if let need { return need.reason }
-        switch agent.status {
-        case .ok, .stale: return detailWhenConnected
-        case .unsupported(let why), .error(let why): return why
-        default: return L10n.t("Not connected")
-        }
     }
 }
 

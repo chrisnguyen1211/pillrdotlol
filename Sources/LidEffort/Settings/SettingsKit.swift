@@ -6,7 +6,7 @@ import SwiftUI
 /// One entry in the sidebar, grouped by what a person is trying to do
 /// rather than by how the setting is stored.
 enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
-    case lid, notch, sessions, notifications, accounts, localModels, general
+    case lid, notch, sessions, notifications, accounts, api, costs, localModels, general
 
     var id: String { rawValue }
 
@@ -17,12 +17,14 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
         case .sessions:      return L10n.t("Sessions & Approvals")
         case .notifications: return L10n.t("Notifications")
         case .accounts:      return L10n.t("Accounts")
+        case .api:           return L10n.t("API Keys")
+        case .costs:         return L10n.t("Costs")
         case .localModels:   return L10n.t("Local Models")
         case .general:       return L10n.t("General")
         }
     }
 
-    /// The tab's label: a word, so all seven sit on one line.
+    /// The tab's label: a word, so all nine sit on one line.
     var tabTitle: String {
         switch self {
         case .lid:           return L10n.t("Lid")
@@ -30,7 +32,9 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
         case .sessions:      return L10n.t("Sessions")
         case .notifications: return L10n.t("Alerts")
         case .accounts:      return L10n.t("Accounts")
-        case .localModels:   return L10n.t("Models")
+        case .api:           return "API"
+        case .costs:         return L10n.t("Costs")
+        case .localModels:   return L10n.t("Local models")
         case .general:       return L10n.t("General")
         }
     }
@@ -48,6 +52,10 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
             return L10n.t("What the notch says, and plays, when a session finishes or a limit changes.")
         case .accounts:
             return L10n.t("The assistants read from this Mac. Each connected one gets a ring, in this order.")
+        case .api:
+            return L10n.t("API keys you add to track a balance or usage. The notch shows them together, in one API keys cell.")
+        case .costs:
+            return L10n.t("What each project spent of each login's allowance, priced from your plan.")
         case .localModels:
             return L10n.t("Models running on this Mac through Ollama or LM Studio.")
         case .general:
@@ -62,6 +70,8 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
         case .sessions:      return "checkmark.bubble.fill"
         case .notifications: return "bell.badge.fill"
         case .accounts:      return "person.crop.circle.fill"
+        case .api:           return "key.horizontal.fill"
+        case .costs:         return "chart.pie.fill"
         case .localModels:   return "cpu"
         case .general:       return "gearshape.fill"
         }
@@ -76,6 +86,8 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
         case .sessions:      return .green
         case .notifications: return .red
         case .accounts:      return .blue
+        case .api:           return .yellow
+        case .costs:         return .teal
         case .localModels:   return .purple
         case .general:       return .gray
         }
@@ -98,19 +110,19 @@ struct SettingsIndex {
             Entry(section: section, title: title, keywords: keywords.split(separator: " ").map(String.init))
         }
         return [
-            e(.lid, L10n.t("Effort level"), "effort reasoning think level low medium high xhigh max"),
+            e(.lid, L10n.t("Lid level"), "effort reasoning think level low medium high xhigh max ultracode"),
             e(.lid, L10n.t("Lid gesture"), "lid command cmd ⌘ gesture angle hinge degrees sensor"),
             e(.lid, L10n.t("Agents"), "agent claude code codex grok config target"),
             e(.lid, L10n.t("Claude Desktop (experimental)"), "claude desktop app accessibility composer type experiment"),
             e(.notch, L10n.t("Edge"), "edge side left right top bottom position move"),
-            e(.notch, L10n.t("Displays"), "display screen monitor external main all"),
+            e(.notch, L10n.t("Show on"), "display displays screen monitor external main all every active window follow"),
             e(.notch, L10n.t("Show"), "show hide visibility hover always"),
             e(.notch, L10n.t("Size"), "size scale bigger smaller large small zoom pill"),
             e(.notch, L10n.t("Tooltip size"), "tooltip card size text bigger smaller zoom scale font"),
             e(.notch, L10n.t("Surface"), "surface glass solid liquid material"),
             e(.notch, L10n.t("Transparency"), "transparency frost opacity see-through clear"),
             e(.notch, L10n.t("Move handle"), "handle arc move drag"),
-            e(.notch, L10n.t("Recentre"), "recentre recenter reset position nudge option drag"),
+            e(.notch, L10n.t("Recentre the notch"), "recentre recenter centre center middle reset position along edge nudge option alt ⌥ drag move slide"),
             e(.notch, L10n.t("Reset time"), "reset time clock countdown format"),
             e(.notch, L10n.t("Weekly ring"), "weekly week ring limit"),
             e(.notch, L10n.t("Usage pace"), "pace deficit reserve usage"),
@@ -128,8 +140,14 @@ struct SettingsIndex {
             e(.notifications, L10n.t("When a limit is reached"), "limit reached quota spent session weekly"),
             e(.notifications, L10n.t("When a limit resets"), "reset limit back cheer"),
             e(.notifications, L10n.t("Threshold alerts"), "threshold 80% 100% crossing mute"),
-            e(.accounts, L10n.t("Accounts"), "account provider sign login connect claude codex cursor gemini antigravity grok copilot kimi deepseek glm opencode devin"),
+            e(.accounts, L10n.t("Accounts"), "account provider sign login connect claude codex cursor gemini antigravity grok copilot kimi deepseek glm opencode devin kiro amp apify kilo minimax qianwen qianwenai"),
             e(.accounts, L10n.t("Ring order"), "order reorder drag ring arrange"),
+            e(.api, L10n.t("API keys"), "api key keys token secret balance credits spend usage add provider openrouter openai anthropic xai grok mistral gemini groq together fireworks deepinfra novita deepseek kimi moonshot siliconflow stepfun glm zhipu minimax elevenlabs deepgram tavily serpapi firecrawl exa jina apify ollama"),
+            e(.api, L10n.t("Custom Endpoints"), "custom endpoint openai compatible anthropic gemini api proxy openrouter groq vllm llama litellm local model key budget"),
+            e(.costs, L10n.t("Billing"), "cost costs money price billing plan subscription api token spend project"),
+            e(.costs, L10n.t("Monthly price"), "monthly price plan subscription pay currency"),
+            e(.costs, L10n.t("Market data"), "exchange rate currency token prices openrouter market"),
+            e(.costs, L10n.t("Activity"), "activity timeline day week month sessions projects cost"),
             e(.localModels, "Ollama", "ollama local model llm"),
             e(.localModels, "LM Studio", "lm studio lmstudio local model llm"),
             e(.general, L10n.t("Open at login"), "login startup launch boot"),

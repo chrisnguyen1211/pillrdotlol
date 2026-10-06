@@ -42,6 +42,7 @@ final class ThresholdNotifierTests: XCTestCase {
     }
 
     func testCrossingHundredAfterEightyAlertsAgain() {
+        notifier.observe([snapshot("claude", "Claude", 0.5)])
         notifier.observe([snapshot("claude", "Claude", 0.85)])
         notifier.observe([snapshot("claude", "Claude", 1.02)])
         XCTAssertEqual(alerts.map(\.threshold), [80, 100])
@@ -50,12 +51,18 @@ final class ThresholdNotifierTests: XCTestCase {
     /// A spent window that comes back is a new fact, not a re-announcement of
     /// the old one — so the memory clears and the next climb alerts again.
     func testARolledOverWindowAlertsAgain() {
+        notifier.observe([snapshot("claude", "Claude", 0.5)])
         notifier.observe([snapshot("claude", "Claude", 0.9)])
         notifier.observe([snapshot("claude", "Claude", 0.1)])
         XCTAssertEqual(alerts.count, 1)
         notifier.observe([snapshot("claude", "Claude", 0.84)])
         XCTAssertEqual(alerts.count, 2)
         XCTAssertEqual(alerts[1].threshold, 80)
+    }
+
+    func testTheFirstReadingIsWhereThingsStandNotACrossing() {
+        notifier.observe([snapshot("claude", "Claude", 0.95)])
+        XCTAssertTrue(alerts.isEmpty, "already at 95% when spyx starts: not news, and no permission prompt mid-setup")
     }
 
     func testMutedProvidersAreSilentButRemembered() {
@@ -84,6 +91,10 @@ final class ThresholdNotifierTests: XCTestCase {
     }
 
     func testSeveralProvidersAlertIndependently() {
+        notifier.observe([
+            snapshot("claude", "Claude", 0.3),
+            snapshot("cursor", "Cursor", 0.6)
+        ])
         notifier.observe([
             snapshot("claude", "Claude", 0.3),
             snapshot("cursor", "Cursor", 0.95)

@@ -208,6 +208,9 @@ final class ClaudeTranscriptReader {
         return (turn, modified)
     }
 
+    /// Where the session's transcript is, found once and remembered.
+    func transcriptURL(sessionID: String, cwd: String) -> URL? { path(sessionID: sessionID, cwd: cwd) }
+
     private func path(sessionID: String, cwd: String) -> URL? {
         if let known = paths[sessionID] { return known }
         let scanning = !scanned.contains(sessionID)

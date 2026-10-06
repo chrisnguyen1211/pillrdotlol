@@ -302,3 +302,51 @@ final class ScaledMeasurementTests: XCTestCase {
                        marginBound * 2, accuracy: 0.001)
     }
 }
+
+/// "Follow the window you are typing in": which display that window is on,
+/// from the window server's bounds — the layout this was found on: the
+/// laptop as the menu-bar display, a monitor above it, another to the right.
+final class ActiveWindowScreenTests: XCTestCase {
+    private let laptop = FakeScreen(frameValue: CGRect(x: 0, y: 0, width: 1920, height: 1200),
+                                    visibleFrameValue: CGRect(x: 0, y: 0, width: 1920, height: 1170))
+    private let above = FakeScreen(frameValue: CGRect(x: 0, y: 1200, width: 1920, height: 1080),
+                                   visibleFrameValue: CGRect(x: 0, y: 1200, width: 1920, height: 1080))
+    private let right = FakeScreen(frameValue: CGRect(x: 1920, y: 120, width: 1920, height: 1080),
+                                   visibleFrameValue: CGRect(x: 1920, y: 120, width: 1920, height: 1080))
+    private var screens: [FakeScreen] { [laptop, above, right] }
+
+    private func display(of windowServerRect: CGRect) -> CGRect? {
+        let rect = NotchGeometry.cocoaRect(fromWindowServer: windowServerRect, primaryHeight: 1200)
+        return NotchGeometry.screen(holding: rect, in: screens)?.frameValue
+    }
+
+    func testTheWindowsDisplayIsFoundFromWindowServerBounds() {
+        // Chrome on the laptop: y 33 down from the top of the menu-bar display.
+        XCTAssertEqual(display(of: CGRect(x: 0, y: 33, width: 1920, height: 1167)), laptop.frameValue)
+        // Claude full screen on the monitor above: negative y in that space.
+        XCTAssertEqual(display(of: CGRect(x: 0, y: -1080, width: 1920, height: 1080)), above.frameValue)
+        // A window on the right-hand monitor.
+        XCTAssertEqual(display(of: CGRect(x: 2100, y: 300, width: 800, height: 600)), right.frameValue)
+        // Straddling two: the one holding most of it.
+        XCTAssertEqual(display(of: CGRect(x: 1700, y: 300, width: 800, height: 600)), right.frameValue)
+        // Off every display.
+        XCTAssertNil(display(of: CGRect(x: -5000, y: -5000, width: 100, height: 100)))
+    }
+
+    func testAStripOfChromeIsNotTheWindow() {
+        let titleBar = CGRect(x: 0, y: -1112, width: 1920, height: 32)
+        let window = CGRect(x: 0, y: -1080, width: 1920, height: 1080)
+        XCTAssertEqual(NotchGeometry.activeWindow(among: [titleBar, window]), window)
+        XCTAssertNil(NotchGeometry.activeWindow(among: [titleBar]))
+    }
+
+    func testAChosenDisplayStillWinsOverTheActiveWindow() {
+        let chosen = FakeScreen(frameValue: above.frameValue, visibleFrameValue: above.visibleFrameValue,
+                                displayIdentifier: "above")
+        let result = NotchGeometry.preferredScreen(from: [laptop, chosen], preference: .display("above"),
+                                                   activeScreen: laptop)
+        XCTAssertEqual(result?.frameValue, above.frameValue)
+        XCTAssertEqual(NotchGeometry.preferredScreen(from: [laptop, chosen], preference: .followActiveWindow,
+                                                     activeScreen: chosen)?.frameValue, above.frameValue)
+    }
+}

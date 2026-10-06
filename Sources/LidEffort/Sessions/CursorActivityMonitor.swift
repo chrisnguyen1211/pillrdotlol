@@ -128,7 +128,26 @@ final class CursorActivityMonitor: ObservableObject, AgentActivityMonitor {
                         cursorLaunchedAt: cursorLaunchedAt,
                         staleAfter: staleAfter, now: now)
             }
+            .map { session in
+                var session = session
+                session.model = model(of: session, in: db)
+                return session
+            }
             .sorted { $0.since > $1.since }
+    }
+
+    /// The chat's model, from its `composerData` row — read inside SQLite,
+    /// so the conversation it also holds is never loaded. Only for the few
+    /// rows the notch shows.
+    private static func model(of session: AgentSession, in db: OpaquePointer) -> String? {
+        let id = String(session.id.dropFirst("cursor.".count))
+        guard id.range(of: "^[A-Za-z0-9-]{1,64}$", options: .regularExpression) != nil else { return nil }
+        let rows = SQLiteStore.rows(
+            in: db,
+            sql: "SELECT json_extract(value, '$.modelConfig.modelName') FROM cursorDiskKV WHERE key = 'composerData:\(id)'",
+            columns: 1
+        )
+        return rows.first?.first.flatMap { $0.isEmpty || $0 == "default" ? nil : $0 }
     }
 
     /// Only sessions that are *doing* something are worth a row — an editor
@@ -232,7 +251,7 @@ final class CursorActivityMonitor: ObservableObject, AgentActivityMonitor {
             ?? date(head["createdAt"])
             ?? now
 
-        return AgentSession(
+        var session = AgentSession(
             id: "cursor.\(id)",
             name: (head["name"] as? String) ?? L10n.t("Untitled chat"),
             detail: (head["subtitle"] as? String) ?? "Cursor",
@@ -240,6 +259,21 @@ final class CursorActivityMonitor: ObservableObject, AgentActivityMonitor {
             waitingFor: isWaiting ? L10n.t("needs your input") : nil,
             since: since
         )
+        session.facts = facts(head)
+        return session
+    }
+
+    /// What the header says about the chat besides its state: the lines it
+    /// changed and how full its context is.
+    nonisolated static func facts(_ head: [String: Any]) -> [String] {
+        var facts: [String] = []
+        let added = (head["totalLinesAdded"] as? NSNumber)?.intValue ?? 0
+        let removed = (head["totalLinesRemoved"] as? NSNumber)?.intValue ?? 0
+        if added > 0 || removed > 0 { facts.append("+\(added) −\(removed)") }
+        if let percent = (head["contextUsagePercent"] as? NSNumber)?.doubleValue, percent > 0 {
+            facts.append(L10n.t("\(Int(percent.rounded()))% context"))
+        }
+        return facts
     }
 
     /// Waiting is live if it belongs to this editor launch — you may sit on

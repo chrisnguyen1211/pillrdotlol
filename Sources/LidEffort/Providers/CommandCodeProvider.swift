@@ -28,6 +28,9 @@ actor CommandCodeProvider: UsageProvider {
         self.retryNoEarlierThan = archive.loadBackoffUntil(providerID: id)
     }
 
+    /// Where the sign-in lives: a new one written there is read at once.
+    nonisolated var credentialFiles: [URL] { [CommandCodeCredentials.authURL] }
+
     nonisolated var signInRoute: SignInRoute {
         .guidance(L10n.t("Sign in with the Command Code app — it writes ~/.commandcode/auth.json and the notch reads it."))
     }

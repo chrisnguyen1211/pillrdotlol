@@ -242,7 +242,9 @@ final class DoneToastTests: XCTestCase {
         XCTAssertFalse(controller.model.isExpanded)
     }
 
-    func testClickingThePillWhileTheCardIsUpAlsoAnswersIt() throws {
+    /// A click on the pill while the card is up only puts the card away:
+    /// opening the notch must never turn into a jump to some terminal.
+    func testClickingThePillWhileTheCardIsUpOnlyDismissesIt() throws {
         let controller = NotchWindowController()
         controller.model.updateSnapshots(Fixtures.snapshots())
         controller.relocate()
@@ -257,7 +259,7 @@ final class DoneToastTests: XCTestCase {
                                across: controller.model.restingDepth * controller.model.sizeScale / 2)
         controller.handleClick(at: CGPoint(x: pill.x, y: frame.height - pill.y))
 
-        XCTAssertEqual(focused, 4242)
+        XCTAssertNil(focused)
         XCTAssertNil(controller.model.activeDoneToast)
     }
 

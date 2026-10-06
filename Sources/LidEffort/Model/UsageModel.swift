@@ -122,11 +122,19 @@ struct LimitWindow: Identifiable, Codable, Equatable {
 
     /// Exact cycle length when known; optional to keep older archives readable.
     let duration: TimeInterval?
+    /// A band the provider chose itself, for a ring that shows what is *left*
+    /// (a custom endpoint's remaining budget): a full ring there is ample, not
+    /// exhausted, so the colour cannot be read off the fraction.
+    var bandOverride: UsageBand? = nil
+    /// Prints `usedText` under the ring instead of a percentage — a custom
+    /// endpoint that tracks dollars or tokens rather than a quota.
+    var prefersUsedText: Bool = false
 
     init(id: String, group: String? = nil, label: String, usedFraction: Double? = nil,
          remaining: Int? = nil, used: Int? = nil, usedText: String? = nil, detail: String? = nil,
          money: UsageMoneyBreakdown? = nil, resetsAt: Date? = nil,
-         duration: TimeInterval? = nil) {
+         duration: TimeInterval? = nil, bandOverride: UsageBand? = nil,
+         prefersUsedText: Bool = false) {
         self.id = id
         self.group = group
         self.label = label
@@ -138,6 +146,51 @@ struct LimitWindow: Identifiable, Codable, Equatable {
         self.money = money
         self.resetsAt = resetsAt
         self.duration = duration
+        self.bandOverride = bandOverride
+        self.prefersUsedText = prefersUsedText
+    }
+
+    // Written out rather than synthesized: a synthesized decoder would require
+    // `prefersUsedText` to be present, and every reading archived before it
+    // existed would stop decoding.
+    enum CodingKeys: String, CodingKey {
+        case id, group, label, usedFraction, remaining, used, detail, money, usedText, resetsAt, duration, bandOverride, prefersUsedText
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(String.self, forKey: .id)
+        self.group = try container.decodeIfPresent(String.self, forKey: .group)
+        self.label = try container.decode(String.self, forKey: .label)
+        self.usedFraction = try container.decodeIfPresent(Double.self, forKey: .usedFraction)
+        self.remaining = try container.decodeIfPresent(Int.self, forKey: .remaining)
+        self.used = try container.decodeIfPresent(Int.self, forKey: .used)
+        self.detail = try container.decodeIfPresent(String.self, forKey: .detail)
+        self.money = try container.decodeIfPresent(UsageMoneyBreakdown.self, forKey: .money)
+        self.usedText = try container.decodeIfPresent(String.self, forKey: .usedText)
+        self.resetsAt = try container.decodeIfPresent(Date.self, forKey: .resetsAt)
+        self.duration = try container.decodeIfPresent(TimeInterval.self, forKey: .duration)
+        self.bandOverride = try container.decodeIfPresent(UsageBand.self, forKey: .bandOverride)
+        self.prefersUsedText = try container.decodeIfPresent(Bool.self, forKey: .prefersUsedText) ?? false
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encodeIfPresent(group, forKey: .group)
+        try container.encode(label, forKey: .label)
+        try container.encodeIfPresent(usedFraction, forKey: .usedFraction)
+        try container.encodeIfPresent(remaining, forKey: .remaining)
+        try container.encodeIfPresent(used, forKey: .used)
+        try container.encodeIfPresent(detail, forKey: .detail)
+        try container.encodeIfPresent(money, forKey: .money)
+        try container.encodeIfPresent(usedText, forKey: .usedText)
+        try container.encodeIfPresent(resetsAt, forKey: .resetsAt)
+        try container.encodeIfPresent(duration, forKey: .duration)
+        try container.encodeIfPresent(bandOverride, forKey: .bandOverride)
+        if prefersUsedText {
+            try container.encode(prefersUsedText, forKey: .prefersUsedText)
+        }
     }
 
     /// A count short enough to sit inside a 44 pt ring.
@@ -212,7 +265,9 @@ struct UsageBlock: Equatable {
 
 struct ProviderSnapshot: Identifiable, Equatable {
     let id: String
-    let displayName: String
+    /// A `var` for one reason: an extra key can be renamed while its reading
+    /// stands, and the ring follows without a refetch.
+    var displayName: String
     let glyph: ProviderGlyph
     let fidelity: Fidelity
     var status: ProviderStatus
@@ -276,6 +331,12 @@ struct ProviderSnapshot: Identifiable, Equatable {
     /// Provider-owned online usage detail, such as DeepSeek's API key/model
     /// breakdown and daily token/cost series.
     var usageDetail: ProviderUsageDetail? = nil
+    /// A custom endpoint's own icon, saved by the person; nil for every
+    /// built-in provider, which draws its glyph.
+    var customIconFilename: String? = nil
+    /// The keys behind the API keys cell, in the API tab's order — see
+    /// `APIKeyGroup`. Nil for every other cell.
+    var keyGroup: [ProviderSnapshot]? = nil
 
     /// The number on the cell: the provider's declared primary window — for
     /// Claude, the current session.
@@ -294,6 +355,9 @@ struct ProviderSnapshot: Identifiable, Equatable {
     }
 
     var usedFraction: Double? { headline?.usedFraction }
+
+    /// The band the headline asks for, when it does not follow its fraction.
+    var bandOverride: UsageBand? { headline?.bandOverride }
 
     /// The window the second ring draws, when one is switched on.
     ///
@@ -326,6 +390,7 @@ struct ProviderSnapshot: Identifiable, Equatable {
             return showsLocalPerformance ? (localPerformance?.headlineText ?? "— tok/s")
                 : (localModel?.memoryText ?? "—")
         }
+        if headline?.prefersUsedText == true, let usedText = headline?.usedText { return usedText }
         if let usedFraction { return Percent.text(for: usedFraction) + "%" }
         if let remaining = headline?.remaining { return LimitWindow.compact(remaining) }
         if let usedText = headline?.usedText { return usedText }
@@ -369,14 +434,22 @@ struct ProviderSnapshot: Identifiable, Equatable {
         case "cursor":     return L10n.t("Sign in to Cursor in the editor", locale: locale)
         case "codex":      return L10n.t("Sign in to Codex to read your usage", locale: locale)
         case "deepseek":   return L10n.t("Sign in to DeepSeek Platform to read your usage", locale: locale)
+        case "qianwenai":  return L10n.t("Sign in to QianwenAI to read your Token Plan usage", locale: locale)
         case _ where CodexProfile.slug(fromProviderID: id) != nil:
             let slug = CodexProfile.slug(fromProviderID: id)!
             return L10n.t("Sign in to Codex in ~/.codex-\(slug) to read your usage", locale: locale)
         case "gemini":     return L10n.t("Sign in to Antigravity to read your usage", locale: locale)
+        // An extra key has nothing to sign into: the key works or it does not.
+        case _ where ExtraKey.isExtraKey(providerID: id):
+            return L10n.t("This key was not accepted — remove it in Settings and add a working one", locale: locale)
         case "glm":        return L10n.t("Set up a GLM Coding Plan key for a coding tool to read your usage", locale: locale)
         case "copilot":    return L10n.t("Sign in with GitHub CLI to read your Copilot usage", locale: locale)
         case "opencode":   return L10n.t("Connect the Go plan in OpenCode to read your usage", locale: locale)
         case "commandcode": return L10n.t("Sign in with the Command Code app to read your usage", locale: locale)
+        case "kiro":       return L10n.t("Sign in with kiro-cli to read your usage", locale: locale)
+        case "amp":        return L10n.t("Run amp login in Terminal to read your usage", locale: locale)
+        case "apify":      return L10n.t("Run apify login in Terminal, or paste an Apify API token in Settings", locale: locale)
+        case "kilo":       return L10n.t("Sign in with the Kilo CLI to read your usage", locale: locale)
         // Two Ollamas, and they are stuck for different reasons: the hosted
         // one wants a key, the local one wants the daemon running.
         case "ollama":       return L10n.t("Enter an Ollama API key in Settings, or export OLLAMA_API_KEY", locale: locale)
@@ -394,7 +467,7 @@ struct ProviderSnapshot: Identifiable, Equatable {
                 return localRuntime.models.isEmpty ? localRuntime.summary : nil
             }
             if case .error(let why) = status { return why }
-            return "Connecting to \(displayName)…"
+            return L10n.t("Connecting to \(displayName)…")
         }
         if hasReading { return nil }
         let locale = L10n.locale
@@ -413,7 +486,11 @@ struct ProviderSnapshot: Identifiable, Equatable {
             return L10n.t("macOS refused spyx access to \(displayName)'s saved login. Use Allow access… in Settings to ask again.", locale: locale)
         case .unsupported(let why): return why
         case .error(let why): return L10n.t("Couldn't read usage — \(why)", locale: locale)
-        case .stale, .ok:     return L10n.t("Waiting for the first reading…", locale: locale)
+        case .stale:
+            // Stale with nothing to show: checks are being refused for now
+            // (rate limit, a login due a refresh). Says it is not stuck.
+            return L10n.t("No reading yet — spyx keeps trying. If this lasts, open \(displayName) once to refresh its login.", locale: locale)
+        case .ok:             return L10n.t("Waiting for the first reading…", locale: locale)
         }
     }
 }

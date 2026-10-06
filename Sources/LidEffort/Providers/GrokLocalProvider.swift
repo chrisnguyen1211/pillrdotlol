@@ -22,6 +22,9 @@ actor GrokLocalProvider: UsageProvider {
 
     nonisolated var signInCommand: String? { "grok login" }
 
+    /// Where the sign-in lives: a new one written there is read at once.
+    nonisolated var credentialFiles: [URL] { [authURL] }
+
     nonisolated var signInRoute: SignInRoute {
         .guidance(L10n.t("Run grok login — it signs in and refreshes the token this reads."))
     }

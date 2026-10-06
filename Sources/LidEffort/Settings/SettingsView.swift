@@ -82,12 +82,24 @@ struct SettingsView: View {
     /// A re-render per drop, which is a discrete action and cheap — unlike the
     /// per-drag state this replaced.
     @State private var cursorRefresh = 0
+    /// What each provider on the notch needs before it can be read, from the
+    /// store. Re-read on every notch publish: it looks only at snapshots, so it
+    /// is cheap and never touches a credential.
+    @State private var liveNeeds: [String: ConnectNeed] = [:]
+    /// The providers the store has a notch cell for. Only for these is
+    /// `liveNeeds` the whole truth — see `AccountRowState.need`.
+    @State private var onNotch: Set<String> = []
+    /// A provider the API tab should open its add form on — asked for by an
+    /// Accounts row whose way in is a pasted key.
+    @State private var apiAddRequest: String?
     @Namespace private var tabs
-    /// Switching off has to reach the store's archive, not just the preference
+    /// Disconnecting has to reach the store's archive, not just the preference
     /// — see `UsageStore.signOut(providerID:)`.
     let signOut: (String) -> Void
-    /// Switching on takes the user to wherever that account is signed in.
-    /// Returns false when there was nothing to open.
+    /// Reads a provider again after a key is saved, or takes the user to
+    /// wherever that account is signed in. Returns false when there was
+    /// nothing to open. Connect itself goes through the store's
+    /// `beginConnect`, which may also run a sign-in command.
     let signIn: (String) -> Bool
     let switchAccount: (String) -> Bool
     /// Re-reads a provider's credential. For a declined keychain prompt that is
@@ -207,17 +219,24 @@ struct SettingsView: View {
         .onReceive(NotificationCenter.default.publisher(
             for: NSApplication.didChangeScreenParametersNotification
         )) { _ in displays = DisplayOption.connected }
+        // An extra key added, renamed or removed: the store has rebuilt its
+        // providers, and the rows were read from the old list.
+        .onReceive((usageStore?.$providerListRevision.dropFirst().eraseToAnyPublisher()
+                    ?? Empty<Int, Never>().eraseToAnyPublisher())
+            .receive(on: RunLoop.main)) { _ in refreshVisibleState() }
         .onReceive((usageStore?.$notchSnapshots.eraseToAnyPublisher()
                     ?? Empty<[ProviderSnapshot], Never>().eraseToAnyPublisher())
             .receive(on: RunLoop.main)) { _ in
                 // The sheet stays open while models load and unload. Update
                 // those rows without re-reading cloud credentials on each poll.
                 guard let usageStore else { return }
+                readNeeds(from: usageStore)
                 let models = usageStore.localModelSummaries
                 let updated = accounts.filter { $0.localModel == nil }.flatMap { account in
                     [account] + models.filter { $0.sourceProviderID == account.id }
                 }
-                accounts = ProviderOrder.arrange(updated, by: preferences.providerOrder, id: \.id)
+                accounts = ProviderOrder.arrange(updated, by: APIKeyGroup.groupedOrder(preferences.providerOrder),
+                                                 id: \.id)
             }
     }
 
@@ -262,7 +281,9 @@ struct SettingsView: View {
                     Text(section.tabTitle)
                         .font(.system(size: 12, weight: chosen ? .semibold : .medium))
                         .foregroundStyle(chosen ? Color.primary : Color.secondary)
-                        .padding(.horizontal, 12)
+                        // Nine tabs: ten points a side keeps Russian's
+                        // longest labels on one line in the window's width.
+                        .padding(.horizontal, 10)
                         .frame(height: 28)
                         .background {
                             if chosen {
@@ -333,10 +354,15 @@ struct SettingsView: View {
                               previewWeeklyLimitAlert: previewWeeklyLimitAlert,
                               showAccounts: { selection = .accounts })
         case .accounts:      accountsPane
+        case .api:
+            APIKeysPane(preferences: preferences, usageStore: usageStore, addRequest: $apiAddRequest,
+                        signOut: signOut, didAdd: { _ in keyAdded() })
+        case .costs:         CostSettingsPane()
         case .localModels:
             LocalModelsPane(preferences: preferences, usageStore: usageStore,
                             ollamaRelay: ollamaRelay, lmstudioMetrics: lmstudioMetrics)
-        case .general:       GeneralPane(preferences: preferences, updater: updater)
+        case .general:       GeneralPane(preferences: preferences, updater: updater,
+                                         openSetup: openSetup, openTour: openTour, quit: quit)
         }
     }
 
@@ -351,7 +377,9 @@ struct SettingsView: View {
                 if needsSetup { setupNote }
                 ForEach(connected) { account in
                     AccountRow(provider: account, preferences: preferences,
+                               state: state(of: account),
                                signOut: signOut, signIn: signIn,
+                               connect: beginConnect,
                                switchAccount: switchAccount, retry: retry,
                                refresh: { usageStore?.reevaluate(providerID: $0) },
                                isOrderable: true,
@@ -359,7 +387,10 @@ struct SettingsView: View {
                                cursorRefresh: cursorRefresh,
                                onDrop: { cursorRefresh += 1 },
                                takePlaceOf: { move($0, onto: account.id) },
-                               didConnect: { connect(account.id) })
+                               didConnect: { connect(account.id) },
+                               didChange: { accountsChanged() },
+                               probe: { await usageStore?.probe(providerID: $0) ?? .ok },
+                               openAPI: openAPI)
                 }
                 if connected.isEmpty {
                     Text(L10n.t("Nothing is connected, so the notch has no rings to draw."))
@@ -372,9 +403,9 @@ struct SettingsView: View {
                         .foregroundStyle(.tertiary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
-                // Beside the switches it explains, not stranded at the end of
+                // Beside the buttons it explains, not stranded at the end of
                 // the page.
-                Text(L10n.t("Most readings are borrowed from a tool that already holds the account. DeepSeek is the exception: clicking Sign in opens its own spyx WebView, and signing out here clears only that session and its saved reading."))
+                Text(L10n.t("Most readings are borrowed from a tool that already holds the account. DeepSeek, MiniMax and QianwenAI are the exceptions: Connect opens a spyx window for that account, and Disconnect clears only that session and its saved reading."))
                     .font(.caption)
                     .foregroundStyle(.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -386,7 +417,9 @@ struct SettingsView: View {
                 Section(L10n.t("Not connected")) {
                     ForEach(notConnected) { account in
                         AccountRow(provider: account, preferences: preferences,
+                                   state: state(of: account),
                                    signOut: signOut, signIn: signIn,
+                                   connect: beginConnect,
                                    switchAccount: switchAccount, retry: retry,
                                    refresh: { usageStore?.reevaluate(providerID: $0) },
                                    isOrderable: false,
@@ -394,11 +427,14 @@ struct SettingsView: View {
                                    cursorRefresh: cursorRefresh,
                                    onDrop: {},
                                    takePlaceOf: { _ in false },
-                                   didConnect: { connect(account.id) })
+                                   didConnect: { connect(account.id) },
+                               didChange: { accountsChanged() },
+                               probe: { await usageStore?.probe(providerID: $0) ?? .ok },
+                               openAPI: openAPI)
                     }
-                    // Says what switching one back on will do, which is the
-                    // only question this group raises.
-                    Text(L10n.t("These have no ring to place. Switch one on and it joins the end of the list above."))
+                    // Says what connecting one will do, which is the only
+                    // question this group raises.
+                    Text(L10n.t("These have no ring to place. Connect one and it joins the end of the list above."))
                         .font(.caption)
                         .foregroundStyle(.tertiary)
                         .fixedSize(horizontal: false, vertical: true)
@@ -406,14 +442,76 @@ struct SettingsView: View {
             }
         }
         .formStyle(NotchFormStyle())
-        // A row switched off jumps from one group to the other. Scoped to that
+        // A row connected or disconnected jumps from one group to the other. Scoped to that
         // one value so nothing else on the page inherits an animation.
         .animation(.snappy(duration: 0.25), value: preferences.disconnectedProviders)
     }
 
+    /// The API tab, with its add form open on this provider when there is
+    /// one — where an Accounts row sends someone to paste a key.
+    private func openAPI(_ providerID: String?) {
+        withAnimation(.snappy(duration: 0.22)) {
+            selection = .api
+            query = ""
+        }
+        if let providerID { apiAddRequest = providerID }
+    }
+
     private func refreshVisibleState() {
-        accounts = providers()
+        accounts = Self.accountRows(providers(), order: preferences.providerOrder,
+                                    isConnected: preferences.isConnected)
         displays = DisplayOption.connected
+        if let usageStore { readNeeds(from: usageStore) }
+    }
+
+    private func readNeeds(from store: UsageStore) {
+        liveNeeds = store.connectNeeds()
+        onNotch = Set(store.notchSnapshots.map(\.id))
+    }
+
+    /// The Accounts list: every key folded into one API keys row, which
+    /// takes its place in the order like any other.
+    static func accountRows(_ summaries: [ProviderSummary], order: [String],
+                            isConnected: (String) -> Bool = { _ in true }) -> [ProviderSummary] {
+        ProviderOrder.arrange(APIKeyGroup.collapse(summaries: summaries, isConnected: isConnected),
+                              by: APIKeyGroup.groupedOrder(order), id: \.id)
+    }
+
+    /// A key was added under API. It joins the API keys row wherever that
+    /// stands; the first key puts the row after the connected ones, and a
+    /// row hidden from the notch comes back, since a key was just asked for.
+    private func keyAdded() {
+        let hasRow = accounts.contains { $0.id == APIKeyGroup.id }
+        if !hasRow || !preferences.isConnected(APIKeyGroup.id) {
+            preferences.setConnected(true, for: APIKeyGroup.id)
+            if !hasRow { accounts.append(APIKeyGroup.summary()) }
+            connect(APIKeyGroup.id)
+        } else {
+            accountsChanged()
+        }
+    }
+
+    /// What this row's trailing control should offer.
+    private func state(of account: ProviderSummary) -> AccountRowState {
+        // Shown or hidden in the notch, like a local model: the keys are
+        // switched on and off one by one under API.
+        if account.id == APIKeyGroup.id { return .toggle }
+        let isConnected = preferences.isConnected(account.id)
+        let need = isConnected
+            ? AccountRowState.need(live: liveNeeds[account.id], isOnNotch: onNotch.contains(account.id),
+                                   summary: account,
+                                   appInstalled: { NSWorkspace.shared.urlForApplication(withBundleIdentifier: $0) != nil })
+            : nil
+        return AccountRowState.resolve(isLocalModel: account.localModel != nil,
+                                       isConnected: isConnected, need: need)
+    }
+
+    /// Connect, from a row's button: the store's own fix when the provider is
+    /// already on the notch, otherwise whatever sign-in route it has. Without
+    /// a store — a render — the plain sign-in closure stands in.
+    private func beginConnect(_ providerID: String) -> Bool {
+        guard let usageStore else { return signIn(providerID) }
+        return usageStore.connect(providerID: providerID) || usageStore.beginConnect(providerID: providerID)
     }
 
     /// The slider's multiplier as a percentage, which is how people think
@@ -453,9 +551,12 @@ struct SettingsView: View {
     ///
     /// Model switches control visibility; their shared runtime has its own
     /// connection row and must remain enabled for its models to appear.
+    ///
+    /// Every API key is in the one API keys row.
     private var ringAccounts: [ProviderSummary] {
         accounts.filter {
-            $0.kind == .usage || ($0.localModel != nil && preferences.isConnected($0.sourceProviderID ?? $0.id))
+            ($0.kind == .usage && APICatalog.drawsRing(providerID: $0.id))
+                || ($0.localModel != nil && preferences.isConnected($0.sourceProviderID ?? $0.id))
         }
     }
 
@@ -505,6 +606,14 @@ struct SettingsView: View {
                                                  isConnected: preferences.isConnected)
         accounts = ProviderOrder.arrange(accounts, by: ids, id: \.id)
         preferences.setProviderOrder(ids)
+        accountsChanged()
+    }
+
+    /// One provider switched on or off, or given a key: its summary was built
+    /// while it was in the other state (a disconnected one has no account),
+    /// so the rows are read again once — on the click, not on every reading.
+    private func accountsChanged() {
+        DispatchQueue.main.async { refreshVisibleState() }
     }
 
     /// Put the dragged provider where the one under the pointer sits, while the
@@ -683,11 +792,25 @@ struct SoundRow: View {
     }
 }
 
+/// Where Settings' Connect has got to for one row.
+private enum ConnectPhase: Equatable {
+    case idle
+    case checking
+    case failed(String, ConnectNeed?)
+}
+
 private struct AccountRow: View {
     let provider: ProviderSummary
     @ObservedObject var preferences: Preferences
+    /// Which control the row ends in — worked out by the list, which can see
+    /// the store, from `AccountRowState`.
+    let state: AccountRowState
     let signOut: (String) -> Void
     let signIn: (String) -> Bool
+    /// Starts this provider's sign-in from a click: a Terminal command, its
+    /// app, or spyx's own sign-in window. False when there was nothing to
+    /// start, and the row's guidance or key field is the way in.
+    let connect: (String) -> Bool
     let switchAccount: (String) -> Bool
     let retry: (String) -> Void
     let refresh: (String) -> Void
@@ -707,18 +830,39 @@ private struct AccountRow: View {
     /// Move the dragged provider into this row's place. False when the id is
     /// not one of ours.
     let takePlaceOf: (String) -> Bool
-    /// Called after this row is switched on, so the list can decide where it
+    /// Called after this row is connected, so the list can decide where it
     /// now belongs. The row itself cannot: it can see only itself.
     let didConnect: () -> Void
+    /// After a disconnect: the owner reads the rows again.
+    var didChange: () -> Void = {}
+    /// One real reading, now — what Connect waits for before calling the
+    /// provider connected. See `UsageStore.probe`.
+    var probe: (String) async -> ProviderStatus = { _ in .ok }
+    /// Opens the API tab — on this provider's add form when given one. Keys
+    /// are pasted there, not on the row.
+    var openAPI: (String?) -> Void = { _ in }
 
     @Environment(\.notchReduceTransparency) private var reduceTransparency
+
+    /// The extra key this row is, when it is one.
+    private var extraKey: ExtraKey? {
+        preferences.extraKeys.first { $0.id == provider.id }
+    }
 
     /// The handle only appears under the pointer, so a row at rest stays as
     /// quiet as it was before there was anything to drag.
     @State private var isHovering = false
+    /// Disconnecting a provider whose session spyx owns signs it out for real,
+    /// so that one is asked first.
+    @State private var confirmingDisconnect = false
+    /// Where a Connect click has got to: checking the account for real, or
+    /// why it could not be read.
+    @State private var phase: ConnectPhase = .idle
 
     private var isConnected: Bool { preferences.isConnected(provider.id) }
     private var isMuted: Bool { preferences.isMutedAlerts(for: provider.id) }
+    /// The one row every API key is folded into.
+    private var isKeyGroup: Bool { provider.id == APIKeyGroup.id }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -734,7 +878,7 @@ private struct AccountRow: View {
                 HStack(spacing: 10) {
                     if isOrderable { handle }
 
-                    ProviderGlyphView(glyph: provider.glyph, size: 16)
+                    ProviderGlyphView(glyph: provider.glyph, customIconFilename: provider.customIconFilename, size: 16)
                         .foregroundStyle(isConnected ? .primary : .tertiary)
 
                     Text(provider.name)
@@ -760,7 +904,7 @@ private struct AccountRow: View {
                     // a lot of translucent furniture to move a ring one place
                     // up.
                     HStack(spacing: 6) {
-                        ProviderGlyphView(glyph: provider.glyph, size: 12)
+                        ProviderGlyphView(glyph: provider.glyph, customIconFilename: provider.customIconFilename, size: 12)
                         Text(provider.name)
                     }
                     .padding(.horizontal, 8)
@@ -768,7 +912,9 @@ private struct AccountRow: View {
                 }
                 .help(isOrderable
                       ? L10n.t("Drag to reorder. The notch draws the rings in this order.")
-                      : L10n.t("Switch this on to give it a ring in the notch."))
+                      : provider.localModel != nil
+                      ? L10n.t("Switch this on to give it a ring in the notch.")
+                      : L10n.t("Connect this to give it a ring in the notch."))
                 // Two mechanisms, neither of which covers both halves.
                 // `pointerStyle` draws the hand on an ordinary hover but cannot
                 // re-evaluate under a pointer that has not moved, which is the
@@ -788,64 +934,7 @@ private struct AccountRow: View {
 
                 Spacer(minLength: 8)
 
-                // Per-provider threshold alerts, muted here rather than in a
-                // separate notifications pane — the thing being muted is this
-                // row's reading, so the control belongs on the row.
-                if isConnected, provider.kind == .usage {
-                    Button {
-                        preferences.setAlertsMuted(!isMuted, for: provider.id)
-                    } label: {
-                        Image(systemName: isMuted ? "bell.slash" : "bell")
-                            .font(.system(size: 11))
-                            .foregroundStyle(isMuted ? .tertiary : .secondary)
-                    }
-                    .buttonStyle(.borderless)
-                    .help(isMuted
-                          ? L10n.t("Alerts for \(provider.name) are muted. Click to unmute.")
-                          : L10n.t("Alert when \(provider.name) crosses 80% and 100% of a limit."))
-                }
-
-                // Prefers the app that owns the account, and falls back to the
-                // web page only when there is no app to open.
-                //
-                // The reading is borrowed from an app on this Mac, so that app
-                // is where the account actually lives — and the website is a
-                // different session entirely, which will bounce you to a login
-                // if the browser is not signed in. Sending someone to a login
-                // screen from a row that says "connected" is the wrong answer
-                // whenever the real thing is one launch away.
-                // The way back from a declined keychain prompt, and the only
-                // one: declining is easy to do by reflex, and nothing else on
-                // screen will ask macOS again.
-                //
-                // Shown only while macOS is actually refusing. It used to be
-                // permanent for any keychain-backed provider, which meant it sat
-                // there next to a working account offering to fix nothing — and
-                // when it *was* needed there was no way to tell the two apart.
-                if isConnected, provider.wasRefusedAccess {
-                    Button(L10n.t("Allow access…")) { retry(provider.id) }
-                        .controlSize(.small)
-                        // Not "it will stop asking": for Claude it will not.
-                        // Claude Code recreates its login when the token
-                        // rotates, and a recreated item forgets the grant.
-                        .help(L10n.t("Asks macOS for \(provider.name)'s saved login again. Always Allow means it is asked less often."))
-                }
-
-                if isConnected, let destination {
-                    Button(destination.title) { open(destination) }
-                        .controlSize(.small)
-                        .help(destination.help)
-                }
-
-                Toggle(provider.name, isOn: binding)
-                    .toggleStyle(.switch)
-                    .controlSize(.small)
-                    .labelsHidden()
-                    .help(provider.localModel != nil
-                          ? L10n.t("Show or hide this model in the notch. It stays loaded in \(provider.runtimeName ?? "Ollama").")
-                          : isConnected
-                          ? L10n.t("Switch off to stop reading \(provider.name) and forget its readings. \(provider.signIn.signOutCaveat)")
-                          : L10n.t("Switch on to sign in and read \(provider.name) again."))
+                trailingControls
             }
 
             // 48 = the handle, the glyph and the two gaps before the name, so
@@ -854,13 +943,29 @@ private struct AccountRow: View {
                 .font(.caption)
                 .padding(.leading, 48)
 
+            // A connected row whose new key was refused: said under the field,
+            // since the row's own status still reads the old, working one.
+            if isConnected, case .failed(let reason, _) = phase {
+                Text(reason)
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                    .padding(.leading, 48)
+            } else if isConnected, phase == .checking {
+                HStack(spacing: 6) {
+                    ProgressView().controlSize(.mini)
+                    Text(L10n.t("Checking the key…")).font(.caption).foregroundStyle(.secondary)
+                }
+                .padding(.leading, 48)
+            }
+
             // Outside `detail` on purpose. That chain shows the account summary
             // whenever there is an account, and an aged-out token still has
             // one — the credential is there, it is simply too old to use. Put
             // inside, this warning would be swallowed by the very row that
             // makes everything look fine.
             if isConnected, provider.needsSignInRenewal {
-                Text(L10n.t("\(provider.name) usage needs its sign-in renewed — run `claude` once in a terminal."))
+                Text(provider.signInCommand.map { L10n.t("\(provider.name) usage needs its sign-in renewed — run `\($0)` once in a terminal.") }
+                     ?? L10n.t("\(provider.name) usage needs its sign-in renewed — sign in to \(provider.name) again."))
                     .font(.caption)
                     .foregroundStyle(.orange)
                     .padding(.leading, 48)
@@ -872,6 +977,11 @@ private struct AccountRow: View {
         // pointer is over.
         .contentShape(Rectangle())
         .onHover { isHovering = $0 }
+        .confirmationDialog(L10n.t("Disconnect \(provider.name)?"), isPresented: $confirmingDisconnect) {
+            Button(L10n.t("Disconnect"), role: .destructive) { disconnect() }
+        } message: {
+            Text(provider.signIn.signOutCaveat)
+        }
         .dropDestination(for: String.self) { ids, _ in
             defer { drag.id = nil }
             guard isOrderable else { return false }
@@ -893,6 +1003,162 @@ private struct AccountRow: View {
             guard isOrderable, entered, let moved = drag.id, moved != provider.id
             else { return }
             withAnimation(.snappy(duration: 0.22)) { _ = takePlaceOf(moved) }
+        }
+    }
+
+    /// The end of the row: one control for what the row can do next.
+    ///
+    /// It used to be a switch on every row, which read as "turn this on" when
+    /// what most rows needed was "sign in" — and an agent switched on but not
+    /// signed in looked exactly like one that worked. Now a row that is off
+    /// offers Connect, one that is on says how it is doing and offers what
+    /// would fix it, and Disconnect is a separate, deliberate button.
+    @ViewBuilder
+    private var trailingControls: some View {
+        stateControls
+    }
+
+    @ViewBuilder
+    private var stateControls: some View {
+        switch state {
+        case .toggle:
+            Toggle(provider.name, isOn: binding)
+                .toggleStyle(.switch)
+                .controlSize(.small)
+                .labelsHidden()
+                .help(isKeyGroup
+                      ? L10n.t("Show or hide the API keys cell in the notch. The keys are still read.")
+                      : L10n.t("Show or hide this model in the notch. It stays loaded in \(provider.runtimeName ?? "Ollama")."))
+
+        case .connect:
+            switch phase {
+            case .checking:
+                ProgressView().controlSize(.small)
+                Text(L10n.t("Checking…"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            case .failed(let reason, let need):
+                status(reason, color: .orange)
+                // The way in, when the account is not signed in yet: then
+                // Check again, once it is.
+                if let need, need.offersButton {
+                    Button(need.buttonTitle) { _ = connect(provider.id) }
+                        .controlSize(.small)
+                        .help(help(for: need))
+                }
+                if takesAPIKey {
+                    Button(L10n.t("Add a key…")) { openAPI(provider.id) }
+                        .controlSize(.small)
+                }
+                Button(L10n.t("Check again")) { verify() }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+            case .idle:
+                Button(L10n.t("Connect")) { connectNow() }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                    .help(L10n.t("Checks that \(provider.name) can be read, then gives it a ring."))
+            }
+
+        case .needs(let need):
+            status(need.reason, color: .orange)
+            alertsButton
+            if need.offersButton {
+                Button(need.buttonTitle) { fix(need) }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                    .help(help(for: need))
+            }
+            // Not "Disconnect": it was never connected to anything.
+            Button(L10n.t("Turn off")) { disconnect() }
+                .controlSize(.small)
+                .help(L10n.t("Stop trying to read \(provider.name). Connect it again any time."))
+
+        case .reading:
+            // Not "Connected": that is the section's own title, and in French
+            // it is plural there.
+            status(L10n.t("Signed in"), color: .green)
+            alertsButton
+            // Prefers the app that owns the account, and falls back to the
+            // web page only when there is no app to open.
+            //
+            // The reading is borrowed from an app on this Mac, so that app
+            // is where the account actually lives — and the website is a
+            // different session entirely, which will bounce you to a login
+            // if the browser is not signed in. Sending someone to a login
+            // screen from a row that says "connected" is the wrong answer
+            // whenever the real thing is one launch away.
+            if let destination {
+                Button(destination.title) { open(destination) }
+                    .controlSize(.small)
+                    .help(destination.help)
+            }
+            disconnectButton
+        }
+    }
+
+    /// A dot and a word, so a row says whether it is being read without
+    /// anyone having to work it out from the detail line.
+    private func status(_ text: String, color: Color) -> some View {
+        HStack(spacing: 5) {
+            Circle()
+                .fill(color)
+                .frame(width: 6, height: 6)
+            Text(text)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+        }
+        .fixedSize()
+        .accessibilityElement(children: .combine)
+    }
+
+    /// Per-provider threshold alerts, muted here rather than in a separate
+    /// notifications pane — the thing being muted is this row's reading, so
+    /// the control belongs on the row.
+    @ViewBuilder
+    private var alertsButton: some View {
+        if provider.kind == .usage {
+            Button {
+                preferences.setAlertsMuted(!isMuted, for: provider.id)
+            } label: {
+                Image(systemName: isMuted ? "bell.slash" : "bell")
+                    .font(.system(size: 11))
+                    .foregroundStyle(isMuted ? .tertiary : .secondary)
+            }
+            .buttonStyle(.borderless)
+            .help(isMuted
+                  ? L10n.t("Alerts for \(provider.name) are muted. Click to unmute.")
+                  : L10n.t("Alert when \(provider.name) crosses 80% and 100% of a limit."))
+        }
+    }
+
+    /// Stops reading and forgets the readings — what switching off used to
+    /// do. Asked first only where it also ends a session spyx owns; anywhere
+    /// else the account is untouched and Connect brings it straight back.
+    private var disconnectButton: some View {
+        Button(L10n.t("Disconnect")) {
+            if case .modal = provider.signIn {
+                confirmingDisconnect = true
+            } else {
+                disconnect()
+            }
+        }
+        .controlSize(.small)
+        .help(L10n.t("Stop reading \(provider.name) and forget its readings. \(provider.signIn.signOutCaveat)"))
+    }
+
+    private func help(for need: ConnectNeed) -> String {
+        switch need.action {
+        case .terminal(let command):
+            return L10n.t("Opens Terminal and runs `\(command)`.")
+        case .allowAccess:
+            // Not "it will stop asking": for Claude it will not. Claude Code
+            // recreates its login when the token rotates, and a recreated
+            // item forgets the grant.
+            return L10n.t("Asks macOS for \(provider.name)'s saved login again. Always Allow means it is asked less often.")
+        case .openApp, .settings:
+            return provider.signIn.explanation
         }
     }
 
@@ -982,61 +1248,129 @@ private struct AccountRow: View {
                 .foregroundStyle(.secondary)
                 .help(L10n.t("Fills the ring against a ceiling you choose; Google publishes none for an API key."))
             }
-            // Ollama owns its credential: the user enters an API key here, stored
-            // in the keychain. The env var OLLAMA_API_KEY is checked first, so a
-            // shell that exports one needs no entry here.
-            if provider.id == "ollama" {
-                ollamaKeyEntry
+            // MiniMax is signed into in spyx. The region is which console
+            // its session and keys belong to; a cookie header is optional.
+            if provider.id == "minimax" {
+                minimaxEntry
+            }
+
+            // A key pasted into spyx lives under API, with every other key.
+            if takesAPIKey || extraKey != nil {
+                apiKeyPointer
             }
         }
     }
 
-    /// The API key input for Ollama. Stored in the keychain on Save, then a
-    /// refresh is triggered so the ring picks up the new credential without a
-    /// relaunch.
-    @State private var ollamaKey = ""
-    @State private var ollamaKeySaved = false
+    /// The API keys row: how many there are and how many are read, and the
+    /// way to the tab where each is added, renamed or switched off.
+    private var keyGroupDetail: some View {
+        let keys = APIKeyItem.all(preferences: preferences, alsoListed: preferences.isConnected).map(\.id)
+        let off = keys.filter { !preferences.isConnected($0) }.count
+        let count = APIKeyGroup.countText(keys.count)
+        return HStack(spacing: 6) {
+            Text(!isConnected
+                 ? L10n.t("Hidden from the notch · \(count)")
+                 : off == 0 ? L10n.t("\(count), shown together in one cell")
+                 : L10n.t("\(count), \(off) switched off"))
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Button(L10n.t("Open API")) { openAPI(nil) }
+                .buttonStyle(.link)
+        }
+    }
 
-    private var ollamaKeyEntry: some View {
-        // Laid out like the Gemini budget above it, and for the same reason:
-        // a field's own title becomes a leading label in a `Form` row, which
-        // crowds the box and pins it to the caption. The caption goes on its
-        // own line instead, and `.small` comes off the controls — it bought
-        // nothing but a cramped row.
+    /// Where this row's key is managed: under API. Says which, so a key
+    /// pasted before the API tab existed is still easy to find.
+    private var apiKeyPointer: some View {
+        // A pasted base key is already listed there; anything else is one
+        // still to add, and the button opens the form on this provider.
+        let listed = extraKey != nil || BaseKeySlot.isPresent(provider.id)
+        return HStack(spacing: 6) {
+            Text(extraKey != nil
+                 ? L10n.t("Rename or remove this key under API.")
+                 : listed
+                 ? L10n.t("The key you pasted is listed under API.")
+                 : L10n.t("No tool on this Mac holds a key? Paste one under API."))
+                .foregroundStyle(.tertiary)
+                .fixedSize(horizontal: false, vertical: true)
+            Button(listed ? L10n.t("Open API") : L10n.t("Add a key…")) {
+                openAPI(listed ? nil : provider.id)
+            }
+            .buttonStyle(.link)
+        }
+        .padding(.top, 2)
+    }
+
+    /// Region and Coding Plan key for MiniMax.
+    ///
+    /// Laid out like the Ollama key below, and for the same reason: a
+    /// field's own title becomes a leading label in a `Form` row. Captions
+    /// sit on their own line. Changing the region only stores the choice —
+    /// opening Sign in here would throw a sheet over a preference picker.
+    @State private var minimaxCookie = ""
+    @State private var minimaxCookieSaved = false
+
+    private var minimaxEntry: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(L10n.t("Region"))
+                    .foregroundStyle(.secondary)
+                Picker(selection: $preferences.minimaxRegion) {
+                    Text(L10n.t("International")).tag(MiniMaxRegion.international)
+                    Text(L10n.t("China mainland")).tag(MiniMaxRegion.china)
+                } label: {
+                    EmptyView()
+                }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .frame(width: 160)
+            }
+
+            minimaxCookieEntry
+
+            Text(L10n.t("Sign in to MiniMax in spyx, or add a Coding Plan key under API. A Cookie header is optional. spyx never reads a browser's cookies."))
+                .foregroundStyle(.tertiary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.top, 2)
+    }
+
+    private var minimaxCookieEntry: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(L10n.t("Ollama API key"))
+            Text(L10n.t("Cookie header (optional)"))
                 .foregroundStyle(.secondary)
             HStack(spacing: 8) {
-                SecureField(L10n.t("Paste your key"), text: $ollamaKey)
+                SecureField(L10n.t("Cookie: …"), text: $minimaxCookie)
                     .textContentType(.password)
                     .textFieldStyle(.roundedBorder)
                     .labelsHidden()
                     .frame(maxWidth: 260)
-                Button(L10n.t("Save")) {
-                    guard !ollamaKey.isEmpty else { return }
-                    OllamaCredentials.store(ollamaKey)
-                    ollamaKey = ""
-                    ollamaKeySaved = true
-                    _ = signIn(provider.id)
+                Button(keyButtonTitle) {
+                    guard !minimaxCookie.isEmpty else { return }
+                    let cookie = minimaxCookie
+                    minimaxCookie = ""
+                    connectWithKey(store: { MiniMaxCredentials.storeCookieHeader(cookie) },
+                                   remove: { MiniMaxCredentials.deleteCookieHeader() })
                 }
-                .disabled(ollamaKey.isEmpty)
-                if ollamaKeySaved {
+                .disabled(minimaxCookie.isEmpty || phase == .checking)
+                if minimaxCookieSaved {
                     Text(L10n.t("Saved"))
                         .foregroundStyle(.green)
                 }
             }
         }
-        .padding(.top, 2)
     }
 
     @ViewBuilder
     private var accountDetail: some View {
-        if let model = provider.localModel {
+        if isKeyGroup {
+            keyGroupDetail
+        } else if let model = provider.localModel {
             Text(isConnected ? L10n.t("\(model.memoryText) \(model.memoryLabel) · via \(provider.runtimeName ?? "Ollama")")
                  : L10n.t("Hidden from the notch · Loaded in \(provider.runtimeName ?? "Ollama")"))
                 .foregroundStyle(.secondary)
         } else if !isConnected {
-            Text(L10n.t("Signed out — nothing is read, and no readings are kept."))
+            Text(L10n.t("Not connected — nothing is read, and no readings are kept."))
                 .foregroundStyle(.tertiary)
         } else if let account = provider.account {
             VStack(alignment: .leading, spacing: 2) {
@@ -1059,21 +1393,16 @@ private struct AccountRow: View {
         } else if provider.wasRefusedAccess {
             // Not a sign-in problem, so do not send them off to sign in. The
             // credential is right there and macOS is the one saying no — the
-            // remedy is the button on this same row.
+            // remedy is the Allow access… button on this same row.
             Text(L10n.t("macOS is not letting spyx read \(provider.name)'s saved login. Choose Allow access… above, then Always Allow."))
                 .foregroundStyle(.orange)
                 .fixedSize(horizontal: false, vertical: true)
         } else {
-            HStack(spacing: 8) {
-                Text(provider.signIn.explanation)
-                    .foregroundStyle(.orange)
-                    .fixedSize(horizontal: false, vertical: true)
-                if let title = provider.signIn.actionTitle, canOpenSignIn {
-                    Button(title) { _ = signIn(provider.id) }
-                        .controlSize(.small)
-                }
-
-            }
+            // What to do, in words. The button that does it — when there is
+            // one — is the row's own, up beside the name.
+            Text(provider.signIn.explanation)
+                .foregroundStyle(.orange)
+                .fixedSize(horizontal: false, vertical: true)
         }
     }
 
@@ -1135,31 +1464,121 @@ private struct AccountRow: View {
         }
     }
 
-    /// One control for both directions: on signs in, off signs out.
-    ///
-    /// Switching on does more than set a flag — if there is no credential to
-    /// read it opens the sign-in there and then, which is the point of managing
-    /// this from one place. Switching off is a real sign-out: it forgets the
-    /// readings as well as stopping the next one.
+    /// The switch, for the one kind of row that keeps it: a local model, where
+    /// on and off only show or hide it in the notch.
     private var binding: Binding<Bool> {
         Binding(
             get: { preferences.isConnected(provider.id) },
             set: { wantsOn in
-                if wantsOn {
-                    preferences.setConnected(true, for: provider.id)
-                    // After the switch, not before: where it belongs depends on
-                    // which providers are connected, and this one has only just
-                    // become one of them.
-                    didConnect()
-                    // Nothing to open for Claude Code — but then there is no
-                    // account either, so `detail` is already showing what to do.
-                    if provider.localModel == nil { _ = signIn(provider.id) }
-                } else {
-                    if provider.localModel == nil { signOut(provider.id) }
-                    preferences.setConnected(false, for: provider.id)
-                }
+                preferences.setConnected(wantsOn, for: provider.id)
+                // After the switch, not before: where it belongs depends on
+                // which providers are connected, and this one has only just
+                // become one of them.
+                if wantsOn { didConnect() }
             }
         )
     }
+
+    /// Switch on, then start whatever sign-in the provider has.
+    ///
+    /// Switching on alone is enough for an account already signed in
+    /// elsewhere — the next reading finds it. For one that is not, this opens
+    /// the place it signs in there and then, which is the point of managing
+    /// it from one place. With nothing to open, a provider that takes a
+    /// pasted key gets its field focused instead.
+    private func connectNow() { verify() }
+
+    /// Connected means read: one real reading first, and only when it comes
+    /// back good is the provider switched on. Otherwise the row says why —
+    /// not signed in, a key refused, macOS said no — and offers the way in
+    /// and Check again, instead of a ring that would only say "Not signed in".
+    private func verify() {
+        phase = .checking
+        Task { @MainActor in
+            let status = await probe(provider.id)
+            switch status {
+            case .ok, .stale:
+                phase = .idle
+                preferences.setConnected(true, for: provider.id)
+                didConnect()
+            default:
+                let need = ConnectNeed.need(status: status, expired: false, route: provider.signIn,
+                                            command: provider.signInCommand,
+                                            appInstalled: { NSWorkspace.shared.urlForApplication(withBundleIdentifier: $0) != nil })
+                phase = .failed(Self.reason(for: status, need: need, takesKey: takesAPIKey), need)
+            }
+        }
+    }
+
+    /// What a failed check says, in the row's one line.
+    nonisolated static func reason(for status: ProviderStatus, need: ConnectNeed?, takesKey: Bool) -> String {
+        switch status {
+        case .needsAuth where takesKey: return L10n.t("No working key — add one under API")
+        case .error(let why): return L10n.t("Couldn't connect — \(why)")
+        case .unsupported(let why): return why
+        default: return need?.reason ?? L10n.t("Not signed in")
+        }
+    }
+
+    /// A key pasted in: kept only if it works. Stored, checked with a real
+    /// reading, and taken out again when the account refuses it — a key
+    /// that does not work is not left behind to fail on every poll.
+    private func connectWithKey(store: () -> Void, remove: @escaping () -> Void) {
+        store()
+        phase = .checking
+        Task { @MainActor in
+            let status = await probe(provider.id)
+            switch status {
+            case .ok, .stale:
+                phase = .idle
+                if !isConnected {
+                    preferences.setConnected(true, for: provider.id)
+                    didConnect()
+                } else {
+                    refresh(provider.id)
+                }
+            default:
+                remove()
+                phase = .failed(status == .needsAuth || status == .accessDenied
+                                    ? L10n.t("That key was not accepted")
+                                    : Self.reason(for: status, need: nil, takesKey: true), nil)
+            }
+        }
+    }
+
+    /// What a key field's button says: Connect until it is, then Update.
+    private var keyButtonTitle: String { isConnected ? L10n.t("Update") : L10n.t("Connect") }
+
+    /// What the button on a connected row that cannot be read yet does.
+    private func fix(_ need: ConnectNeed) {
+        switch need.action {
+        case .allowAccess:
+            retry(provider.id)
+        default:
+            if !connect(provider.id), takesAPIKey { openAPI(provider.id) }
+        }
+    }
+
+    /// A real sign-out for the readings: it forgets them as well as stopping
+    /// the next one. For a session spyx owns it ends that session too.
+    private func disconnect() {
+        if provider.localModel == nil { signOut(provider.id) }
+        preferences.setConnected(false, for: provider.id)
+        didChange()
+    }
+
+    /// Pasting a key is a way of connecting, so saving one on a row that is
+    /// off switches it on — otherwise the key sat there unread.
+    private func connectForSavedKey() {
+        guard !isConnected else { return }
+        preferences.setConnected(true, for: provider.id)
+        didConnect()
+    }
+
+    /// The providers whose way in can be a pasted key — added under API.
+    private var takesAPIKey: Bool {
+        ExtraKey.bases.contains(provider.id)
+    }
+
 
 }

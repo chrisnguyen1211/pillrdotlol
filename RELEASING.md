@@ -11,8 +11,8 @@ lets macOS keep a user's permissions across updates.
 1. **Developer ID certificate.** In your Apple Developer account, create a
    "Developer ID Application" certificate and install it in the login
    keychain. `security find-identity -v -p codesigning` lists its name.
-2. **Notary credentials.** `xcrun notarytool store-credentials spyx` (Apple ID,
-   team ID and an app-specific password).
+2. **Notary credentials.** Stored once in the keychain as the profile `spyx` —
+   see [Notarization](#notarization).
 3. **Back up the update signing key.** Sparkle updates are signed with an
    EdDSA key kept in the login keychain under the account `spyx.lol`; its
    public half is `SUPublicEDKey` in `script/bundle.sh`. Lose the private key
@@ -57,6 +57,60 @@ lets macOS keep a user's permissions across updates.
    (after Open Anyway, if not notarized), the notch appears, Settings → General →
    Check Now reports "up to date", and an approval from Claude Code reaches
    the notch.
+
+## Notarization
+
+Notarizing needs an Apple Developer Program membership and the Developer ID
+certificate from step 1 above. Without it, everything else in this file works
+and releases simply stay un-notarized.
+
+**Once: store the notary credentials.** Create an app-specific password at
+[appleid.apple.com](https://appleid.apple.com) → Sign-In and Security →
+App-Specific Passwords, then:
+
+```bash
+xcrun notarytool store-credentials spyx \
+  --apple-id you@example.com \
+  --team-id TEAMID
+```
+
+`notarytool` prompts for the app-specific password and keeps it in the login
+keychain under the profile name `spyx`. The team ID is the ten characters in
+parentheses after your name in `security find-identity -v -p codesigning`.
+Check the profile with `xcrun notarytool history --keychain-profile spyx`.
+
+**Each release: set two variables.** `script/package.sh` (which
+`script/release.sh` runs) reads exactly these:
+
+| Variable | Value | Effect |
+|---|---|---|
+| `DEVELOPER_ID` | `Developer ID Application: Your Name (TEAMID)` | Signs the app (Sparkle's helpers first) and the DMG with a secure timestamp |
+| `NOTARY_PROFILE` | `spyx` | Submits the DMG with `xcrun notarytool submit --keychain-profile "$NOTARY_PROFILE" --wait`, then staples the ticket with `xcrun stapler staple` |
+
+```bash
+DEVELOPER_ID="Developer ID Application: Your Name (TEAMID)" NOTARY_PROFILE=spyx PUBLISH=1 script/release.sh
+```
+
+Without `DEVELOPER_ID` nothing is notarized, whatever `NOTARY_PROFILE` says;
+with `DEVELOPER_ID` but no `NOTARY_PROFILE` the build is Developer ID–signed but
+not notarized. A rejected submission stops the script; read Apple's reasons with
+`xcrun notarytool log <submission-id> --keychain-profile spyx`. Verify a
+finished DMG with `spctl -a -t open --context context:primary-signature -v build/spyx-<version>.dmg`
+and `xcrun stapler validate build/spyx-<version>.dmg`.
+
+**What changes for users.**
+
+- New downloads open with a double-click: no "Apple could not verify" message
+  and no trip to Privacy & Security → Open Anyway. Remove the Open Anyway
+  instructions from `README.md` (Install, FAQ), `site/index.html`, and the
+  release notes text in `script/release.sh`.
+- Installed copies update through Sparkle as before: the update is still
+  checked against the same EdDSA key.
+- The first notarized release is signed by a different identity (Developer ID
+  instead of Apple Development). macOS ties Accessibility, Automation and the
+  keychain's "Always Allow" to the signing identity, so people updating from
+  an earlier build may be asked for these once more. Say so in that release's
+  notes. Keep signing with the same Developer ID afterwards.
 
 ## What users keep across updates
 

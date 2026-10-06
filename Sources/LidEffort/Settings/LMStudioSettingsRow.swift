@@ -6,6 +6,8 @@ struct LMStudioSettingsRow: View {
     var metrics: LMStudioMetrics? = nil
     @State private var address = ""
     @State private var addressError: String?
+    @State private var check: LocalCheckResult?
+    @State private var checkingNow = false
     @State private var token = ""
     @State private var tokenSaved = false
 
@@ -41,15 +43,23 @@ struct LMStudioSettingsRow: View {
                     .textFieldStyle(.roundedBorder)
                     .onSubmit { applyAddress() }
                     .accessibilityLabel("LM Studio server address")
-                Button(address == preferences.lmstudioEndpoint ? L10n.t("Check connection") : L10n.t("Apply")) {
+                Button(address == preferences.lmstudioEndpoint ? L10n.t("Check connection") : L10n.t("Apply & check")) {
                     applyAddress()
+                    runCheck()
                 }
-                .disabled(address == preferences.lmstudioEndpoint && (!enabled || checking))
+                .disabled(checkingNow)
                 .controlSize(.small)
             }
 
             if let addressError {
                 Text(addressError).foregroundStyle(.orange)
+            } else if checkingNow {
+                HStack(spacing: 6) {
+                    ProgressView().controlSize(.mini)
+                    Text(L10n.t("Checking \("LM Studio")…")).foregroundStyle(.secondary)
+                }
+            } else if let check {
+                LocalCheckLine(result: check)
             } else if !enabled {
                 Text(L10n.t("Monitoring off."))
                     .foregroundStyle(.secondary)
@@ -72,7 +82,7 @@ struct LMStudioSettingsRow: View {
         .font(.caption)
         .fixedSize(horizontal: false, vertical: true)
         .onAppear { address = preferences.lmstudioEndpoint }
-        .onChange(of: address) { _, _ in addressError = nil }
+        .onChange(of: address) { _, _ in addressError = nil; check = nil }
     }
 
     /// Only needed when LM Studio's "Require API token" is on. Stored in the
@@ -115,6 +125,19 @@ struct LMStudioSettingsRow: View {
                 .foregroundStyle(.secondary)
         }
         .padding(.top, 2)
+    }
+
+    /// A real look at the server, said in the row whatever it finds —
+    /// switched on or not, reading before or not.
+    private func runCheck() {
+        guard addressError == nil else { return }
+        checkingNow = true
+        Task { @MainActor in
+            let probe = await store.probeReading(providerID: providerID)
+            check = LocalCheckResult.from(status: probe.status, snapshot: probe.snapshot,
+                                          name: "LM Studio", address: preferences.lmstudioEndpoint)
+            checkingNow = false
+        }
     }
 
     private func applyAddress() {
