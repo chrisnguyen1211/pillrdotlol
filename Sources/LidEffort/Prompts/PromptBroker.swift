@@ -46,12 +46,19 @@ final class PromptBroker: @unchecked Sendable {
     }
 
     func start() throws {
-        try FileManager.default.createDirectory(atPath: (path as NSString).deletingLastPathComponent,
-                                                withIntermediateDirectories: true)
+        let directory = (path as NSString).deletingLastPathComponent
+        try FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true,
+                                                attributes: [.posixPermissions: 0o700])
+        // An existing directory keeps the mode it was made with.
+        chmod(directory, 0o700)
         unlink(path)
         let fd = socket(AF_UNIX, SOCK_STREAM, 0)
         guard fd >= 0 else { throw POSIXError(.init(rawValue: errno) ?? .EIO) }
         var address = Self.address(path)
+        // The socket is created by bind(); a tight umask means it is never
+        // reachable by others, not even before the chmod below.
+        let previousMask = umask(0o077)
+        defer { umask(previousMask) }
         let bound = withUnsafePointer(to: &address) {
             $0.withMemoryRebound(to: sockaddr.self, capacity: 1) { bind(fd, $0, socklen_t(MemoryLayout<sockaddr_un>.size)) }
         }
