@@ -258,6 +258,10 @@ struct ClaudeProfile: Equatable, Hashable {
 
     /// The command that signs this profile in, for the row that has no button.
     var signInCommand: String {
-        slug == nil ? "claude" : "CLAUDE_CONFIG_DIR=\(displayPath) claude"
+        guard slug != nil else { return "claude" }
+        // Quote the actual path, including spaces and apostrophes. A quoted ~
+        // would not expand, and an unquoted slug could become shell syntax.
+        let path = "'" + configDirectory.path.replacingOccurrences(of: "'", with: "'\"'\"'") + "'"
+        return "CLAUDE_CONFIG_DIR=\(path) claude"
     }
 }
