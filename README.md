@@ -24,7 +24,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/media/hero.gif" alt="The pill fills up and turns to glass, with a ring for each coding agent" width="760">
+  <img src="docs/media/shots/hero.png" alt="The pill in a MacBook's notch with a ring per agent, a done card with Reply, the API keys card and a question from Claude Code" width="800">
 </p>
 
 > [!NOTE]
@@ -41,56 +41,37 @@
 
 ## ✨ What it does
 
-<table>
-  <tr>
-    <td width="46%"><img src="docs/media/ui/tooltip-limits.png" alt="Claude usage card: session and weekly limits with reset times"></td>
-    <td>
-      <h3>Know before you hit the wall</h3>
-      A ring for each agent shows how much of its limit is left. Hover for the card: every window, when it resets, and a forecast when you'll run out before it does. When a limit comes back, a card says so.
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <h3>Every session, one hover away</h3>
-      See what each agent is doing — its model, reasoning effort, tokens and how long it's been at it. Click a session to jump straight to its terminal tab or app window.
-    </td>
-    <td width="46%"><img src="docs/media/ui/tooltip-sessions.png" alt="The card's sessions: one waiting for approval, one working, one idle"></td>
-  </tr>
-  <tr>
-    <td width="46%"><img src="docs/media/ui/done.png" alt="Done card: Done and dusted, my-app, Refactored the auth flow"></td>
-    <td>
-      <h3>Finished? You'll know</h3>
-      Ten agents tell pillr the moment a turn ends — Claude Code, Codex, Grok, Cursor, Kimi Code, Gemini CLI, OpenCode, Copilot CLI, Droid and Antigravity. Hover an idle session to <b>Reply</b> right from its card: pillr types it in only when the agent is waiting, never over a draft.
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <h3>Approve without leaving your flow</h3>
-      Allow or deny Claude Code's permission prompts, and answer its questions, from the notch. Your answer goes straight back to the session that asked.
-    </td>
-    <td width="46%"><img src="docs/media/ui/approval.png" alt="Needs your OK: Claude wants to run npm run build, with Deny, Always and Allow"></td>
-  </tr>
-  <tr>
-    <td width="46%"><img src="docs/media/ui/apikeys-tooltip.png" alt="API keys card: OpenRouter, ElevenLabs, DeepSeek and Groq with credit left and spend"></td>
-    <td>
-      <h3>No more keys burning in the dark</h3>
-      Paste the API keys you pay for and pillr keeps an eye on all of them: <b>credit left</b>, <b>spent this month</b> and <b>spent in total</b>, read from each provider's own API. They share one <b>API keys</b> cell — its ring follows the key closest to running out.
-    </td>
-  </tr>
-  <tr>
-    <td>
-      <h3>Hold ⌘. Tilt the lid.</h3>
-      Open the lid a little to raise reasoning effort, close it to lower it — one level per 7°, applied when you let go of ⌘, to the agent you're working with and on its model's own scale. Without ⌘, the lid is just the lid.
-    </td>
-    <td width="46%"><img src="docs/media/ui/effort-high.png" alt="Effort → High: the lid gesture sets Claude, Codex and Grok to high"></td>
-  </tr>
-</table>
+### Every limit and every session, one hover away
+
+A ring for each agent shows how much of its limit is left, with a forecast when you'll run out before it resets — and a card when it comes back. Hover for the details: every window and when it resets, then each running session with its model, effort and tokens. Click one to jump straight to its terminal tab or app window.
+
+<p align="center"><img src="docs/media/shots/sessions.png" alt="The pill on the right edge of the screen, with Claude's usage card: the current session and three running sessions" width="800"></p>
+
+### Finished? You'll know — and you can answer
+
+Ten agents tell pillr the moment a turn ends: Claude Code, Codex, Grok, Cursor, Kimi Code, Gemini CLI, OpenCode, Copilot CLI, Droid and Antigravity. The card says what changed. Press **Reply** to write back to that session — pillr types it in only when the agent is waiting, never over a draft.
+
+<p align="center"><img src="docs/media/shots/done.png" alt="A done card: Task done. Nice — 3 files, +42 −7 — with the Reply button under it" width="800"></p>
+
+### Approve and answer without leaving your flow
+
+Allow or deny Claude Code's permission prompts, and answer its questions — one choice, several, or your own words — right from the notch. Your answer goes straight back to the session that asked.
+
+<p align="center"><img src="docs/media/shots/questions.png" alt="Two questions from Claude Code: platforms to ship first, with macOS and CLI ticked, and a database question answered in its own words" width="800"></p>
+
+### No more keys burning in the dark
+
+Add the API keys you pay for — pick the provider as you type, paste the key. pillr reads **credit left**, **spent this month** and **spent in total** from each provider's own API, and keeps every key in one **API keys** cell whose ring follows the key closest to running out. Providers that need a special key, like xAI's management key, say so before you paste.
+
+<p align="center"><img src="docs/media/shots/api-keys.png" alt="Settings › API Keys listing eight keys, with the Add an API key sheet suggesting voice providers as you type" width="800"></p>
+
+### Hold ⌘. Tilt the lid.
+
+Open the lid a little to raise reasoning effort, close it to lower it — one level per 7°, applied when you let go of ⌘, to the agent you're working with and on its model's own scale. Without ⌘, the lid is just the lid.
+
+<p align="center"><img src="docs/media/shots/effort.png" alt="The effort bar from low to ultra, its last stretch in a shifting rainbow" width="800"></p>
 
 **And everywhere else:** any edge of the screen — top, right, bottom or left — and it follows the display you're working on. Light, dark, or matching your Mac.
-
-<p align="center">
-  <img src="docs/media/hero.png" alt="pillr on a MacBook: a done card beside the pill, with rings for Claude, Codex, Grok and API keys" width="820">
-</p>
 
 ## 🤖 Supported agents
 
