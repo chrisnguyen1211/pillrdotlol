@@ -24,7 +24,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/media/shots/hero.png" alt="The pill in a MacBook's notch with a ring per agent, a done card with Reply, the API keys card and a question from Claude Code" width="800">
+  <img src="docs/media/meme.gif" alt="When you have 6 coding agents running and no idea who's done — terminals shaking, alerts piling up. Me with pillr: one pill on the screen's edge, a done card, and pixel sunglasses landing on it. One pill. Zero panic." width="800">
 </p>
 
 > [!NOTE]
@@ -40,6 +40,8 @@
 </table>
 
 ## ✨ What it does
+
+<p align="center"><img src="docs/media/shots/hero.png" alt="The pill in a MacBook's notch with a ring per agent, a done card with Reply, the API keys card and a question from Claude Code" width="800"></p>
 
 ### Every limit and every session, one hover away
 
