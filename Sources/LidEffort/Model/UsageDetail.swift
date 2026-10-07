@@ -43,11 +43,6 @@ struct UsageDetailGroup: Codable, Equatable, Sendable, Identifiable {
     var totalCost: Double { days.reduce(0) { $0 + $1.cost } }
     var hasUsage: Bool { totalTokens > 0 || totalCost > 0 || requests > 0 }
 
-    var cacheHitRate: Double? {
-        let input = cacheHitTokens + cacheMissTokens
-        guard input > 0 else { return nil }
-        return Double(cacheHitTokens) / Double(input)
-    }
 }
 
 struct UsageDetailDay: Codable, Equatable, Sendable {

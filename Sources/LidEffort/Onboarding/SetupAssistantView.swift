@@ -754,30 +754,6 @@ private struct ReadyBody: View {
     }
 }
 
-/// The five levels, the current one filled, and the lid's pull toward the
-/// next while it moves.
-private struct LevelMeter: View {
-    let level: EffortLevel
-    let preview: Double?
-
-    var body: some View {
-        let shown = preview.map { Int($0.rounded()) } ?? level.rawValue
-        HStack(spacing: 6) {
-            ForEach(EffortLevel.allCases, id: \.self) { candidate in
-                VStack(spacing: 5) {
-                    Capsule()
-                        .fill(candidate.rawValue <= shown ? Color.accentColor : Color.primary.opacity(0.1))
-                        .frame(height: 6)
-                    Text(candidate.description)
-                        .font(.system(size: 11, weight: candidate.rawValue == shown ? .semibold : .regular))
-                        .foregroundStyle(candidate.rawValue == shown ? .primary : .secondary)
-                }
-            }
-        }
-        .animation(.easeOut(duration: 0.15), value: shown)
-    }
-}
-
 // MARK: - Pieces
 
 private struct SetupCard<Content: View>: View {

@@ -637,8 +637,6 @@ enum CostRange: String, CaseIterable, Identifiable {
         }
     }
 
-    /// True when percentages mean "share of your own work", not "share of the limit".
-    var isShare: Bool { window == nil }
 }
 
 extension CostStore {
@@ -765,7 +763,6 @@ extension CostStore {
     /// Weekly limit periods seen so far: start, end and how much of the
     /// allowance was used in each (the highest reading of that period).
     struct WeeklyPeriod { var start: Int; var end: Int; var usedPct: Double }
-    func weeklyPeriods() -> [WeeklyPeriod] { periods(window: .weekly) }
 
     func periods(window: CostWindow) -> [WeeklyPeriod] {
         var out: [WeeklyPeriod] = []

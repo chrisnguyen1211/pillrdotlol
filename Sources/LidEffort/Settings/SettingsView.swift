@@ -27,9 +27,8 @@ extension View {
 /// whatever is stacked under the panel show through it, and the sidebar and
 /// the pane can take different materials so they read as two surfaces rather
 /// than one flat fill.
-/// The panel's glass. It covers the top bar too, and a view that may move
-/// the window there takes the bar's clicks for the window server — so it
-/// may not (see `SettingsHostingView`).
+/// The panel's glass. It covers the top bar too, which moves the window
+/// only through its own empty stretch (see `SettingsHostingView`).
 final class StillEffectView: NSVisualEffectView {
     override var mouseDownCanMoveWindow: Bool { false }
 }
@@ -136,9 +135,16 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // Above the preview: the preview's notch is laid out at full size
+            // and scaled down, and the box it takes up for hit-testing ran up
+            // over this bar — the appearance icon, search and quit took no
+            // clicks at all.
             topBar
+                .zIndex(1)
             NotchPreview(preferences: preferences, usageStore: usageStore)
                 .frame(height: SettingsView.previewHeight)
+                .contentShape(Rectangle())
+                .clipped()
                 .padding(.horizontal, 18)
             tabBar
                 .padding(.top, 14)
@@ -1582,14 +1588,6 @@ private struct AccountRow: View {
         if provider.localModel == nil { signOut(provider.id) }
         preferences.setConnected(false, for: provider.id)
         didChange()
-    }
-
-    /// Pasting a key is a way of connecting, so saving one on a row that is
-    /// off switches it on — otherwise the key sat there unread.
-    private func connectForSavedKey() {
-        guard !isConnected else { return }
-        preferences.setConnected(true, for: provider.id)
-        didConnect()
     }
 
     /// The providers whose way in can be a pasted key — added under API.

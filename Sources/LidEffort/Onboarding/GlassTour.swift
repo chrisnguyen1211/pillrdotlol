@@ -70,25 +70,6 @@ struct BehindBlur: NSViewRepresentable {
     func updateNSView(_ view: NSVisualEffectView, context: Context) {}
 }
 
-/// A ring the way the pill draws one: a track open at the bottom, an arc
-/// of colour over it.
-struct MiniRing: View {
-    let fraction: Double
-    let color: Color
-    var lineWidth: CGFloat = 4
-
-    var body: some View {
-        ZStack {
-            Circle().trim(from: 0, to: 0.75)
-                .stroke(Color.white.opacity(0.18), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                .rotationEffect(.degrees(135))
-            Circle().trim(from: 0, to: 0.75 * fraction)
-                .stroke(color, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-                .rotationEffect(.degrees(135))
-        }
-    }
-}
-
 // MARK: - The intro
 
 /// The film before the first card, every frame worked out from the time

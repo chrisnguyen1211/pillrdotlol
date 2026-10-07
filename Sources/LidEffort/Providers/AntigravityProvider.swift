@@ -376,29 +376,6 @@ actor AntigravityProvider: UsageProvider {
         return windows
     }
 
-    /// Known quota group names, so an English API value still localizes.
-    private static func quotaGroupName(_ name: String?) -> String? {
-        guard let name, !name.isEmpty else { return nil }
-        switch name {
-        case "Gemini Models": return L10n.t("Gemini Models")
-        case "Claude and GPT models": return L10n.t("Claude and GPT models")
-        default: return name
-        }
-    }
-
-    /// Known window titles, including the wording the language server uses.
-    private static func quotaWindowLabel(_ name: String) -> String {
-        var label = name
-        if label.hasSuffix(" Remaining") {
-            label = String(label.dropLast(" Remaining".count))
-        }
-        switch label {
-        case "Five Hour Limit", "5-hour Limit": return L10n.t("5-hour Limit")
-        case "Weekly Limit": return L10n.t("Weekly Limit")
-        default: return label
-        }
-    }
-
     /// The plan's display name, for the message the cell shows.
     static func tier(in data: Data) -> String {
         struct Response: Decodable {

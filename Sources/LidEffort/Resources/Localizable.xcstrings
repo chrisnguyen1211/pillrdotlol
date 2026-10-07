@@ -26577,40 +26577,6 @@
         }
       }
     },
-    "Switch to light mode" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Passer en mode clair"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ライトモードに切り替え"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mudar para o modo claro"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Включить светлый режим"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "切换到浅色模式"
-          }
-        }
-      }
-    },
     "System Liquid Glass, light or dark with the switch at the top of Settings." : {
       "localizations" : {
         "fr" : {
@@ -53739,6 +53705,448 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "右键点按以添加第一个密钥。"
+          }
+        }
+      }
+    },
+    "spyx is now pillr — and every API key has a place." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "spyx devient pillr — et chaque clé API a sa place."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "spyx は pillr になりました。すべての API キーに居場所を。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "spyx agora é pillr — e cada chave de API tem seu lugar."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "spyx теперь pillr — и у каждого API-ключа есть своё место."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "spyx 现名 pillr——每个 API 密钥都有了位置。"
+          }
+        }
+      }
+    },
+    "A new name, nothing lost" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un nouveau nom, rien de perdu"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新しい名前、失うものはなし"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nome novo, nada perdido"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Новое имя, ничего не потеряно"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "换了名字，什么都没丢"
+          }
+        }
+      }
+    },
+    "Your settings, keys, history, sign-ins and agent hooks came with it. macOS may ask once more for keychain access." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vos réglages, clés, historique, connexions et hooks d’agents ont suivi. macOS peut redemander une fois l’accès au trousseau."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定、キー、履歴、サインイン、エージェントのフックはそのまま引き継がれます。macOS がもう一度キーチェーンへのアクセスを尋ねることがあります。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suas configurações, chaves, histórico, logins e hooks dos agentes vieram junto. O macOS pode pedir acesso ao Porta-chaves mais uma vez."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройки, ключи, история, входы и хуки агентов перенесены. macOS может ещё раз спросить доступ к связке ключей."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你的设置、密钥、历史、登录和代理钩子都已带过来。macOS 可能会再询问一次钥匙串访问。"
+          }
+        }
+      }
+    },
+    "Every API key in one cell" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toutes les clés API dans une seule cellule"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべての API キーを一つのセルに"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todas as chaves de API em uma célula"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Все API-ключи в одной ячейке"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所有 API 密钥集中在一格"
+          }
+        }
+      }
+    },
+    "Credit left, spent this month and spent in total, for about 70 providers. The ring follows the key closest to running out." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crédit restant, dépensé ce mois-ci et au total, pour environ 70 fournisseurs. L’anneau suit la clé la plus proche de l’épuisement."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "約 70 のプロバイダについて、残高、今月の支出、累計を表示。リングは最も残りの少ないキーを示します。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crédito restante, gasto no mês e no total, para cerca de 70 provedores. O anel segue a chave mais perto de acabar."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Остаток, траты за месяц и всего — примерно для 70 провайдеров. Кольцо показывает ключ, который закончится первым."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "约 70 家服务商的余额、本月花费和累计花费。圆环跟随最快用完的那个密钥。"
+          }
+        }
+      }
+    },
+    "Reply from the card" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Répondre depuis la carte"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カードから返信"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Responda pelo cartão"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ответ прямо с карточки"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在卡片上直接回复"
+          }
+        }
+      }
+    },
+    "Hover an idle session and answer it. pillr types it in only when the agent is waiting, never over a draft." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Survolez une session inactive et répondez. pillr ne la saisit que quand l’agent attend, jamais par-dessus un brouillon."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "待機中のセッションにカーソルを合わせて返信。pillr はエージェントが待っているときだけ入力し、下書きには上書きしません。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passe o mouse por uma sessão parada e responda. O pillr só digita quando o agente está esperando, nunca sobre um rascunho."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Наведите на простаивающую сессию и ответьте. pillr вводит текст, только когда агент ждёт, и никогда поверх черновика."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "悬停在空闲会话上即可回复。pillr 只在代理等待时输入，绝不覆盖草稿。"
+          }
+        }
+      }
+    },
+    "Ten agents say when they're done" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dix agents disent quand ils ont fini"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "10 のエージェントが完了を知らせます"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dez agentes avisam quando terminam"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Десять агентов сообщают, что закончили"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "十个代理会在完成时告诉你"
+          }
+        }
+      }
+    },
+    "Claude Code, Codex, Grok, Cursor, Kimi Code, Gemini CLI, OpenCode, Copilot CLI, Droid and Antigravity." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code, Codex, Grok, Cursor, Kimi Code, Gemini CLI, OpenCode, Copilot CLI, Droid et Antigravity."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code、Codex、Grok、Cursor、Kimi Code、Gemini CLI、OpenCode、Copilot CLI、Droid、Antigravity。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code, Codex, Grok, Cursor, Kimi Code, Gemini CLI, OpenCode, Copilot CLI, Droid e Antigravity."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code, Codex, Grok, Cursor, Kimi Code, Gemini CLI, OpenCode, Copilot CLI, Droid и Antigravity."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code、Codex、Grok、Cursor、Kimi Code、Gemini CLI、OpenCode、Copilot CLI、Droid 和 Antigravity。"
+          }
+        }
+      }
+    },
+    "Connect in one click" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connexion en un clic"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ワンクリックで接続"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conecte com um clique"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подключение в один клик"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一键连接"
+          }
+        }
+      }
+    },
+    "Setup connects each agent, and shows how to install one that isn't on your Mac." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La configuration connecte chaque agent et montre comment installer celui qui manque sur votre Mac."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "セットアップで各エージェントを接続し、Mac にないものはインストール方法を案内します。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A configuração conecta cada agente e mostra como instalar o que não está no seu Mac."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Настройка подключает каждого агента и показывает, как установить того, которого нет на Mac."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置会连接每个代理，并告诉你如何安装 Mac 上还没有的那个。"
+          }
+        }
+      }
+    },
+    "Light, Dark or System" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clair, Sombre ou Système"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ライト、ダーク、システム"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claro, Escuro ou Sistema"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Светлая, тёмная или как в системе"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "浅色、深色或跟随系统"
+          }
+        }
+      }
+    },
+    "One icon in Settings — or let pillr follow your Mac." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une icône dans les Réglages — ou laissez pillr suivre votre Mac."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定のアイコン一つで切り替え。Mac に合わせることもできます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um ícone nos Ajustes — ou deixe o pillr seguir o seu Mac."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Один значок в настройках — или пусть pillr следует за Mac."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置里一个图标搞定——或让 pillr 跟随你的 Mac。"
           }
         }
       }

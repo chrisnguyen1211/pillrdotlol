@@ -40,8 +40,6 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         self.onOpenSettings = onOpenSettings
     }
 
-    var isShowing: Bool { item != nil }
-
     func show() {
         guard item == nil else { return }
 
