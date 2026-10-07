@@ -24,7 +24,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/media/meme.gif" alt="When you have 6 coding agents running and no idea who's done — terminals shaking, alerts piling up. Me with pillr: one pill on the screen's edge, a done card, and pixel sunglasses landing on it. One pill. Zero panic." width="800">
+  <img src="docs/media/meme.gif" alt="When you have 6 coding agents running and no idea who's done — a storm, terminals shaking, alerts piling up. Me with pillr: noon and a rainbow over the meadow, one pill on the screen's edge, a done card, and pixel sunglasses landing on it. One pill. Zero panic." width="800">
 </p>
 
 > [!NOTE]
