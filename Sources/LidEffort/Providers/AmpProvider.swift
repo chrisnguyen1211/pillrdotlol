@@ -1,4 +1,3 @@
-// Ported from Codenotch (MIT).
 import Foundation
 
 actor AmpProvider: UsageProvider {

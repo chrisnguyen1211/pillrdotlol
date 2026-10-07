@@ -1,4 +1,3 @@
-// Ported from Codenotch (MIT).
 import Foundation
 
 /// Parses MiniMax Coding Plan and Token Plan remains JSON.

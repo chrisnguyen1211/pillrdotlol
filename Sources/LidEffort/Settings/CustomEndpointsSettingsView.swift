@@ -1,4 +1,3 @@
-// Ported from Codenotch (MIT).
 import AppKit
 import SwiftUI
 import UniformTypeIdentifiers

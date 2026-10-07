@@ -1,4 +1,3 @@
-// Ported from Codenotch (MIT).
 import Foundation
 import os
 import Security

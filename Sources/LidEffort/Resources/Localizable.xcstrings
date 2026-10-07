@@ -38200,7 +38200,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在终端运行 amp login，Codenotch 会读取 ~/.local/share/amp/secrets.json。"
+            "value" : "在终端运行 amp login，spyx 会读取 ~/.local/share/amp/secrets.json。"
           }
         }
       }

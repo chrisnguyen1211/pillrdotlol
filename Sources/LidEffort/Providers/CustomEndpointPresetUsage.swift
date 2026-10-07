@@ -1,4 +1,3 @@
-// Ported from Codenotch (MIT).
 import Foundation
 
 public enum CustomEndpointUsagePreset: String, Codable, CaseIterable, Sendable {

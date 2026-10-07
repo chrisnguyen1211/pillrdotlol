@@ -1,4 +1,3 @@
-// Ported from Codenotch (MIT).
 import Foundation
 
 /// Refuses to carry the key across a redirect.

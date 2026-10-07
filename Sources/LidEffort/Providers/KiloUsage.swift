@@ -1,4 +1,3 @@
-// Ported from Codenotch (MIT).
 import Foundation
 
 /// Parses Kilo's cloud answers: the coding-plan usage tRPC procedure, and the
@@ -157,8 +156,7 @@ enum KiloUsage {
             used: 0,
             usedText: formatted,
             // No fraction, so the cell already prints `usedText` under the
-            // ring rather than the zero `used` count (Codenotch's
-            // `prefersUsedText` is not needed here).
+            // ring rather than the zero `used` count.
             detail: L10n.t("\(formatted) left")
         )
     }

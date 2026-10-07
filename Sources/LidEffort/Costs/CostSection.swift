@@ -1,4 +1,3 @@
-// Ported from Codenotch (MIT).
 import SwiftUI
 
 /// "What used it" on the hover card: the projects that consumed this

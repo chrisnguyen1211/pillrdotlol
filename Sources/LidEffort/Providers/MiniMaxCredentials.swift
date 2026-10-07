@@ -1,4 +1,3 @@
-// Ported from Codenotch (MIT).
 import Foundation
 
 /// Which MiniMax console a key or cookie belongs to.

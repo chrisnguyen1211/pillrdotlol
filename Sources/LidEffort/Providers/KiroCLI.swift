@@ -1,4 +1,3 @@
-// Ported from Codenotch (MIT).
 import Foundation
 
 /// Kiro's own `/usage`, asked of the binary rather than of any credential

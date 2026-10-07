@@ -22,8 +22,7 @@ final class Preferences: ObservableObject {
         "kiro", "amp", "apify", "kilo", "minimax", "qianwenai",
     ]
 
-    /// Providers added after people already had a saved list — ported from
-    /// Codenotch. Off for them until switched on; see `init`.
+    /// Providers added after people already had a saved list. Off for them until switched on; see `init`.
     static let introducedLater: Set<String> = ["kiro", "amp", "apify", "kilo", "minimax", "qianwenai"]
 
     /// A fresh install's rings: the coding agents found on this Mac — their

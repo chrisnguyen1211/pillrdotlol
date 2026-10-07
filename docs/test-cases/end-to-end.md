@@ -127,7 +127,7 @@ update feed and the public repository.
 
 | ID | Scenario | Expected | Evidence |
 |---|---|---|---|
-| H8 | Secrets and old names in the public tree | No keys or tokens; codenotch only in THIRD_PARTY_NOTICES | live: `public_clean` |
+| H8 | Secrets and old names in the public tree | No keys or tokens; upstream names only in THIRD_PARTY_NOTICES | live: `public_clean` |
 
 ## Approvals
 

@@ -32,7 +32,7 @@ enum ProviderGlyph: String, Codable, Equatable {
     case ollama
     case ollamaLocal = "ollama-local"
     case lmstudio
-    // From Codenotch (MIT), with the providers that wear them.
+    // Added later, with the providers that wear them.
     case kilo
     case kiro
     case amp

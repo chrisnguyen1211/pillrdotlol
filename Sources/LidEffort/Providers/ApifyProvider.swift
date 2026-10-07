@@ -1,4 +1,3 @@
-// Ported from Codenotch (MIT).
 import Foundation
 
 /// This cycle's platform spend against the account's monthly usage limit —

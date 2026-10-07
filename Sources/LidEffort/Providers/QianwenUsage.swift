@@ -1,4 +1,3 @@
-// Ported from Codenotch (MIT).
 import Foundation
 
 /// Reads the QianwenAI Token Plan (个人版) numbers out of the platform

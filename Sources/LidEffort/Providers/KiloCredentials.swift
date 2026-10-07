@@ -1,4 +1,3 @@
-// Ported from Codenotch (MIT).
 import Foundation
 
 /// Kilo's own credential, borrowed from the Kilo CLI's sign-in.

@@ -1,4 +1,3 @@
-// Ported from Codenotch (MIT).
 import XCTest
 @testable import LidEffort
 

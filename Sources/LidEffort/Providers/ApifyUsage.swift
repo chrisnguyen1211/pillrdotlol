@@ -1,4 +1,3 @@
-// Ported from Codenotch (MIT).
 import Foundation
 
 /// Parses `GET https://api.apify.com/v2/users/me/limits` — the documented

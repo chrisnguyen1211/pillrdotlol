@@ -1,4 +1,3 @@
-// Ported from Codenotch (MIT).
 import SQLite3
 import XCTest
 @testable import LidEffort

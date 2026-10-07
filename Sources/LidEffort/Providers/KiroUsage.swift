@@ -1,4 +1,3 @@
-// Ported from Codenotch (MIT).
 import Foundation
 
 /// Parses `kiro-cli chat --no-interactive "/usage"` stdout.

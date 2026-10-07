@@ -1366,7 +1366,6 @@ enum GlyphOutline {
         ],
     ]
 
-    // Ported from Codenotch (MIT).
     static let kilo: [[CGPoint]] = [
         [CGPoint(x: 0, y: 0), CGPoint(x: 0, y: 1), CGPoint(x: 1, y: 1), CGPoint(x: 1, y: 0), CGPoint(x: 0, y: 0)],
         [CGPoint(x: 0.9259, y: 0.9259), CGPoint(x: 0.0741, y: 0.9259), CGPoint(x: 0.0741, y: 0.0741), CGPoint(x: 0.9259, y: 0.0741), CGPoint(x: 0.9259, y: 0.9259)],

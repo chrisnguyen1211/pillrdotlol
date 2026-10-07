@@ -123,8 +123,8 @@ extension UsageProvider {
     var credentialFiles: [URL] { [] }
     /// A custom endpoint's icon, saved by the person; nil for every built-in.
     var customIconFilename: String? { nil }
-    /// How fresh a reading must be. Providers ported from Codenotch honour
-    /// it; the rest answer as `fetchSnapshot()` always has.
+    /// How fresh a reading must be. Providers that can serve a cached
+    /// reading honour it; the rest answer as `fetchSnapshot()` always has.
     func fetchSnapshot(freshness: UsageFreshness) async throws -> ProviderSnapshot {
         try await fetchSnapshot()
     }
@@ -167,7 +167,6 @@ enum UsageProviderError: Error {
     case nothingMetered(String)
     /// The endpoint answered with its own named failure, or the credential
     /// file could not be understood — the words are the useful half of the
-    /// answer, and `badResponse(status:)` cannot carry them. Ported from
-    /// Codenotch alongside the providers that throw it.
+    /// answer, and `badResponse(status:)` cannot carry them.
     case apiError(String)
 }

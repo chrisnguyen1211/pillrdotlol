@@ -1,4 +1,3 @@
-// Ported from Codenotch (MIT).
 import SwiftUI
 import AppKit
 import Combine

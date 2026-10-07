@@ -1,4 +1,3 @@
-// Ported from Codenotch (MIT).
 import Foundation
 
 /// Presence of a kiro-cli session — the binary, or the token it files in

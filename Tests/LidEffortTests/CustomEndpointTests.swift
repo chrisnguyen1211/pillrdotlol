@@ -1,4 +1,3 @@
-// Ported from Codenotch (MIT).
 import XCTest
 import SwiftUI
 @testable import LidEffort
