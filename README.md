@@ -10,7 +10,7 @@
 <h3 align="center">Every coding agent and every API key,<br>in one small pill at the edge of your Mac.</h3>
 
 <p align="center">
-  <a href="https://github.com/chrisnguyen1211/pillrdotlol/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/chrisnguyen1211/pillrdotlol?style=flat-square&label=release&color=2563eb"></a>
+  <a href="https://github.com/Catleader1407/pillr/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/Catleader1407/pillr?style=flat-square&label=release&color=2563eb"></a>
   <img alt="macOS 15+" src="https://img.shields.io/badge/macOS-15%2B-111111?style=flat-square&logo=apple&logoColor=white">
   <img alt="Apple silicon" src="https://img.shields.io/badge/Apple_silicon-native-111111?style=flat-square">
   <a href="LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/license-MIT-16a34a?style=flat-square"></a>
@@ -18,7 +18,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/chrisnguyen1211/pillrdotlol/releases/latest"><img alt="Download for macOS" src="https://img.shields.io/badge/Download_for_macOS-000000?style=for-the-badge&logo=apple&logoColor=white" height="40"></a>
+  <a href="https://github.com/Catleader1407/pillr/releases/latest"><img alt="Download for macOS" src="https://img.shields.io/badge/Download_for_macOS-000000?style=for-the-badge&logo=apple&logoColor=white" height="40"></a>
   &nbsp;
   <a href="https://pillr.lol"><img alt="pillr.lol" src="https://img.shields.io/badge/pillr.lol-1d4ed8?style=for-the-badge&logo=safari&logoColor=white" height="40"></a>
 </p>
@@ -138,7 +138,7 @@ Where a provider reports credit or spend, pillr shows it; where it doesn't, pill
 
 ## 📦 Install
 
-1. Download `pillr-<version>.dmg` from the [latest release](https://github.com/chrisnguyen1211/pillrdotlol/releases/latest).
+1. Download `pillr-<version>.dmg` from the [latest release](https://github.com/Catleader1407/pillr/releases/latest).
 2. Open it and drag **pillr** onto **Applications**.
 3. Open pillr from Applications.
 
@@ -248,7 +248,7 @@ To script Terminal, iTerm2 and cmux: typing <code>/effort</code> or a reply into
 <details>
 <summary><b>Where do I report a problem?</b></summary>
 <br>
-<a href="https://github.com/chrisnguyen1211/pillrdotlol/issues">Open an issue</a>. Settings → General can copy local crash reports to attach.
+<a href="https://github.com/Catleader1407/pillr/issues">Open an issue</a>. Settings → General can copy local crash reports to attach.
 </details>
 
 ## 🛠️ Contributing and building

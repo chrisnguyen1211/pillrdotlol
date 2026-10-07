@@ -15,3 +15,9 @@ release/
 /release-manifest.json
 /.repomixignore
 /.gitignore.local-backup
+
+# Signing material — never in the repository
+*.p8
+*.p12
+*.cer
+*.certSigningRequest

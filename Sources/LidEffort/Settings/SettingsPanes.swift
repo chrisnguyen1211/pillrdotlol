@@ -192,7 +192,7 @@ struct SectionHeader: View {
 /// A new GitHub issue with the version and macOS filled in — nothing else
 /// about the Mac — and the crash reports on the clipboard to paste.
 enum BugReport {
-    static let issues = URL(string: "https://github.com/chrisnguyen1211/pillrdotlol/issues/new")!
+    static let issues = URL(string: "https://github.com/Catleader1407/pillr/issues/new")!
 
     static func url(version: String, macOS: String = ProcessInfo.processInfo.operatingSystemVersionString) -> URL {
         var components = URLComponents(url: issues, resolvingAgainstBaseURL: false)!

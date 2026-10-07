@@ -22,12 +22,11 @@
 # Sparkle only ever needs the newest.
 #
 # The update is signed with the EdDSA key generate_keys stored in the login
-# keychain under the account "spyx.lol" — the name it was made under, before
-# the app was pillr; renaming it would lose it. Its public half is in Info.plist.
+# keychain under the account "pillr". Its public half is in Info.plist.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-REPO=chrisnguyen1211/pillrdotlol
+REPO=Catleader1407/pillr
 
 if [ -z "${DEVELOPER_ID:-}" ]; then
   echo "note: no DEVELOPER_ID — signing for development, not notarizing." >&2
@@ -88,7 +87,7 @@ rm -rf "$STAGE"
 [ -f "$OUT/pillr-$VERSION.html" ] && mv "$OUT/pillr-$VERSION.html" "$SPARKLE/"
 
 TOOLS=.build/artifacts/sparkle/Sparkle/bin
-"$TOOLS/generate_appcast" --account spyx.lol \
+"$TOOLS/generate_appcast" --account pillr \
   --download-url-prefix "https://github.com/$REPO/releases/download/v$VERSION/" \
   --link "https://github.com/$REPO" \
   --maximum-versions 1 --maximum-deltas 0 \

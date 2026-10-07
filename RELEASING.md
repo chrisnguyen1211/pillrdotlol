@@ -14,13 +14,13 @@ lets macOS keep a user's permissions across updates.
 2. **Notary credentials.** Stored once in the keychain as the profile `pillr` —
    see [Notarization](#notarization).
 3. **Back up the update signing key.** Sparkle updates are signed with an
-   EdDSA key kept in the login keychain under the account `spyx.lol` (its name from before the app was pillr); its
+   EdDSA key kept in the login keychain under the account `pillr`; its
    public half is `SUPublicEDKey` in `script/bundle.sh`. Lose the private key
    and installed copies can never be updated again. Export it to a password
    manager or an encrypted backup:
 
    ```bash
-   .build/artifacts/sparkle/Sparkle/bin/generate_keys --account spyx.lol -x pillr-sparkle-key.txt
+   .build/artifacts/sparkle/Sparkle/bin/generate_keys --account pillr -x pillr-sparkle-key.txt
    ```
 
    Then delete the exported file from disk — or keep it only inside an
@@ -52,7 +52,7 @@ lets macOS keep a user's permissions across updates.
    ```
 
 4. That creates the release `v<version>` on
-   [chrisnguyen1211/pillrdotlol](https://github.com/chrisnguyen1211/pillrdotlol/releases)
+   [Catleader1407/pillr](https://github.com/Catleader1407/pillr/releases)
    with `pillr-<version>.dmg` and `appcast.xml`. Installed copies read
    `releases/latest/download/appcast.xml`, so the newest release is the feed:
    never mark an older one "latest", and never delete the newest's appcast.
