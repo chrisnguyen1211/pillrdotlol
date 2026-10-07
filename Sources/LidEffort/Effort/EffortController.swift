@@ -46,7 +46,7 @@ final class EffortController: ObservableObject {
     private var wakeGraceUntil: TimeInterval = 0
     private var observers: [NSObjectProtocol] = []
     private let defaults: UserDefaults
-    private let log = Logger(subsystem: "lol.spyx.app", category: "effort")
+    private let log = Logger(subsystem: "lol.pillr.app", category: "effort")
 
     /// Nobody works with the screen under 60°; below it the lid is being shut.
     static let closedBelow: Double = 60
@@ -128,7 +128,7 @@ final class EffortController: ObservableObject {
     /// A value no lid level types — Claude Code's `ultracode`, past `max` —
     /// is not a level at all: it is typed into the session in view as it
     /// is, and nothing else changes — no config, not the lid's level.
-    /// Claude app sessions spyx switched ultracode on in — the app keeps it
+    /// Claude app sessions pillr switched ultracode on in — the app keeps it
     /// on through every /effort level until `/effort ultracode off`.
     private var ultracodeOn: Set<pid_t> = []
 
@@ -137,7 +137,7 @@ final class EffortController: ObservableObject {
         let target = EffortTargetWriter.loadTargets().first { $0.id == id }
         let value = scale[scaleIndex]
         if let target, Self.isLiveChoice(value, agent: id, model: state.models[id], target: target) {
-            // In the Claude app ultracode is a switch, and spyx is the one
+            // In the Claude app ultracode is a switch, and pillr is the one
             // who turned it on: picked again, it is switched off.
             let inView = Self.desktopSessionInView(liveSessions())?.info.pid
             if value == "ultracode", let pid = inView, ultracodeOn.contains(pid) {
@@ -541,7 +541,7 @@ final class EffortController: ObservableObject {
             note = superset
         } else if NSWorkspace.shared.frontmostApplication?.bundleIdentifier == "com.apple.Terminal",
                   !EffortInjector.terminalAllowed {
-            note = L10n.t("Terminal · allow spyx in Setup → Terminals to apply it live")
+            note = L10n.t("Terminal · allow pillr in Setup → Terminals to apply it live")
         } else if let host = AutoScope.unreachableHost(sessions: refs, focus: focus) {
             note = L10n.t("\(host) · applies next session")
         } else {

@@ -537,8 +537,8 @@ final class APICatalogTests: XCTestCase {
             }
         }
         let paths = CatalogEndpoint.requests.compactMap(\.url?.path)
-        XCTAssertTrue(paths.contains { $0.hasPrefix("/v1/predictions/status/spyx-check-") })
-        XCTAssertTrue(paths.contains { $0.hasPrefix("/v2/status/spyx-check-") })
+        XCTAssertTrue(paths.contains { $0.hasPrefix("/v1/predictions/status/pillr-check-") })
+        XCTAssertTrue(paths.contains { $0.hasPrefix("/v2/status/pillr-check-") })
     }
 
     func testRunwareAsksForTheAccountWithATaskOfItsOwn() async throws {
@@ -655,7 +655,7 @@ final class APICatalogTests: XCTestCase {
         CatalogEndpoint.reset { _ in (500, [:], Data()) }
         await assertFails(try provider("poe"), .badResponse(status: 500))
         CatalogEndpoint.reset { _ in (200, [:], Data("<html>".utf8)) }
-        await assertFails(try provider("poe"), .apiError(L10n.t("\("Poe") answered in a way spyx doesn't recognise")))
+        await assertFails(try provider("poe"), .apiError(L10n.t("\("Poe") answered in a way pillr doesn't recognise")))
 
         // Payment required: the key is good, the account is empty.
         CatalogEndpoint.reset { _ in (402, [:], Data()) }
@@ -665,7 +665,7 @@ final class APICatalogTests: XCTestCase {
         // Best-effort usage: a 200 without it still proves the key.
         CatalogEndpoint.reset { _ in (200, [:], Data(#"{"chat":{}}"#.utf8)) }
         let mistral = try await provider("mistral").fetchSnapshot()
-        XCTAssertEqual(mistral.headline?.detail, L10n.t("Key works · spyx couldn't read the usage in \("Mistral")'s answer"))
+        XCTAssertEqual(mistral.headline?.detail, L10n.t("Key works · pillr couldn't read the usage in \("Mistral")'s answer"))
     }
 
     private func assertFails(_ make: @autoclosure () throws -> CatalogKeyProvider, _ expected: UsageProviderError,
@@ -716,7 +716,7 @@ final class APICatalogTests: XCTestCase {
         let perplexity = try provider("perplexity")
         let kept = try await perplexity.fetchSnapshot()
         XCTAssertTrue(CatalogEndpoint.requests.isEmpty, "a billed check is never spent on a schedule")
-        XCTAssertEqual(kept.headline?.detail, L10n.t("Key kept · each check is billed, so spyx checks only when you ask"))
+        XCTAssertEqual(kept.headline?.detail, L10n.t("Key kept · each check is billed, so pillr checks only when you ask"))
         let checked = try await perplexity.fetchSnapshot(freshness: .fromSource)
         XCTAssertEqual(CatalogEndpoint.requests.count, 1)
         XCTAssertEqual(CatalogEndpoint.requests.first?.httpMethod, "POST")
@@ -761,7 +761,7 @@ final class APICatalogTests: XCTestCase {
 
         for (status, body, reason) in [
             (401, "", L10n.t("That key was not accepted")),
-            (200, "[]", L10n.t("Couldn't connect — \(L10n.t("\("OpenRouter") answered in a way spyx doesn't recognise"))")),
+            (200, "[]", L10n.t("Couldn't connect — \(L10n.t("\("OpenRouter") answered in a way pillr doesn't recognise"))")),
         ] {
             CatalogEndpoint.reset { _ in (status, [:], Data(body.utf8)) }
             stored = []

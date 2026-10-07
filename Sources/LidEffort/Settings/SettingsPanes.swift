@@ -111,7 +111,7 @@ private struct LidPaneContent: View {
                 Toggle(isOn: $typesIntoClaudeDesktop) {
                     SettingLabel(title: L10n.t("Type /effort into Claude Desktop"),
                                  subtitle: L10n.t("Experimental. Only when Claude Desktop is in front, a session is idle and its message box is empty."),
-                                 info: L10n.t("Claude Desktop has no terminal to type into, so its sessions otherwise pick the level up next session. With this on, spyx types /effort and Return into the focused, empty message box through Accessibility. Every check is a reason not to type."))
+                                 info: L10n.t("Claude Desktop has no terminal to type into, so its sessions otherwise pick the level up next session. With this on, pillr types /effort and Return into the focused, empty message box through Accessibility. Every check is a reason not to type."))
                 }
                 if typesIntoClaudeDesktop && !accessibilityGranted {
                     LabeledContent {
@@ -192,13 +192,13 @@ struct SectionHeader: View {
 /// A new GitHub issue with the version and macOS filled in — nothing else
 /// about the Mac — and the crash reports on the clipboard to paste.
 enum BugReport {
-    static let issues = URL(string: "https://github.com/chrisnguyen1211/spyxdotlol/issues/new")!
+    static let issues = URL(string: "https://github.com/chrisnguyen1211/pillrdotlol/issues/new")!
 
     static func url(version: String, macOS: String = ProcessInfo.processInfo.operatingSystemVersionString) -> URL {
         var components = URLComponents(url: issues, resolvingAgainstBaseURL: false)!
         components.queryItems = [
             URLQueryItem(name: "labels", value: "bug"),
-            URLQueryItem(name: "body", value: "**What happened**\n\n\n**What you expected**\n\n\n---\nspyx \(version) · macOS \(macOS)\n"),
+            URLQueryItem(name: "body", value: "**What happened**\n\n\n**What you expected**\n\n\n---\npillr \(version) · macOS \(macOS)\n"),
         ]
         return components.url ?? issues
     }
@@ -386,7 +386,7 @@ struct NotchPane: View {
             if let display = displays.first(where: { $0.id == id }) {
                 return L10n.t("Pinned to \(display.name).")
             }
-            return L10n.t("That display is disconnected. spyx follows the active window until it returns.")
+            return L10n.t("That display is disconnected. pillr follows the active window until it returns.")
         }
     }
 }
@@ -429,7 +429,7 @@ struct SessionsPane: View {
                 Toggle(isOn: $preferences.answerPromptsFromNotch) {
                     SettingLabel(title: L10n.t("Answer Claude from the notch"),
                                  subtitle: preferences.answerPromptsFromNotch && !hookInstalled
-                                    ? L10n.t("Setting up — the hook goes in once spyx is in Applications.")
+                                    ? L10n.t("Setting up — the hook goes in once pillr is in Applications.")
                                     : L10n.t("Allow, deny and answer questions in the tooltip or beside the pill."),
                                  info: L10n.t("When a Claude Code session asks to run a tool or asks you a question, the prompt shows under that session in the Claude tooltip and beside the folded pill. It stays until you answer. If you are looking at that session, or switch to it, Claude asks in its own dialog instead. Turning this on adds one hook to ~/.claude/settings.json; turning it off removes it."))
                 }
@@ -517,7 +517,7 @@ struct NotificationsPane: View {
                 Toggle(isOn: $preferences.announceSessionEnd) {
                     SettingLabel(title: L10n.t("Show a card beside the pill"),
                                  subtitle: L10n.t("Finished, or waiting on you. Click it to jump to the session."),
-                                 info: L10n.t("To know the moment a turn ends, spyx adds a small hook of its own to each agent's config. Turning this off takes those hooks out again."))
+                                 info: L10n.t("To know the moment a turn ends, pillr adds a small hook of its own to each agent's config. Turning this off takes those hooks out again."))
                 }
                 Picker(selection: $preferences.peekDuration) {
                     ForEach(PeekDuration.allCases) { Text($0.title).tag($0) }
@@ -615,7 +615,7 @@ struct GeneralPane: View {
             Section { PaneHero(section: .general) }
 
             Section {
-                Toggle(L10n.t("Open spyx at login"), isOn: $preferences.launchAtLogin)
+                Toggle(L10n.t("Open pillr at login"), isOn: $preferences.launchAtLogin)
                 if let problem = preferences.launchAtLoginProblem {
                     Text(problem)
                         .font(.system(size: 11))
@@ -637,7 +637,7 @@ struct GeneralPane: View {
             Section {
                 Toggle(isOn: Binding(get: { updater.automatic }, set: { updater.automatic = $0 })) {
                     SettingLabel(title: L10n.t("Install updates automatically"),
-                                 subtitle: L10n.t("Downloaded in the background. spyx asks before it restarts to finish."))
+                                 subtitle: L10n.t("Downloaded in the background. pillr asks before it restarts to finish."))
                 }
                 LabeledContent {
                     if updater.isReadyToInstall {
@@ -679,19 +679,19 @@ struct GeneralPane: View {
                 LabeledContent {
                     Button(L10n.t("Remove…")) { confirmingRemoval = true }
                 } label: {
-                    SettingLabel(title: L10n.t("Remove spyx from my agents"),
+                    SettingLabel(title: L10n.t("Remove pillr from my agents"),
                                  subtitle: removed.map { list in
-                                     list.isEmpty ? L10n.t("Nothing was left in any agent. You can move spyx to the Trash.")
-                                                  : L10n.t("Removed from \(list.joined(separator: ", ")). You can move spyx to the Trash.")
-                                 } ?? L10n.t("Before you delete spyx: takes its hooks out of every agent's config and puts Codex's notify back as it was."))
+                                     list.isEmpty ? L10n.t("Nothing was left in any agent. You can move pillr to the Trash.")
+                                                  : L10n.t("Removed from \(list.joined(separator: ", ")). You can move pillr to the Trash.")
+                                 } ?? L10n.t("Before you delete pillr: takes its hooks out of every agent's config and puts Codex's notify back as it was."))
                 }
                 if removed != nil {
-                    Button(L10n.t("Quit spyx"), action: quit)
+                    Button(L10n.t("Quit pillr"), action: quit)
                 }
             } header: {
                 Text(L10n.t("Uninstall"))
             }
-            .confirmationDialog(L10n.t("Remove spyx from your agents?"), isPresented: $confirmingRemoval) {
+            .confirmationDialog(L10n.t("Remove pillr from your agents?"), isPresented: $confirmingRemoval) {
                 Button(L10n.t("Remove"), role: .destructive) {
                     removed = AgentHooks.removeEverything()
                 }

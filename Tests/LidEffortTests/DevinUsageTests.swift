@@ -217,7 +217,7 @@ final class DevinUsageTests: XCTestCase {
     }
 
     func testLiveDevinUsageWhenExplicitlyEnabled() async throws {
-        guard ProcessInfo.processInfo.environment["SPYX_TEST_DEVIN_LIVE"] == "1" else {
+        guard ProcessInfo.processInfo.environment["PILLR_TEST_DEVIN_LIVE"] == "1" else {
             throw XCTSkip("Opt-in live check requires a signed-in Devin Desktop")
         }
         let snapshot = try await DevinLocalProvider().fetchSnapshot()

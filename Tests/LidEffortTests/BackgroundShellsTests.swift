@@ -22,9 +22,9 @@ final class BackgroundShellsTests: XCTestCase {
         XCTAssertEqual(BackgroundShells.count(under: 1_999_999), 0)
     }
 
-    /// This Mac, read-only: `SPYX_LIVE=1 swift test --filter BackgroundShellsTests`.
+    /// This Mac, read-only: `PILLR_LIVE=1 swift test --filter BackgroundShellsTests`.
     func testLiveSessions() throws {
-        try XCTSkipUnless(ProcessInfo.processInfo.environment["SPYX_LIVE"] == "1")
+        try XCTSkipUnless(ProcessInfo.processInfo.environment["PILLR_LIVE"] == "1")
         let dir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".claude/sessions")
         for file in try FileManager.default.contentsOfDirectory(atPath: dir.path) where file.hasSuffix(".json") {
             guard let pid = pid_t(file.dropLast(5)), kill(pid, 0) == 0 else { continue }

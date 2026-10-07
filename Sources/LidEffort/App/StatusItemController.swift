@@ -47,7 +47,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
 
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
         item.button?.image = Self.icon()
-        item.button?.toolTip = L10n.t("spyx")
+        item.button?.toolTip = L10n.t("pillr")
 
         let menu = NSMenu()
         menu.delegate = self
@@ -99,13 +99,13 @@ final class StatusItemController: NSObject, NSMenuDelegate {
             withTitle: L10n.t("Settings…"), action: #selector(openSettings), keyEquivalent: ","
         ).target = self
         menu.addItem(
-            withTitle: L10n.t("Set Up spyx…"), action: #selector(openSetup), keyEquivalent: ""
+            withTitle: L10n.t("Set Up pillr…"), action: #selector(openSetup), keyEquivalent: ""
         ).target = self
         menu.addItem(
             withTitle: L10n.t("Take the Tour"), action: #selector(takeTour), keyEquivalent: ""
         ).target = self
         menu.addItem(.separator())
-        menu.addItem(withTitle: L10n.t("About spyx"), action: #selector(about), keyEquivalent: "").target = self
+        menu.addItem(withTitle: L10n.t("About pillr"), action: #selector(about), keyEquivalent: "").target = self
         if let version = readyUpdate?() {
             menu.addItem(withTitle: L10n.t("Restart to Update to \(version)"), action: #selector(restartToUpdate), keyEquivalent: "").target = self
         } else {
@@ -114,7 +114,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
         menu.addItem(withTitle: L10n.t("Report a Bug…"), action: #selector(reportBug), keyEquivalent: "").target = self
         menu.addItem(.separator())
         menu.addItem(
-            withTitle: L10n.t("Quit spyx"), action: #selector(quit), keyEquivalent: "q"
+            withTitle: L10n.t("Quit pillr"), action: #selector(quit), keyEquivalent: "q"
         ).target = self
     }
 

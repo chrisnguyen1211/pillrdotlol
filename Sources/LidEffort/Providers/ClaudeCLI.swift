@@ -6,7 +6,7 @@ import Foundation
 /// `~/Library/Application Support/Claude/claude-code/<version>/`. Checked on a
 /// real machine: that copy keeps its OAuth token in the desktop app's own
 /// store (`config.json`, `oauth:tokenCacheV2`) and never writes the login
-/// keychain — which is the item spyx reads. Renewing with it would look
+/// keychain — which is the item pillr reads. Renewing with it would look
 /// like it worked and change nothing here, so the search refuses to return it.
 enum ClaudeCLI {
     /// The usual install locations, in the order a shell would find them.

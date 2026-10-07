@@ -63,7 +63,7 @@ actor ApifyProvider: UsageProvider {
 
     nonisolated func account() -> ProviderAccount? { ApifyCredentials.account(sources) }
 
-    /// Only the token spyx holds itself. An `apify login` is the CLI's
+    /// Only the token pillr holds itself. An `apify login` is the CLI's
     /// to end, the same bargain every borrowed credential makes.
     nonisolated func signOut() async { sources.deleteSettingsToken() }
 

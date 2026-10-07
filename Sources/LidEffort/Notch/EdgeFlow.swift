@@ -2,16 +2,16 @@ import AppKit
 import SwiftUI
 
 extension NotchEdge {
-    /// Where a click on the move handle sends the notch: clockwise round the
-    /// three sides it lives on — left, top, right, and back to the left.
-    /// The bottom is not one of them; a notch that somehow starts there
-    /// rejoins the cycle at the left.
+    /// Where a click on the move handle sends the notch: all four edges,
+    /// clockwise — right, bottom, left, top — the round the tour's Show me
+    /// flies. It used to skip the bottom (right went straight to left), so
+    /// no number of clicks ever reached it.
     var nextSide: NotchEdge {
         switch self {
+        case .right:  return .bottom
+        case .bottom: return .left
         case .left:   return .top
         case .top:    return .right
-        case .right:  return .left
-        case .bottom: return .left
         }
     }
 }

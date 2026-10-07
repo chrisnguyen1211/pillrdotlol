@@ -69,6 +69,25 @@ final class PreferencesDefaultsTests: XCTestCase {
         XCTAssertEqual(Preferences(defaults: UserDefaults(suiteName: name)!).interfaceMode, flipped)
     }
 
+    /// Light, Dark or System: the choice survives a relaunch, System is the
+    /// default, and System resolves against the Mac.
+    func testTheAppearanceChoiceHasThreeWaysAndKeepsThem() {
+        let (fresh, name) = makeDefaults()
+        let first = Preferences(defaults: fresh)
+        XCTAssertEqual(first.appearanceChoice, .system, "never chosen: follow the Mac")
+        XCTAssertEqual(first.interfaceMode, AppearanceChoice.system.resolved(systemIsDark: AppearanceChoice.systemIsDark))
+        first.appearanceChoice = .dark
+        XCTAssertEqual(first.interfaceMode, .dark, "the look follows the choice at once")
+        XCTAssertEqual(Preferences(defaults: UserDefaults(suiteName: name)!).appearanceChoice, .dark)
+        first.appearanceChoice = .system
+        XCTAssertEqual(Preferences(defaults: UserDefaults(suiteName: name)!).appearanceChoice, .system)
+        // An old stored light/dark is kept as that choice.
+        fresh.set("light", forKey: "interfaceMode")
+        XCTAssertEqual(Preferences(defaults: fresh).appearanceChoice, .light)
+        XCTAssertEqual(AppearanceChoice.system.resolved(systemIsDark: true), .dark)
+        XCTAssertEqual(AppearanceChoice.system.resolved(systemIsDark: false), .light)
+    }
+
     /// Off by default, and it has to stay chosen once it is chosen: an extra
     /// arc in a 44pt circle changes how every reading looks, so it is not
     /// something to switch on for somebody, nor to forget they switched on.

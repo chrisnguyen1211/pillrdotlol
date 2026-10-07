@@ -112,8 +112,18 @@ final class APIKeyGroupTests: XCTestCase {
         XCTAssertEqual(store.notchSnapshots.map(\.id), ["claude", "codex"], "every key off: no cell")
     }
 
+    func testTheStoreShowsTheEmptyCellUntilAKeyIsAdded() async {
+        let defaults = UserDefaults(suiteName: "APIKeyGroupTests.\(UUID().uuidString)")!
+        let store = UsageStore(providers: [GroupStub(id: "claude", share: 0.2)], archive: UsageArchive(defaults: defaults))
+        await store.refresh()
+        XCTAssertEqual(store.notchSnapshots.map(\.id), ["claude", APIKeyGroup.id], "a place for keys, before any")
+        XCTAssertEqual(store.notchSnapshots.last?.keyGroup, [])
+        store.disconnected = [APIKeyGroup.id]
+        XCTAssertEqual(store.notchSnapshots.map(\.id), ["claude"], "and it can be hidden")
+    }
+
     func testSettingsListsOneRowInPlaceOfTheKeys() {
-        let account = ProviderAccount(label: nil, plan: nil, source: "spyx", manageURL: nil)
+        let account = ProviderAccount(label: nil, plan: nil, source: "pillr", manageURL: nil)
         let rows = ["claude", "apikey_openrouter-k00001", "glm", "glm-k00a01", "codex", "apify"].map {
             ProviderSummary(id: $0, name: $0, glyph: .apiKey, account: account, signIn: .guidance(""))
         }
@@ -284,5 +294,25 @@ private final class GroupStub: UsageProvider {
     func fetchSnapshot() async throws -> ProviderSnapshot {
         ProviderSnapshot(id: id, displayName: displayName, glyph: glyph, fidelity: .official, status: .ok,
                          windows: [LimitWindow(id: "usage", label: "Usage", usedFraction: share)])
+    }
+
+    // MARK: Shown before any key
+
+    func testTheNotchKeepsAnEmptyCellWhenAskedTo() {
+        let claude = ProviderSnapshot(id: "claude", displayName: "Claude", glyph: .claude, fidelity: .official,
+                                      status: .ok, windows: [])
+        XCTAssertEqual(APIKeyGroup.collapse([claude]).map(\.id), ["claude"], "unchanged unless asked")
+        let kept = APIKeyGroup.collapse([claude], keepEmpty: true)
+        XCTAssertEqual(kept.map(\.id), ["claude", APIKeyGroup.id])
+        XCTAssertEqual(kept.last?.keyGroup, [])
+        XCTAssertEqual(kept.last?.headline?.usedText, L10n.t("Add key"))
+        XCTAssertEqual(APIKeyGroup.note(for: [], now: Date()), "")
+        XCTAssertEqual(NotchLayout.keyGroupPlan([]).shown, 0)
+        XCTAssertGreaterThan(NotchLayout.keyGroupPlan([]).body, 0, "the card has its two lines")
+    }
+
+    func testTheAccountsListKeepsTheRowBeforeAnyKey() {
+        let rows = [ProviderSummary(id: "claude", name: "Claude", glyph: .claude, account: nil, signIn: .guidance(""))]
+        XCTAssertEqual(SettingsView.accountRows(rows, order: []).map(\.id), ["claude", APIKeyGroup.id])
     }
 }

@@ -3,31 +3,31 @@ import SwiftUI
 @testable import LidEffort
 
 /// In the Claude or Codex app a change that waits, or cannot reach the chat
-/// at all, has to say so — or it reads as spyx being broken.
+/// at all, has to say so — or it reads as pillr being broken.
 final class EffortNotesTests: XCTestCase {
     private let languages = ["en", "fr", "ja", "pt-BR", "ru", "zh-Hans"]
 
     func testEveryReasonTheClaudeAppDidNotTakeItIsNamed() {
-        let busy = EffortNotes.claudeApp(nil, session: "spyx")
+        let busy = EffortNotes.claudeApp(nil, session: "pillr")
         XCTAssertTrue(busy.text.contains("replying"), busy.text)
         XCTAssertTrue(busy.waits)
 
-        let draft = EffortNotes.claudeApp(.draft, session: "spyx")
+        let draft = EffortNotes.claudeApp(.draft, session: "pillr")
         XCTAssertTrue(draft.text.contains("Draft"), draft.text)
         XCTAssertTrue(draft.waits)
-        XCTAssertEqual(EffortNotes.claudeApp(.userTyping, session: "spyx"), draft)
+        XCTAssertEqual(EffortNotes.claudeApp(.userTyping, session: "pillr"), draft)
 
-        let sent = EffortNotes.claudeApp(.sent, session: "spyx")
+        let sent = EffortNotes.claudeApp(.sent, session: "pillr")
         XCTAssertTrue(sent.isLive)
         XCTAssertFalse(sent.waits)
 
         // Waiting will not grant a permission or make Claude take a command
         // it refused: those say what to do, and stop.
-        let trust = EffortNotes.claudeApp(.notTrusted, session: "spyx")
+        let trust = EffortNotes.claudeApp(.notTrusted, session: "pillr")
         XCTAssertTrue(trust.text.contains("Accessibility"), trust.text)
         XCTAssertFalse(trust.waits)
-        XCTAssertFalse(EffortNotes.claudeApp(.notSent, session: "spyx").waits)
-        XCTAssertTrue(EffortNotes.claudeApp(.noComposer, session: "spyx").waits)
+        XCTAssertFalse(EffortNotes.claudeApp(.notSent, session: "pillr").waits)
+        XCTAssertTrue(EffortNotes.claudeApp(.noComposer, session: "pillr").waits)
     }
 
     func testCodexSaysItsChatsKeepTheirLevel() {

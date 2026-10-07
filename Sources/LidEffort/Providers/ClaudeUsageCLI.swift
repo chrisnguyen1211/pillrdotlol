@@ -68,7 +68,7 @@ struct ClaudeUsageCLI: Sendable {
         fileManager: FileManager = .default
     ) throws -> URL {
         let directory = applicationSupport
-            .appendingPathComponent("spyx", isDirectory: true)
+            .appendingPathComponent("pillr", isDirectory: true)
             .appendingPathComponent("usage-scratch", isDirectory: true)
         try fileManager.createDirectory(at: directory, withIntermediateDirectories: true)
         return directory

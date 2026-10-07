@@ -2,7 +2,7 @@ import XCTest
 import LidEffortCore
 @testable import LidEffort
 
-/// Every other agent's hook goes in and out the same way — spyx's own entry
+/// Every other agent's hook goes in and out the same way — pillr's own entry
 /// only, everything else in the file kept — and its stop reads alike. The
 /// shapes are the agents' documented ones.
 final class OtherAgentsTests: XCTestCase {
@@ -21,8 +21,8 @@ final class OtherAgentsTests: XCTestCase {
         let url = dir.appendingPathComponent("settings.json")
         try #"{"model":"claude-opus-4-6","hooks":{"Stop":[{"hooks":[{"type":"command","command":"other.sh"}]}]}}"#
             .write(to: url, atomically: true, encoding: .utf8)
-        try AgentHooks.installClaudeStyle(at: url, event: "Stop", agent: "droid", executable: "/A/spyx")
-        try AgentHooks.installClaudeStyle(at: url, event: "Stop", agent: "droid", executable: "/A/spyx")
+        try AgentHooks.installClaudeStyle(at: url, event: "Stop", agent: "droid", executable: "/A/pillr")
+        try AgentHooks.installClaudeStyle(at: url, event: "Stop", agent: "droid", executable: "/A/pillr")
         XCTAssertTrue(AgentHooks.isClaudeStyleInstalled(at: url, event: "Stop"))
         let stops = try XCTUnwrap((try json(url)["hooks"] as? [String: Any])?["Stop"] as? [[String: Any]])
         XCTAssertEqual(stops.count, 2, "installed twice is still one entry, beside the other tool's")
@@ -36,14 +36,14 @@ final class OtherAgentsTests: XCTestCase {
         let url = dir.appendingPathComponent("settings.json")
         let jsonc = "{ // a comment\n \"model\": \"x\" }"
         try jsonc.write(to: url, atomically: true, encoding: .utf8)
-        try AgentHooks.installClaudeStyle(at: url, event: "AfterAgent", agent: "gemini-cli", executable: "/A/spyx")
-        try AgentHooks.installCursor(executable: "/A/spyx", at: url)
+        try AgentHooks.installClaudeStyle(at: url, event: "AfterAgent", agent: "gemini-cli", executable: "/A/pillr")
+        try AgentHooks.installCursor(executable: "/A/pillr", at: url)
         XCTAssertEqual(try String(contentsOf: url, encoding: .utf8), jsonc)
     }
 
     func testGeminiCLITimesOutInMilliseconds() throws {
         let url = dir.appendingPathComponent("settings.json")
-        try AgentHooks.installClaudeStyle(at: url, event: "AfterAgent", agent: "gemini-cli", executable: "/A/spyx",
+        try AgentHooks.installClaudeStyle(at: url, event: "AfterAgent", agent: "gemini-cli", executable: "/A/pillr",
                                           timeout: 5000, matcher: "*")
         let entry = try XCTUnwrap(((try json(url)["hooks"] as? [String: Any])?["AfterAgent"] as? [[String: Any]])?.first)
         XCTAssertEqual(entry["matcher"] as? String, "*")
@@ -53,7 +53,7 @@ final class OtherAgentsTests: XCTestCase {
     func testAntigravityHookIsKeyedByItsOwnName() throws {
         let url = dir.appendingPathComponent("hooks.json")
         try #"{"theirs":{"enabled":true,"Stop":[]}}"#.write(to: url, atomically: true, encoding: .utf8)
-        try AgentHooks.installAntigravity(executable: "/A/spyx", at: url)
+        try AgentHooks.installAntigravity(executable: "/A/pillr", at: url)
         XCTAssertTrue(AgentHooks.isAntigravityInstalled(at: url))
         try AgentHooks.removeAntigravity(at: url)
         XCTAssertFalse(AgentHooks.isAntigravityInstalled(at: url))
@@ -61,8 +61,8 @@ final class OtherAgentsTests: XCTestCase {
     }
 
     func testCopilotHookIsAFileOfItsOwn() throws {
-        let url = dir.appendingPathComponent("hooks/spyx.json")
-        try AgentHooks.installCopilot(executable: "/A/spyx", at: url)
+        let url = dir.appendingPathComponent("hooks/pillr.json")
+        try AgentHooks.installCopilot(executable: "/A/pillr", at: url)
         let hook = try XCTUnwrap(((try json(url)["hooks"] as? [String: Any])?["agentStop"] as? [[String: Any]])?.first)
         XCTAssertTrue((hook["bash"] as? String)?.contains("--agent copilot") == true)
         try AgentHooks.removeCopilot(at: url)
@@ -84,17 +84,17 @@ final class OtherAgentsTests: XCTestCase {
     }
 
     func testOpenCodePluginIsOursAndOnlyOursIsRemoved() throws {
-        let url = dir.appendingPathComponent("plugins/spyx.js")
-        try AgentHooks.installOpenCode(executable: "/Applications/spyx.app/Contents/MacOS/spyx", at: url)
+        let url = dir.appendingPathComponent("plugins/pillr.js")
+        try AgentHooks.installOpenCode(executable: "/Applications/pillr.app/Contents/MacOS/pillr", at: url)
         let text = try String(contentsOf: url, encoding: .utf8)
-        XCTAssertTrue(text.contains(#"const spyx = "\/Applications\/spyx.app\/Contents\/MacOS\/spyx""#)
-                      || text.contains(#"const spyx = "/Applications/spyx.app/Contents/MacOS/spyx""#))
+        XCTAssertTrue(text.contains(#"const pillr = "\/Applications\/pillr.app\/Contents\/MacOS\/pillr""#)
+                      || text.contains(#"const pillr = "/Applications/pillr.app/Contents/MacOS/pillr""#))
         XCTAssertTrue(text.contains("session.status"))
         try AgentHooks.removeOpenCode(at: url)
         XCTAssertFalse(FileManager.default.fileExists(atPath: url.path))
         try "export const Mine = 1\n".write(to: url, atomically: true, encoding: .utf8)
         try AgentHooks.removeOpenCode(at: url)
-        XCTAssertTrue(FileManager.default.fileExists(atPath: url.path), "a file spyx did not write stays")
+        XCTAssertTrue(FileManager.default.fileExists(atPath: url.path), "a file pillr did not write stays")
     }
 
     func testEveryAgentsStopReadsAlike() {
@@ -153,8 +153,8 @@ final class ClaudeSettingsSafetyTests: XCTestCase {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".json")
         let broken = "{\n  \"model\": \"opus\",\n  \"permissions\": {\"allow\": [\"Bash(ls)\"]\n"
         try broken.write(to: url, atomically: true, encoding: .utf8)
-        XCTAssertThrowsError(try ClaudeHookInstaller.install(executable: "/A/spyx", at: url))
-        XCTAssertThrowsError(try ClaudeHookInstaller.installStop(executable: "/A/spyx", at: url))
+        XCTAssertThrowsError(try ClaudeHookInstaller.install(executable: "/A/pillr", at: url))
+        XCTAssertThrowsError(try ClaudeHookInstaller.installStop(executable: "/A/pillr", at: url))
         XCTAssertEqual(try String(contentsOf: url, encoding: .utf8), broken)
     }
 }

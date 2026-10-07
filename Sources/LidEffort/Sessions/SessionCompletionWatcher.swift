@@ -30,7 +30,7 @@ struct SessionCompletionWatcher {
     private var previous: [String: AgentSession.State] = [:]
     /// Nothing is announced from the first reading.
     ///
-    /// Every session already running when spyx launches arrives with no
+    /// Every session already running when pillr launches arrives with no
     /// history, and treating that as a transition would ring once per session
     /// on every start — including a restart in the middle of the night after a
     /// Sparkle update. The first pass only records.

@@ -36,7 +36,7 @@ enum EffortTargetWriter {
         .appendingPathComponent(".lid-effort", isDirectory: true)
         .appendingPathComponent("targets.json", isDirectory: false)
 
-    private static let log = Logger(subsystem: "lol.spyx.app", category: "effort")
+    private static let log = Logger(subsystem: "lol.pillr.app", category: "effort")
 
     /// Switches one agent on or off in the overrides file, keeping the rest
     /// of it. Read again on the next gesture, so it takes effect then.
@@ -172,7 +172,7 @@ enum EffortTargetWriter {
     static func replaceContents(of url: URL, with text: String) throws {
         let directory = url.deletingLastPathComponent()
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        let tempURL = directory.appendingPathComponent(".spyx-effort.tmp-\(UUID().uuidString)")
+        let tempURL = directory.appendingPathComponent(".pillr-effort.tmp-\(UUID().uuidString)")
         try text.write(to: tempURL, atomically: true, encoding: .utf8)
         if FileManager.default.fileExists(atPath: url.path) {
             _ = try FileManager.default.replaceItemAt(url, withItemAt: tempURL)

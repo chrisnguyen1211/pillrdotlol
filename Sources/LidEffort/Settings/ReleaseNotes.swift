@@ -40,8 +40,8 @@ enum ReleaseNotes {
                         detail: L10n.t("A command longer than the card scrolls, and Allow waits until you have seen its last line. Invisible and reordering characters are shown, not hidden.")
                     ),
                     ReleaseNote.Change(
-                        title: L10n.t("spyx's permissions stay spyx's"),
-                        detail: L10n.t("The app now runs with macOS's hardened runtime, so no other program can load itself into spyx and use its Accessibility or Terminal access.")
+                        title: L10n.t("pillr's permissions stay pillr's"),
+                        detail: L10n.t("The app now runs with macOS's hardened runtime, so no other program can load itself into pillr and use its Accessibility or Terminal access.")
                     ),
                     ReleaseNote.Change(
                         title: L10n.t("Only plain effort values are written"),

@@ -17,10 +17,12 @@ struct AgentMenuActions {
     var open: (URL) -> Void = { NSWorkspace.shared.open($0) }
     /// Whose readings these are: the account the agent's credential belongs to.
     var account: (String) -> ProviderAccount? = { _ in nil }
-    /// Where this agent's account lives: its own sign-in window, an app, or nowhere spyx can open.
+    /// Where this agent's account lives: its own sign-in window, an app, or nowhere pillr can open.
     var signInRoute: (String) -> SignInRoute? = { _ in nil }
     /// Takes you there — to sign in, or with `true`, to switch account.
     var openAccountSource: (String, Bool) -> Void = { _, _ in }
+    /// Settings, on the API keys tab — for the API keys cell.
+    var openAPIKeys: () -> Void = {}
 }
 
 /// A menu item that runs a closure. `NSMenuItem` wants an Objective-C
@@ -68,6 +70,12 @@ extension NotchWindowController {
             menu.addItem(connect)
         }
 
+        if snapshot.keyGroup != nil {
+            menu.addItem(ActionMenuItem(L10n.t("Add API Key…")) { [weak self] in
+                self?.agentMenuActions.openAPIKeys()
+            })
+        }
+
         menu.addItem(ActionMenuItem(L10n.t("Refresh \(name)"), key: "r") { [weak self] in
             guard let self, let refresh = self.onRefreshProvider else { return }
             Task { await self.model.refresh(snapshot, using: refresh) }
@@ -87,7 +95,7 @@ extension NotchWindowController {
 
         // Local models have no limits to be warned about. The API keys cell
         // mutes every key in it: the alerts are each key's own.
-        if snapshot.localModel == nil {
+        if snapshot.localModel == nil, snapshot.keyGroup?.isEmpty != true {
             let alertIDs = snapshot.keyGroup?.map(\.id) ?? [snapshot.providerID]
             let muted = alertIDs.allSatisfy { agentMenuActions.alertsMuted($0) }
             menu.addItem(ActionMenuItem(L10n.t("Mute Limit Alerts"), checked: muted) { [weak self] in
@@ -159,7 +167,7 @@ extension NotchWindowController {
         return item
     }
 
-    /// Where the agent's account lives, when spyx can take you there: its
+    /// Where the agent's account lives, when pillr can take you there: its
     /// own sign-in window — to sign in, or switch account once signed in —
     /// or the app that holds it. Claude Code is a command; nothing to open.
     private func accountItem(for snapshot: ProviderSnapshot) -> NSMenuItem? {

@@ -3,13 +3,13 @@ import Foundation
 /// The Ollama cloud API key, read from the environment first and the keychain
 /// second.
 ///
-/// Unlike every other provider, spyx owns this credential: the user types
+/// Unlike every other provider, pillr owns this credential: the user types
 /// it into Settings, and it is stored in the login keychain under a service
 /// name no other app uses. The environment variable `OLLAMA_API_KEY` is checked
 /// first, so a shell that already exports one works without any setup.
 enum OllamaCredentials {
     static let keychainService = "ollama-api-key"
-    static let keychainAccount = "spyx"
+    static let keychainAccount = "pillr"
     static let environmentKey = "OLLAMA_API_KEY"
 
     /// Held until the item moves, for the reason spelled out in

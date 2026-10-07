@@ -1,4 +1,4 @@
-# spyx — end-to-end test cases
+# pillr — end-to-end test cases
 
 Generated from `script/e2e.py`; run `script/e2e.py` to execute them all.
 Logic cases are proven by the automated suites named; release and security
@@ -41,7 +41,7 @@ update feed and the public repository.
 
 | ID | Scenario | Expected | Evidence |
 |---|---|---|---|
-| D1 | Turn answering from the notch on and off | Only spyx's own PermissionRequest entry is added/removed in settings.json; the binary path is shell-quoted | `ClaudeHookInstallerTests` |
+| D1 | Turn answering from the notch on and off | Only pillr's own PermissionRequest entry is added/removed in settings.json; the binary path is shell-quoted | `ClaudeHookInstallerTests` |
 | D2 | Hook ↔ app round trip | Prompt held until answered; 9 min, app not running or hook killed → Claude asks itself; parallel prompts kept apart | `PromptBrokerTests`, `PromptBrokerConcurrencyTests` |
 | D3 | Allow / Deny / Always | Exact decision JSON; Always carries Claude's own suggestion | `PendingPromptTests`, `PromptPermissionTests` |
 | D4 | AskUserQuestion: one, several, your own answer, skip | Answers sent per question; Continue/Send/Skip behave; typing goes into Something else… | `PromptDraftTests`, `PromptDraftCopyTests`, `PromptTypingTests`, `PromptQuestionClickMapTests` |
@@ -102,7 +102,7 @@ update feed and the public repository.
 
 | ID | Scenario | Expected | Evidence |
 |---|---|---|---|
-| H3 | Load a library into spyx with DYLD_INSERT_LIBRARIES | Refused by the hardened runtime | live: `injection_blocked` |
+| H3 | Load a library into pillr with DYLD_INSERT_LIBRARIES | Refused by the hardened runtime | live: `injection_blocked` |
 
 ## Release
 
@@ -115,7 +115,7 @@ update feed and the public repository.
 
 | ID | Scenario | Expected | Evidence |
 |---|---|---|---|
-| H6 | The update's EdDSA signature | Verifies against spyx's key | live: `eddsa` |
+| H6 | The update's EdDSA signature | Verifies against pillr's key | live: `eddsa` |
 
 ## Release
 
@@ -133,7 +133,7 @@ update feed and the public repository.
 
 | ID | Scenario | Expected | Evidence |
 |---|---|---|---|
-| H9 | Claude Code's hook | settings.json runs this /Applications/spyx.app binary with --prompt-hook | live: `hook_installed` |
+| H9 | Claude Code's hook | settings.json runs this /Applications/pillr.app binary with --prompt-hook | live: `hook_installed` |
 
 Manual, on screen: see [approvals-and-questions.md](approvals-and-questions.md)
 and `script/fake-prompt.sh` (TC37 `long`: Allow waits until the command is scrolled to its end).

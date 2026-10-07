@@ -83,7 +83,7 @@ struct EffortState: Equatable {
     var liveOnly: [String: [String]] = [:]
     var lastChange: Date?
 
-    /// The value written for a spyx provider id, which may carry a
+    /// The value written for a pillr provider id, which may carry a
     /// profile suffix ("claude-work") the target ids never do.
     func value(forProviderID providerID: String) -> String? {
         values[EffortState.targetID(forProviderID: providerID)]

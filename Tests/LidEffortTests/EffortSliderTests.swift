@@ -7,12 +7,13 @@ import SwiftUI
 final class EffortSliderTests: XCTestCase {
     // MARK: - The move handle's cycle
 
-    func testAClickGoesClockwiseRoundTheThreeSides() {
+    func testAClickGoesClockwiseRoundAllFourEdges() {
+        XCTAssertEqual(NotchEdge.right.nextSide, .bottom, "the bottom is reachable")
+        XCTAssertEqual(NotchEdge.bottom.nextSide, .left)
         XCTAssertEqual(NotchEdge.left.nextSide, .top)
         XCTAssertEqual(NotchEdge.top.nextSide, .right)
-        XCTAssertEqual(NotchEdge.right.nextSide, .left)
-        XCTAssertEqual(NotchEdge.bottom.nextSide, .left, "the bottom is not a side; it rejoins the cycle")
-        XCTAssertEqual(NotchEdge.left.nextSide.nextSide.nextSide, .left)
+        XCTAssertEqual(NotchEdge.right.nextSide.nextSide.nextSide.nextSide, .right, "four clicks, home")
+        XCTAssertEqual(Set([NotchEdge.right, .bottom, .left, .top].map(\.nextSide)), Set(NotchEdge.allCases))
     }
 
     // MARK: - The drop's route

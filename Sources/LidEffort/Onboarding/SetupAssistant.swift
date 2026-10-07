@@ -20,7 +20,7 @@ final class SetupModel: ObservableObject {
     @Published private(set) var offers: [EffortOffer] = []
     @Published private(set) var agents: [ProviderSnapshot] = []
     @Published private(set) var needs: [String: ConnectNeed] = [:]
-    /// Every cloud agent spyx can read, switched on or not.
+    /// Every cloud agent pillr can read, switched on or not.
     @Published private(set) var catalog: [ProviderSummary] = []
     @Published private(set) var effortState = EffortState()
     @Published var moveProblem: String?
@@ -46,13 +46,13 @@ final class SetupModel: ObservableObject {
         self.terminals = AutomationTarget.installed()
         let desktopApps = DesktopAgentApp.all.filter { AutomationTarget.isInstalled($0.bundleID) }
         self.desktopApps = desktopApps
-        // The page is for an app spyx can reach; one it cannot is said on
+        // The page is for an app pillr can reach; one it cannot is said on
         // the Ready page's lid table instead of a page with nothing to do.
         self.plan = SetupPlan(needsMove: location.needsMove,
                               desktopAppInstalled: desktopApps.contains { $0.reach != nil })
 
         guard let store else { return }
-        store.$notchSnapshots
+        store.$connectedCells
             .combineLatest(store.$needsRenewal, preferences.$disconnectedProviders)
             .receive(on: RunLoop.main)
             .sink { [weak self] snapshots, _, _ in
@@ -196,6 +196,24 @@ final class SetupModel: ObservableObject {
         _ = store?.connect(providerID: providerID)
     }
 
+    /// One real reading, switched on or not — what Connect waits for.
+    func probe(_ providerID: String) async -> ProviderStatus {
+        await store?.probe(providerID: providerID) ?? .error(L10n.t("pillr doesn't know this provider"))
+    }
+
+    /// Opens where the agent signs in — its app, or its sign-in command in a
+    /// Terminal window — exactly as Settings' Connect does. False when there
+    /// is nothing to open from here.
+    func beginSignIn(_ providerID: String) -> Bool {
+        store?.beginConnect(providerID: providerID) ?? false
+    }
+
+    /// What a reading that did not come back means for this agent.
+    func need(for status: ProviderStatus, agent: ProviderSummary) -> ConnectNeed? {
+        ConnectNeed.need(status: status, expired: false, route: agent.signIn, command: agent.signInCommand,
+                         appInstalled: { NSWorkspace.shared.urlForApplication(withBundleIdentifier: $0) != nil })
+    }
+
     var enabledAgents: [ProviderSummary] {
         catalog.filter { !preferences.disconnectedProviders.contains($0.id) }
     }
@@ -235,11 +253,11 @@ final class SetupModel: ObservableObject {
     }
 }
 
-/// An agent's desktop app, and what spyx can do in it without a terminal.
+/// An agent's desktop app, and what pillr can do in it without a terminal.
 struct DesktopAgentApp: Identifiable, Equatable {
     let bundleID: String
     let name: String
-    /// What Accessibility lets spyx do there; nil: nothing yet.
+    /// What Accessibility lets pillr do there; nil: nothing yet.
     let reach: String?
 
     var id: String { bundleID }
@@ -263,6 +281,9 @@ final class SetupAssistantController {
     private var window: NSWindow?
     private var model: SetupModel?
     private let preferences: Preferences
+    /// pillr's own light or dark, not the Mac's: the switch in Settings
+    /// reaches this window too, the moment it is used.
+    private var themeWatch: AnyCancellable?
     private let store: () -> UsageStore?
     private let effort: () -> EffortController?
     private let openSettings: () -> Void
@@ -297,11 +318,14 @@ final class SetupAssistantController {
             backing: .buffered,
             defer: false
         )
-        window.title = L10n.t("Set Up spyx")
+        window.title = L10n.t("Set Up pillr")
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
         window.isMovableByWindowBackground = true
         window.isReleasedWhenClosed = false
+        window.appearance = preferences.interfaceMode.appearance
+        themeWatch = preferences.$interfaceMode
+            .sink { [weak window] mode in window?.appearance = mode.appearance }
         let host = NSHostingView(
             rootView: SetupAssistantView(
                 model: model,

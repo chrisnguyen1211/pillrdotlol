@@ -17,6 +17,9 @@ actor GitHubCopilotProvider: UsageProvider {
         self.loadCredentials = loadCredentials ?? { try GitHubCopilotCredentials.load() }
     }
 
+    /// The vendor's own sign-in, run in Terminal from Connect.
+    nonisolated var signInCommand: String? { "gh auth login" }
+
     nonisolated var signInRoute: SignInRoute {
         .guidance(L10n.t("Sign in with GitHub CLI using `gh auth login`, then enable GitHub Copilot."))
     }
@@ -31,7 +34,7 @@ actor GitHubCopilotProvider: UsageProvider {
         request.setValue("Bearer \(credentials.token)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.setValue("2022-11-28", forHTTPHeaderField: "X-GitHub-Api-Version")
-        request.setValue("spyx", forHTTPHeaderField: "User-Agent")
+        request.setValue("pillr", forHTTPHeaderField: "User-Agent")
         request.timeoutInterval = 15
 
         let (data, response) = try await session.data(for: request)

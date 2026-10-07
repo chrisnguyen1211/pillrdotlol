@@ -25,7 +25,7 @@ final class CostIndexer {
     /// Codex rollouts carry session id, cwd and model in earlier lines than the
     /// token counts; remember them per file across incremental reads.
     private var codexContext: [String: (sessionId: String, cwd: String, model: String)] = [:]
-    private let queue = DispatchQueue(label: "lol.spyx.app.costs.indexer", qos: .utility)
+    private let queue = DispatchQueue(label: "lol.pillr.app.costs.indexer", qos: .utility)
     private var stream: FSEventStreamRef?
     private var gitRootCache: [String: String] = [:]
     private var scanScheduled = false

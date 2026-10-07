@@ -266,7 +266,7 @@ final class ClaudeOAuthProviderTests: XCTestCase {
         XCTAssertEqual(StubEndpoint.requestCount, 1)
     }
 
-    /// Claude Desktop is signed into one account; spyx draws a ring per
+    /// Claude Desktop is signed into one account; pillr draws a ring per
     /// Claude Code profile. A profile whose organization does not match the
     /// cached URL gets nothing from Desktop — the alternative is the personal
     /// account's session percentage on the work ring.
@@ -290,7 +290,7 @@ final class ClaudeOAuthProviderTests: XCTestCase {
         StubEndpoint.reset([.init(status: 200, body: Self.usagePayload)])
         let source = CredentialSource(readable: true)
         let home = FileManager.default.temporaryDirectory
-            .appendingPathComponent("spyx-nohome-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("pillr-nohome-\(UUID().uuidString)", isDirectory: true)
         let provider = makeProvider(source: source, profile: .default(home: home),
                                     desktopCache: desktopCache(age: 0))
 
@@ -306,7 +306,7 @@ final class ClaudeOAuthProviderTests: XCTestCase {
         StubEndpoint.reset([.init(status: 200, body: Self.usagePayload)])
         let source = CredentialSource(readable: true)
         let absent = FileManager.default.temporaryDirectory
-            .appendingPathComponent("spyx-absent-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("pillr-absent-\(UUID().uuidString)", isDirectory: true)
         let provider = makeProvider(source: source, profile: desktopProfile(),
                                     desktopCache: ClaudeDesktopUsageCache(directory: absent))
 
@@ -365,7 +365,7 @@ final class ClaudeOAuthProviderTests: XCTestCase {
         organization: String = ClaudeDesktopUsageCacheTests.organization
     ) -> ClaudeProfile {
         let home = FileManager.default.temporaryDirectory
-            .appendingPathComponent("spyx-home-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("pillr-home-\(UUID().uuidString)", isDirectory: true)
         let config = home.appendingPathComponent(".claude")
         try? FileManager.default.createDirectory(at: config, withIntermediateDirectories: true)
         let json = #"{"oauthAccount":{"emailAddress":"someone@example.com","organizationUuid":"\#(organization)"}}"#
@@ -384,7 +384,7 @@ final class ClaudeOAuthProviderTests: XCTestCase {
     /// An empty throwaway directory shaped like `Cache_Data`.
     private func makeCacheDirectory() -> URL {
         let directory = FileManager.default.temporaryDirectory
-            .appendingPathComponent("spyx-cache-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("pillr-cache-\(UUID().uuidString)", isDirectory: true)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         addTeardownBlock { try? FileManager.default.removeItem(at: directory) }
         return directory
@@ -587,7 +587,7 @@ final class ClaudeKeychainPromptTests: XCTestCase {
     }
 
     private func keychain(_ reads: Reads) -> ClaudeKeychain {
-        ClaudeKeychain(services: ["spyx-test-\(UUID().uuidString)"]) { _, interactive in
+        ClaudeKeychain(services: ["pillr-test-\(UUID().uuidString)"]) { _, interactive in
             reads.interactive.append(interactive)
             if reads.fails { throw UsageProviderError.accessDenied }
             return ClaudeCredentials(accessToken: "t", expiresAt: .distantFuture,
@@ -641,7 +641,7 @@ extension ClaudeKeychainPromptTests {
         final class Clock: @unchecked Sendable { var now = Date(timeIntervalSince1970: 1_000) }
         let clock = Clock()
         var interactive: [Bool] = []
-        let k = ClaudeKeychain(services: ["spyx-test-\(UUID().uuidString)"],
+        let k = ClaudeKeychain(services: ["pillr-test-\(UUID().uuidString)"],
                                now: { clock.now }) { _, flag in
             interactive.append(flag)
             return ClaudeCredentials(accessToken: "t", expiresAt: .distantFuture, subscriptionType: nil)

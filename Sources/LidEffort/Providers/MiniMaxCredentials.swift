@@ -59,7 +59,7 @@ enum MiniMaxRegion: String, Codable, CaseIterable {
 
 /// The MiniMax Coding Plan key and optional console session cookie.
 ///
-/// spyx owns both: the user pastes them in Settings (or exports them),
+/// pillr owns both: the user pastes them in Settings (or exports them),
 /// and they live in the login keychain under service names no other app uses
 /// — not `ollama-api-key`, which is Ollama's item on the same account.
 /// Browser cookie databases are never opened: a Chrome or Safari session is
@@ -75,7 +75,7 @@ enum MiniMaxCredentials {
 
     static let apiKeyService = "minimax-api-key"
     static let cookieService = "minimax-session-cookie"
-    static let keychainAccount = "spyx"
+    static let keychainAccount = "pillr"
 
     /// Held until the item moves, for the reason spelled out in
     /// `CredentialCache`: a data read can prompt, and usage polling reaches

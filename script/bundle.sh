@@ -1,16 +1,16 @@
 #!/bin/bash
-# Build the SwiftPM executable and wrap it in a real .app bundle: spyx.app.
+# Build the SwiftPM executable and wrap it in a real .app bundle: pillr.app.
 #
 # A bare `swift build` binary is not an application to macOS: it has no bundle
 # identifier, so UNUserNotificationCenter throws on first use, the keychain
 # can't remember an "Always Allow", Automation consent has no app name to
 # show, and there is no Dock icon to find Settings from. This assembles
-# spyx.app the way Xcode would, from the same build products. The Swift
-# target is still called LidEffort; only the bundle says spyx. The bundle ID
-# is lol.spyx.app (spyx.lol, reversed), which is what macOS keeps permissions, the keychain's
+# pillr.app the way Xcode would, from the same build products. The Swift
+# target is still called LidEffort; only the bundle says pillr. The bundle ID
+# is lol.pillr.app (pillr.lol, reversed), which is what macOS keeps permissions, the keychain's
 # Always Allow and the login item against.
 #
-#   script/bundle.sh            # Debug build → build/spyx.app
+#   script/bundle.sh            # Debug build → build/pillr.app
 #   script/bundle.sh --release  # Release build
 #   script/bundle.sh --run      # ...and (re)launch it
 set -euo pipefail
@@ -33,16 +33,16 @@ BUILD_NUMBER=$(echo "$VERSION" | awk -F. '{ printf "%d", $1 * 10000 + $2 * 100 +
 
 swift build -c "$CONFIG"
 PRODUCTS=".build/$CONFIG"
-APP="build/spyx.app"
+APP="build/pillr.app"
 rm -rf "$APP"
 # The bundle under its old name, so nothing launches the stale copy.
 rm -rf build/LidEffort.app
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
-cp "$PRODUCTS/LidEffort" "$APP/Contents/MacOS/spyx"
+cp "$PRODUCTS/LidEffort" "$APP/Contents/MacOS/pillr"
 # Sparkle, where the binary looks for it.
 mkdir -p "$APP/Contents/Frameworks"
 cp -R "$PRODUCTS/Sparkle.framework" "$APP/Contents/Frameworks/"
-install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP/Contents/MacOS/spyx" 2>/dev/null || true
+install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP/Contents/MacOS/pillr" 2>/dev/null || true
 # SwiftPM's Bundle.module looks for this beside the executable or in the
 # app's Resources; the latter is where a bundle keeps it.
 cp -R "$PRODUCTS/LidEffort_LidEffort.bundle" "$APP/Contents/Resources/"
@@ -61,12 +61,12 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
   <key>CFBundleDevelopmentRegion</key><string>en</string>
-  <key>CFBundleExecutable</key><string>spyx</string>
+  <key>CFBundleExecutable</key><string>pillr</string>
   <key>CFBundleIconFile</key><string>AppIcon</string>
-  <key>CFBundleIdentifier</key><string>lol.spyx.app</string>
+  <key>CFBundleIdentifier</key><string>lol.pillr.app</string>
   <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
-  <key>CFBundleName</key><string>spyx</string>
-  <key>CFBundleDisplayName</key><string>spyx</string>
+  <key>CFBundleName</key><string>pillr</string>
+  <key>CFBundleDisplayName</key><string>pillr</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>$VERSION</string>
   <key>CFBundleVersion</key><string>$BUILD_NUMBER</string>
@@ -76,8 +76,8 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>NSPrincipalClass</key><string>NSApplication</string>
   <key>NSHighResolutionCapable</key><true/>
   <key>NSAppleEventsUsageDescription</key>
-  <string>spyx talks to your terminal to open the session you click, send your reply or the lid&apos;s effort level to a running agent session, and run an agent&apos;s sign-in command when you ask. It never reads your keystrokes.</string>
-  <key>SUFeedURL</key><string>https://github.com/chrisnguyen1211/spyxdotlol/releases/latest/download/appcast.xml</string>
+  <string>pillr talks to your terminal to open the session you click, send your reply or the lid&apos;s effort level to a running agent session, and run an agent&apos;s sign-in command when you ask. It never reads your keystrokes.</string>
+  <key>SUFeedURL</key><string>https://github.com/chrisnguyen1211/pillrdotlol/releases/latest/download/appcast.xml</string>
   <key>SUPublicEDKey</key><string>9+PPkW+iIsKvN+uBa6Ab15KmY/D2GYiWCXuAYUC2pGQ=</string>
   <key>NSHumanReadableCopyright</key><string>© 2026 Cuong Nguyen. Open-source notices: Settings → General → Acknowledgements.</string>
 </dict></plist>
@@ -91,7 +91,7 @@ script/sign.sh "$APP" "${IDENTITY:--}"
 echo "bundled: $APP (signed: ${IDENTITY:-ad-hoc})"
 
 if [ "$RUN" = 1 ]; then
-  pkill -x spyx 2>/dev/null || true
+  pkill -x pillr 2>/dev/null || true
   pkill -x LidEffort 2>/dev/null || true
   sleep 0.5
   open "$APP"

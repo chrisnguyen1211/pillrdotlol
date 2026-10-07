@@ -29,7 +29,7 @@ final class AgentMenuTests: XCTestCase {
         XCTAssertTrue(titles(second).contains("Refresh \(b)"))
         // And the notch's own items are still there, underneath.
         XCTAssertTrue(titles(first).contains("Keep open"))
-        XCTAssertTrue(titles(first).contains("Quit spyx"))
+        XCTAssertTrue(titles(first).contains("Quit pillr"))
     }
 
     func testMovingAndHidingSayWhichAgent() throws {
@@ -159,7 +159,7 @@ final class AgentMenuTests: XCTestCase {
                       "\(info.map(\.title))")
     }
 
-    /// Its own account, where spyx can take you: its sign-in window — or,
+    /// Its own account, where pillr can take you: its sign-in window — or,
     /// signed in, a switch — or the app that holds it.
     func testTheAccountItemFollowsWhereTheAccountLives() throws {
         let controller = controller()

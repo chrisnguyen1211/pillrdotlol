@@ -9,7 +9,14 @@ final class UsageStore: ObservableObject {
     @Published private(set) var snapshots: [ProviderSnapshot] = [] {
         didSet { updateNotchSnapshots() }
     }
-    /// Settings and every display share the same ordered, visible model cells.
+    /// Every switched-on cell, in order — read or not. Settings and the
+    /// setup work from this: a provider still waiting for its first reading,
+    /// or for a sign-in, is listed there with what it needs.
+    @Published private(set) var connectedCells: [ProviderSnapshot] = []
+    /// What the pill draws: the cells in `connectedCells` that have
+    /// something to show. An agent that is on but has never been read —
+    /// not signed in, nothing to read yet — stays off the pill rather than
+    /// standing there as an empty ring.
     @Published private(set) var notchSnapshots: [ProviderSnapshot] = []
     /// Providers with a fetch in flight, so the cell can show it happening.
     @Published private(set) var refreshing: Set<String> = []
@@ -272,19 +279,32 @@ final class UsageStore: ObservableObject {
     }
 
     private func updateNotchSnapshots() {
-        let cells = ProviderOrder.cells(from: snapshots, keeping: notchSnapshots)
+        let cells = ProviderOrder.cells(from: snapshots, keeping: connectedCells)
             .filter { !disconnected.contains($0.id) }
         // Every API key is drawn in one cell, the keys in the order they were
         // added — which is the order they were registered in. A key that can
         // only be checked has no ring of its own, but it has a line there.
-        let grouped = APIKeyGroup.collapse(cells, memberOrder: providers.map(\.id))
-        notchSnapshots = ProviderOrder.arrange(grouped, by: APIKeyGroup.groupedOrder(order), id: \.id)
+        // Before any key is added the cell is still there, saying where one
+        // goes. Keys that are all switched off are a choice: no cell then.
+        let noKeys = !providers.contains { APIKeyGroup.isAddedKey($0.id) }
+            && !cells.contains { APIKeyGroup.isMember($0.id) }
+        let grouped = APIKeyGroup.collapse(cells, memberOrder: providers.map(\.id), keepEmpty: noKeys)
+        connectedCells = ProviderOrder.arrange(grouped, by: APIKeyGroup.groupedOrder(order), id: \.id)
             .filter { !disconnected.contains($0.id) }
+        notchSnapshots = connectedCells.filter(Self.isShownOnPill)
+    }
+
+    /// Whether a cell has anything to draw: a reading, kept or fresh — so a
+    /// sign-in that expires dims the ring rather than taking it away. The
+    /// API keys cell stands either way: before any key it is where one is
+    /// added, and its keys say for themselves whether they were read.
+    static func isShownOnPill(_ cell: ProviderSnapshot) -> Bool {
+        cell.keyGroup != nil || cell.hasReading
     }
 
     /// Model discovery does not need to re-read any cloud account's credential.
     var localModelSummaries: [ProviderSummary] {
-        ProviderOrder.cells(from: snapshots, keeping: notchSnapshots).compactMap { cell in
+        ProviderOrder.cells(from: snapshots, keeping: connectedCells).compactMap { cell in
             guard let model = cell.localModel else { return nil }
             let runtime = providers.first { $0.id == cell.providerID }?.displayName ?? cell.displayName
             return ProviderSummary(kind: .localRuntime, localModel: model,
@@ -506,7 +526,7 @@ final class UsageStore: ObservableObject {
     /// row that says what it found ("3 models loaded").
     func probeReading(providerID: String) async -> (status: ProviderStatus, snapshot: ProviderSnapshot?) {
         guard let provider = providers.first(where: { $0.id == providerID }) else {
-            return (.error(L10n.t("spyx doesn't know this provider")), nil)
+            return (.error(L10n.t("pillr doesn't know this provider")), nil)
         }
         provider.forgetCachedCredential()
         do {
@@ -616,7 +636,7 @@ final class UsageStore: ObservableObject {
         var needs: [String: ConnectNeed] = [:]
         // The keys in the API keys cell are each their own provider, with
         // their own way in — GLM's setup, MiniMax's sign-in.
-        for snapshot in notchSnapshots.flatMap({ $0.keyGroup ?? [$0] }) where snapshot.localModel == nil {
+        for snapshot in connectedCells.flatMap({ $0.keyGroup ?? [$0] }) where snapshot.localModel == nil {
             guard let provider = providers.first(where: { $0.id == snapshot.id }),
                   let need = ConnectNeed.need(status: snapshot.status, expired: needsRenewal.contains(provider.id),
                                               route: provider.signInRoute, command: provider.signInCommand,
@@ -789,7 +809,7 @@ final class UsageStore: ObservableObject {
     /// something you do while already signed in, so the shortcut `signIn` takes
     /// when a credential exists is exactly wrong here.
     ///
-    /// spyx cannot switch the account itself. The credential belongs to
+    /// pillr cannot switch the account itself. The credential belongs to
     /// Claude Code, Cursor or Codex, and the most this can honestly do is open
     /// the thing that owns it.
     @discardableResult
@@ -979,7 +999,7 @@ final class UsageStore: ObservableObject {
             // Nothing is known about the account, so a remembered reading stays
             // and simply ages. `degraded` handles that; this is only what a
             // provider with nothing to show says.
-            return .error(L10n.t("no reply — check your connection; spyx will try again"))
+            return .error(L10n.t("no reply — check your connection; pillr will try again"))
         case UsageProviderError.nothingMetered(let why):
             return .unsupported(why)
         case UsageProviderError.apiError(let message):
@@ -988,9 +1008,9 @@ final class UsageStore: ObservableObject {
         case UsageProviderError.badResponse(let code):
             // Said as what it means, with the code kept for a bug report.
             switch code {
-            case 429: return .error(L10n.t("too many checks for now; spyx will try again in a few minutes"))
-            case 500...: return .error(L10n.t("its server is having trouble (\(code)); spyx will try again"))
-            default: return .error(L10n.t("an unexpected answer (\(code)); spyx will try again"))
+            case 429: return .error(L10n.t("too many checks for now; pillr will try again in a few minutes"))
+            case 500...: return .error(L10n.t("its server is having trouble (\(code)); pillr will try again"))
+            default: return .error(L10n.t("an unexpected answer (\(code)); pillr will try again"))
             }
         case UsageProviderError.apiError(let name):
             // The server's own words. It is the only part of such a failure

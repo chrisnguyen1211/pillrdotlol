@@ -62,7 +62,7 @@ final class ThresholdNotifierTests: XCTestCase {
 
     func testTheFirstReadingIsWhereThingsStandNotACrossing() {
         notifier.observe([snapshot("claude", "Claude", 0.95)])
-        XCTAssertTrue(alerts.isEmpty, "already at 95% when spyx starts: not news, and no permission prompt mid-setup")
+        XCTAssertTrue(alerts.isEmpty, "already at 95% when pillr starts: not news, and no permission prompt mid-setup")
     }
 
     func testMutedProvidersAreSilentButRemembered() {

@@ -148,7 +148,7 @@ final class ExtraKeyTests: XCTestCase {
         XCTAssertEqual(request.url?.host, "open.bigmodel.cn")
         XCTAssertEqual(request.url?.path, "/api/monitor/usage/quota/limit")
         XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "glm-extra-secret")
-        XCTAssertEqual(provider.account()?.source, "spyx")
+        XCTAssertEqual(provider.account()?.source, "pillr")
         XCTAssertEqual(provider.signInRoute, .guidance(ExtraKey.signInGuidance))
 
         let global = try XCTUnwrap(ExtraKeyProviders.make(
@@ -194,7 +194,7 @@ final class ExtraKeyTests: XCTestCase {
         let request = try XCTUnwrap(ExtraKeyEndpoint.requests.first)
         XCTAssertEqual(request.url?.absoluteString, "https://ollama.com/api/usage")
         XCTAssertEqual(request.value(forHTTPHeaderField: "Authorization"), "Bearer ollama-extra")
-        XCTAssertEqual(provider.account()?.source, "spyx")
+        XCTAssertEqual(provider.account()?.source, "pillr")
     }
 
     func testApifyExtraKeySendsItsOwnTokenAndBorrowsNoLogin() async throws {

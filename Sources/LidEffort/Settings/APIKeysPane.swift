@@ -4,7 +4,7 @@ import SwiftUI
 
 // MARK: - The base providers' own pasted keys
 
-/// The key a provider's own ring reads when somebody pasted it into spyx —
+/// The key a provider's own ring reads when somebody pasted it into pillr —
 /// GLM's, MiniMax's Coding Plan, Ollama's, Apify's. Each lives where it
 /// always has; this only puts the four behind one face for the API tab.
 enum BaseKeySlot {
@@ -94,7 +94,7 @@ struct APIKeyItem: Identifiable, Equatable {
     }
 }
 
-/// Settings › API: every key spyx was handed, how each one reads, the one
+/// Settings › API: every key pillr was handed, how each one reads, the one
 /// button that adds another — and, under them, the custom endpoints.
 struct APIKeysPane: View {
     @ObservedObject var preferences: Preferences
@@ -167,7 +167,7 @@ struct APIKeysPane: View {
             }
 
             // Accounts this Mac does not already hold: an API the user points
-            // spyx at. Once saved, each one is a ring under Accounts too.
+            // pillr at. Once saved, each one is a ring under Accounts too.
             CustomEndpointsSettingsView(preferences: preferences)
         }
         .formStyle(NotchFormStyle())

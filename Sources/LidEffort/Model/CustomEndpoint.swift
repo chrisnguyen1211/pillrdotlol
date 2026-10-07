@@ -59,7 +59,7 @@ public struct CustomEndpointUsageDay: Codable, Equatable, Sendable {
 }
 
 public struct CustomEndpoint: Identifiable, Codable, Equatable, Sendable {
-    public static let keychainService = "lol.spyx.custom-endpoint"
+    public static let keychainService = "lol.pillr.custom-endpoint"
 
     public static func keychainAccount(for endpointID: String) -> String {
         "endpoint-\(endpointID)"
@@ -492,8 +492,8 @@ public struct CustomEndpointPreset: Identifiable, Sendable {
 public enum CustomIconStore {
     private static var customIconsDirectory: URL {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let spyxDir = appSupport.appendingPathComponent("spyx", isDirectory: true)
-        let iconsDir = spyxDir.appendingPathComponent("CustomIcons", isDirectory: true)
+        let pillrDir = appSupport.appendingPathComponent("pillr", isDirectory: true)
+        let iconsDir = pillrDir.appendingPathComponent("CustomIcons", isDirectory: true)
         try? FileManager.default.createDirectory(at: iconsDir, withIntermediateDirectories: true)
         return iconsDir
     }

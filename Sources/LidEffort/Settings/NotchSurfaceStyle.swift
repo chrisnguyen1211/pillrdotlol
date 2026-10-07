@@ -14,7 +14,7 @@ enum NotchSurfaceStyle: String, CaseIterable, Identifiable {
 
     /// Whether this Mac has a Liquid Glass to hand the surface to at all.
     ///
-    /// spyx's deployment target is macOS 15, where `glassEffect` does not
+    /// pillr's deployment target is macOS 15, where `glassEffect` does not
     /// exist. A material is not a stand-in: the notch panel sits over the bezel
     /// with nothing behind it to blur, so a `.regular` material there would
     /// come out as a flat grey rectangle rather than as translucency.

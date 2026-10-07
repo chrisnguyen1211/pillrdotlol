@@ -411,8 +411,8 @@ final class WebSessionProvider: NSObject, UsageProvider {
 
     /// Shows the WebView so the user can sign in — and, if a challenge appears,
     /// answer it themselves. The app never answers one on their behalf.
-    /// The one real logout in the app: this session belongs to spyx, so
-    /// spyx can end it.
+    /// The one real logout in the app: this session belongs to pillr, so
+    /// pillr can end it.
     ///
     /// Scoped to the site's own host (and any associated hosts) rather than
     /// emptying the store — the default store is shared, so clearing all of it

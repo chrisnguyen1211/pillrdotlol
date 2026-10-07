@@ -2,7 +2,7 @@ import AppKit
 import ApplicationServices
 import Foundation
 
-/// Where macOS stands on one thing spyx needs.
+/// Where macOS stands on one thing pillr needs.
 enum Access: Equatable {
     case granted
     case denied
@@ -43,8 +43,8 @@ enum AppLocation: Equatable {
 }
 
 enum AppMover {
-    static let destination = URL(fileURLWithPath: "/Applications/spyx.app")
-    /// The same app under the name it had before it was spyx. Left there it
+    static let destination = URL(fileURLWithPath: "/Applications/pillr.app")
+    /// The same app under the name it had before it was pillr. Left there it
     /// is a second copy of one bundle ID, and whichever macOS finds first is
     /// the one that opens at login.
     static let formerDestination = URL(fileURLWithPath: "/Applications/LidEffort.app")
@@ -71,7 +71,7 @@ enum AppMover {
             catch { throw Failure.copy(L10n.t("An older copy in Applications couldn't be moved to the Trash.")) }
         }
         do { try fm.copyItem(at: source, to: destination) }
-        catch { throw Failure.copy(L10n.t("Couldn't copy spyx into Applications: \(error.localizedDescription)")) }
+        catch { throw Failure.copy(L10n.t("Couldn't copy pillr into Applications: \(error.localizedDescription)")) }
         // This copy has already been through Gatekeeper — it is the one
         // running. Left quarantined, the copy would be asked about again,
         // and from Downloads it would be translocated all over again.
@@ -95,9 +95,9 @@ enum AppMover {
 enum AccessibilityAccess {
     static var status: Access { AXIsProcessTrusted() ? .granted : .notAsked }
 
-    /// Adds spyx to the list, switched off, and opens the pane it is in:
+    /// Adds pillr to the list, switched off, and opens the pane it is in:
     /// Accessibility is the one permission macOS never grants from a dialog.
-    /// The first time, macOS's own alert — which adds spyx to the list and
+    /// The first time, macOS's own alert — which adds pillr to the list and
     /// offers the way there. After that the alert no longer appears, so the
     /// pane itself is opened. Never both at once.
     static func request(_ defaults: UserDefaults = .standard) {
@@ -118,7 +118,7 @@ enum AccessibilityAccess {
 // MARK: - Automation
 
 /// A terminal a session can run in, and whether macOS has to agree before
-/// spyx can reach into it.
+/// pillr can reach into it.
 struct AutomationTarget: Identifiable, Equatable {
     let bundleID: String
     let name: String

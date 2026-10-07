@@ -64,7 +64,7 @@ enum TourDemo {
         sessions().values.flatMap { $0 }.first { $0.processID == pid }
     }
 
-    /// The idle session the reply step writes to: idle, so spyx would type
+    /// The idle session the reply step writes to: idle, so pillr would type
     /// into it.
     static func replySession(now: Date = Date()) -> AgentSession? {
         sessions(now: now)["claude"]?.first { $0.state == .idle }

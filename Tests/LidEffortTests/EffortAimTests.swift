@@ -20,15 +20,15 @@ final class EffortAimTests: XCTestCase {
     }
 
     func testTheAimNamesSessionAndModel() {
-        XCTAssertEqual(EffortAim(agent: "claude", session: "SPYX", model: "claude-opus-5-5").text, "SPYX · Opus 5.5")
+        XCTAssertEqual(EffortAim(agent: "claude", session: "PILLR", model: "claude-opus-5-5").text, "PILLR · Opus 5.5")
         XCTAssertEqual(EffortAim(agent: "grok", session: "shop-redesign", model: nil).text, "shop-redesign")
     }
 
     @MainActor
     func testBothCardsRender() throws {
         let aimed = EffortChangeEvent(level: .high, values: [("Claude Code", "high")], at: Date(), forSession: true,
-                                      note: "Let go of ⌘ to apply · Live → SPYX", noteIsLive: true, agent: "claude",
-                                      aim: EffortAim(agent: "claude", session: "SPYX", model: "claude-opus-5-5"))
+                                      note: "Let go of ⌘ to apply · Live → PILLR", noteIsLive: true, agent: "claude",
+                                      aim: EffortAim(agent: "claude", session: "PILLR", model: "claude-opus-5-5"))
         let everyone = EffortChangeEvent(level: .high,
                                          values: [("Claude Code (Fable)", "high"), ("Codex (GPT-5.6 Sol)", "high"), ("Grok (Grok 4.7)", "high")],
                                          at: Date(), note: "No session in view · applies next session")

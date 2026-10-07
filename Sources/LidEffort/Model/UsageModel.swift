@@ -483,13 +483,13 @@ struct ProviderSnapshot: Identifiable, Equatable {
             // Points at the one control that asks again. Clicking the ring
             // only refreshes, and a refresh never shows the dialogue — polls
             // are not allowed to.
-            return L10n.t("macOS refused spyx access to \(displayName)'s saved login. Use Allow access… in Settings to ask again.", locale: locale)
+            return L10n.t("macOS refused pillr access to \(displayName)'s saved login. Use Allow access… in Settings to ask again.", locale: locale)
         case .unsupported(let why): return why
         case .error(let why): return L10n.t("Couldn't read usage — \(why)", locale: locale)
         case .stale:
             // Stale with nothing to show: checks are being refused for now
             // (rate limit, a login due a refresh). Says it is not stuck.
-            return L10n.t("No reading yet — spyx keeps trying. If this lasts, open \(displayName) once to refresh its login.", locale: locale)
+            return L10n.t("No reading yet — pillr keeps trying. If this lasts, open \(displayName) once to refresh its login.", locale: locale)
         case .ok:             return L10n.t("Waiting for the first reading…", locale: locale)
         }
     }

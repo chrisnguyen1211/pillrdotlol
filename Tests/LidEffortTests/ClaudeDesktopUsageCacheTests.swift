@@ -402,7 +402,7 @@ final class ClaudeDesktopUsageCacheTests: XCTestCase {
     /// Whatever else is wrong, an absent Claude Desktop is not an error.
     func testAMissingCacheDirectoryReadsAsNothing() {
         let missing = FileManager.default.temporaryDirectory
-            .appendingPathComponent("spyx-tests-absent-\(UUID().uuidString)")
+            .appendingPathComponent("pillr-tests-absent-\(UUID().uuidString)")
         XCTAssertNil(ClaudeDesktopUsageCache(directory: missing)
             .read(organization: Self.organization))
     }
@@ -426,7 +426,7 @@ final class ClaudeDesktopUsageCacheTests: XCTestCase {
     func testAnEntryForAnotherOrganizationIsIgnored() {
         let directory = makeCacheDirectory(["a_0": Entry().data()])
         // The reading exists, and it is not this profile's. Claude Desktop is
-        // signed into one account while spyx may draw a ring per profile,
+        // signed into one account while pillr may draw a ring per profile,
         // so the wrong account's session percentage must not reach the wrong ring.
         XCTAssertNil(ClaudeDesktopUsageCache(directory: directory)
             .read(organization: "99999999-8888-7777-6666-555555555555"))
@@ -604,7 +604,7 @@ final class ClaudeDesktopUsageCacheTests: XCTestCase {
                                     file: StaticString = #filePath,
                                     line: UInt = #line) -> URL {
         let directory = FileManager.default.temporaryDirectory
-            .appendingPathComponent("spyx-desktop-cache-\(UUID().uuidString)",
+            .appendingPathComponent("pillr-desktop-cache-\(UUID().uuidString)",
                                     isDirectory: true)
         do {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)

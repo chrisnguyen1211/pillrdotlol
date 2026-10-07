@@ -1,4 +1,4 @@
-# Releasing spyx
+# Releasing pillr
 
 ## Once
 
@@ -11,23 +11,23 @@ lets macOS keep a user's permissions across updates.
 1. **Developer ID certificate.** In your Apple Developer account, create a
    "Developer ID Application" certificate and install it in the login
    keychain. `security find-identity -v -p codesigning` lists its name.
-2. **Notary credentials.** Stored once in the keychain as the profile `spyx` —
+2. **Notary credentials.** Stored once in the keychain as the profile `pillr` —
    see [Notarization](#notarization).
 3. **Back up the update signing key.** Sparkle updates are signed with an
-   EdDSA key kept in the login keychain under the account `spyx.lol`; its
+   EdDSA key kept in the login keychain under the account `spyx.lol` (its name from before the app was pillr); its
    public half is `SUPublicEDKey` in `script/bundle.sh`. Lose the private key
    and installed copies can never be updated again. Export it to a password
    manager or an encrypted backup:
 
    ```bash
-   .build/artifacts/sparkle/Sparkle/bin/generate_keys --account spyx.lol -x spyx-sparkle-key.txt
+   .build/artifacts/sparkle/Sparkle/bin/generate_keys --account spyx.lol -x pillr-sparkle-key.txt
    ```
 
    Then delete the exported file from disk — or keep it only inside an
    encrypted disk image whose password is in your password manager:
 
    ```bash
-   hdiutil create -encryption AES-256 -fs APFS -volname spyx-sparkle-key -srcfolder <folder holding the key> spyx-sparkle-key-backup.dmg
+   hdiutil create -encryption AES-256 -fs APFS -volname pillr-sparkle-key -srcfolder <folder holding the key> pillr-sparkle-key-backup.dmg
    ```
 
 ## Each release
@@ -42,15 +42,18 @@ lets macOS keep a user's permissions across updates.
    PUBLISH=1 script/release.sh
    ```
 
+   Add `STYLED=1` for the dressed disk image — a background with an arrow
+   from pillr to Applications (see `script/dmg/README.md`).
+
    or, with a Developer ID, notarized:
 
    ```bash
-   DEVELOPER_ID="Developer ID Application: Name (TEAMID)" NOTARY_PROFILE=spyx PUBLISH=1 script/release.sh
+   DEVELOPER_ID="Developer ID Application: Name (TEAMID)" NOTARY_PROFILE=pillr PUBLISH=1 script/release.sh
    ```
 
 4. That creates the release `v<version>` on
-   [chrisnguyen1211/spyxdotlol](https://github.com/chrisnguyen1211/spyxdotlol/releases)
-   with `spyx-<version>.dmg` and `appcast.xml`. Installed copies read
+   [chrisnguyen1211/pillrdotlol](https://github.com/chrisnguyen1211/pillrdotlol/releases)
+   with `pillr-<version>.dmg` and `appcast.xml`. Installed copies read
    `releases/latest/download/appcast.xml`, so the newest release is the feed:
    never mark an older one "latest", and never delete the newest's appcast.
 5. Install the DMG on a clean Mac (or a new user account) and check: it opens
@@ -69,15 +72,15 @@ and releases simply stay un-notarized.
 App-Specific Passwords, then:
 
 ```bash
-xcrun notarytool store-credentials spyx \
+xcrun notarytool store-credentials pillr \
   --apple-id you@example.com \
   --team-id TEAMID
 ```
 
 `notarytool` prompts for the app-specific password and keeps it in the login
-keychain under the profile name `spyx`. The team ID is the ten characters in
+keychain under the profile name `pillr`. The team ID is the ten characters in
 parentheses after your name in `security find-identity -v -p codesigning`.
-Check the profile with `xcrun notarytool history --keychain-profile spyx`.
+Check the profile with `xcrun notarytool history --keychain-profile pillr`.
 
 **Each release: set two variables.** `script/package.sh` (which
 `script/release.sh` runs) reads exactly these:
@@ -85,18 +88,18 @@ Check the profile with `xcrun notarytool history --keychain-profile spyx`.
 | Variable | Value | Effect |
 |---|---|---|
 | `DEVELOPER_ID` | `Developer ID Application: Your Name (TEAMID)` | Signs the app (Sparkle's helpers first) and the DMG with a secure timestamp |
-| `NOTARY_PROFILE` | `spyx` | Submits the DMG with `xcrun notarytool submit --keychain-profile "$NOTARY_PROFILE" --wait`, then staples the ticket with `xcrun stapler staple` |
+| `NOTARY_PROFILE` | `pillr` | Submits the DMG with `xcrun notarytool submit --keychain-profile "$NOTARY_PROFILE" --wait`, then staples the ticket with `xcrun stapler staple` |
 
 ```bash
-DEVELOPER_ID="Developer ID Application: Your Name (TEAMID)" NOTARY_PROFILE=spyx PUBLISH=1 script/release.sh
+DEVELOPER_ID="Developer ID Application: Your Name (TEAMID)" NOTARY_PROFILE=pillr PUBLISH=1 script/release.sh
 ```
 
 Without `DEVELOPER_ID` nothing is notarized, whatever `NOTARY_PROFILE` says;
 with `DEVELOPER_ID` but no `NOTARY_PROFILE` the build is Developer ID–signed but
 not notarized. A rejected submission stops the script; read Apple's reasons with
-`xcrun notarytool log <submission-id> --keychain-profile spyx`. Verify a
-finished DMG with `spctl -a -t open --context context:primary-signature -v build/spyx-<version>.dmg`
-and `xcrun stapler validate build/spyx-<version>.dmg`.
+`xcrun notarytool log <submission-id> --keychain-profile pillr`. Verify a
+finished DMG with `spctl -a -t open --context context:primary-signature -v build/pillr-<version>.dmg`
+and `xcrun stapler validate build/pillr-<version>.dmg`.
 
 **What changes for users.**
 
@@ -114,7 +117,7 @@ and `xcrun stapler validate build/spyx-<version>.dmg`.
 
 ## What users keep across updates
 
-Settings live in the `lol.spyx.app` defaults domain. Builds before 1.0 used
+Settings live in the `lol.pillr.app` defaults domain. Builds before 1.0 used
 `dev.lideffort`; the first launch of 1.0 copies those settings across once
 (`Preferences.migrateFromPreviousDomain`). Accessibility, Automation and the
 keychain's "Always Allow" are granted per bundle id, so testers moving from a

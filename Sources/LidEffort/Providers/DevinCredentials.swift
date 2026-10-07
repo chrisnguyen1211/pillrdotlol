@@ -4,7 +4,7 @@ import SQLite3
 /// The session Devin keeps for itself — Devin Desktop's SQLite store first,
 /// then the CLI's `credentials.toml` if that store is missing or has no sign-in.
 ///
-/// spyx only ever reads it, the same bargain as Cursor and Claude Code:
+/// pillr only ever reads it, the same bargain as Cursor and Claude Code:
 /// the owning tool mints and refreshes it, we borrow the current value. Both
 /// files hold the same kind of session token, and both answer the same
 /// GetUserStatus call — the CLI path is only a fallback so the notch works on

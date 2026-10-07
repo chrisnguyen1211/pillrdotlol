@@ -15,11 +15,11 @@ import OSLog
 /// this process must be trusted for Accessibility, the focused element
 /// must be a text area, and it must be empty. Enable with
 ///
-///     defaults write lol.spyx.app effort.axInject -bool true
+///     defaults write lol.pillr.app effort.axInject -bool true
 enum ClaudeDesktopComposer {
     static let bundleID = "com.anthropic.claudefordesktop"
     static let defaultsKey = "effort.axInject"
-    private static let log = Logger(subsystem: "lol.spyx.app", category: "effort")
+    private static let log = Logger(subsystem: "lol.pillr.app", category: "effort")
 
     static func isEnabled(_ defaults: UserDefaults) -> Bool {
         defaults.object(forKey: defaultsKey) == nil ? true : defaults.bool(forKey: defaultsKey)
@@ -31,7 +31,7 @@ enum ClaudeDesktopComposer {
     enum Outcome: Equatable {
         case sent
         case notFront
-        /// spyx is not allowed to use Accessibility.
+        /// pillr is not allowed to use Accessibility.
         case notTrusted
         /// No message box in the window: a settings page, a chat that is
         /// not a Code session.
@@ -56,7 +56,7 @@ enum ClaudeDesktopComposer {
         return deliver(command, askForTrust: askForTrust)
     }
 
-    /// A message you wrote in spyx, sent into the Claude app session it is
+    /// A message you wrote in pillr, sent into the Claude app session it is
     /// for — only while the window is showing that very session, into an
     /// empty box, and sent only once the box reads back exactly the message.
     @MainActor
@@ -66,7 +66,7 @@ enum ClaudeDesktopComposer {
             log.notice("composer: another session is on screen")
             return .otherSession
         }
-        // Just brought to the front from spyx's panel: the window may still
+        // Just brought to the front from pillr's panel: the window may still
         // be redrawing its message box. Once more, from a fresh look, if the
         // first try could not put the message in.
         let first = deliver(line, askForTrust: false)
@@ -226,7 +226,7 @@ enum ClaudeDesktopComposer {
         return "len \(value.count)/\(command.count), contains \(value.contains(command)), extra [\(codes)]"
     }
 
-    /// Text spyx put there: the command, part of it, or it twice over.
+    /// Text pillr put there: the command, part of it, or it twice over.
     static func isOurs(_ text: String, _ command: String) -> Bool {
         let text = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return false }

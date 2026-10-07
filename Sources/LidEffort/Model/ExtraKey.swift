@@ -2,7 +2,7 @@ import Foundation
 import os
 import Security
 
-/// An API key spyx tracks on top of whatever a provider's own ring reads,
+/// An API key pillr tracks on top of whatever a provider's own ring reads,
 /// each read on its own and drawn as a line of the one API keys cell — see
 /// `APIKeyGroup`.
 ///
@@ -159,22 +159,22 @@ struct ExtraKey: Codable, Identifiable, Equatable, Hashable {
     /// What an extra key's row says in place of the base's sign-in guidance:
     /// there is nothing to sign into, only a key that was kept or was not.
     static var signInGuidance: String {
-        L10n.t("This key was added in spyx. If it stops working, remove it and add it again.")
+        L10n.t("This key was added in pillr. If it stops working, remove it and add it again.")
     }
 }
 
 // MARK: - The keys themselves
 
-/// Each extra key's secret, in the login keychain: service `spyx-extra-key`,
+/// Each extra key's secret, in the login keychain: service `pillr-extra-key`,
 /// account the extra key's id.
 ///
-/// The item is spyx's own, so a read never needs to ask anyone — and is never
+/// The item is pillr's own, so a read never needs to ask anyone — and is never
 /// allowed to: an ad-hoc rebuild is a new signing identity, and an own-item
 /// read can then raise the dialogue like anyone else's. Reads are made with
 /// interaction switched off and held behind a `CredentialCache` until the item
 /// moves, the same bargain every other key in the app makes.
 enum ExtraKeySecrets {
-    static let service = "spyx-extra-key"
+    static let service = "pillr-extra-key"
 
     private static let lock = NSLock()
     private static var caches: [String: CredentialCache<String>] = [:]
@@ -254,7 +254,7 @@ enum ExtraKeyProviders {
             return GLMProvider(id: extra.id, displayName: extra.displayName,
                                session: session, archive: archive,
                                credential: {
-                                   secret().map { GLMCredentials.Credential(token: $0, baseURL: base, source: "spyx") }
+                                   secret().map { GLMCredentials.Credential(token: $0, baseURL: base, source: "pillr") }
                                })
         case "minimax":
             return MiniMaxProvider(id: extra.id, displayName: extra.displayName,
@@ -326,7 +326,7 @@ enum ExtraKeyVerifier {
         let extra = ExtraKey(id: makeID(base, existing), base: base, name: name, region: region,
                              fields: kept?.isEmpty == false ? kept : nil)
         guard let provider = makeProvider(extra, key) else {
-            return .failed(L10n.t("spyx doesn't know this provider"))
+            return .failed(L10n.t("pillr doesn't know this provider"))
         }
 
         // Only a reading that actually came back proves the key. A throttle

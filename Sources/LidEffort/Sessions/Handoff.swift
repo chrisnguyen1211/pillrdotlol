@@ -23,7 +23,7 @@ enum Handoff {
         var command: String { rawValue }
     }
 
-    private static let log = Logger(subsystem: "lol.spyx.app", category: "sessions")
+    private static let log = Logger(subsystem: "lol.pillr.app", category: "sessions")
 
     /// Which agent a session belongs to, from its id.
     static func source(of session: AgentSession) -> Agent? {

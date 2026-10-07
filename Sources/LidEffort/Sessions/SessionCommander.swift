@@ -6,7 +6,7 @@ import OSLog
 /// Talking back to a session from the notch: a reply you write, or Stop.
 ///
 /// Each host is reached the way it can be reached *safely*. Return is only
-/// pressed where spyx can confirm the text went into the right session —
+/// pressed where pillr can confirm the text went into the right session —
 /// Terminal.app (the tab is found by its tty, and the prompt must be idle),
 /// the Claude app (the window must be showing that session, and the box must
 /// read back the message exactly), Superset (its own host service). Anywhere
@@ -35,7 +35,7 @@ enum SessionCommander {
         case busy
         /// Pasted into the app in front; Return is yours to press.
         case pasted(app: String)
-        /// The app is in front but spyx could not be sure which of its tabs
+        /// The app is in front but pillr could not be sure which of its tabs
         /// is the session's, so the message is on the clipboard instead.
         case copied(app: String)
         /// The Claude app is showing a different session.
@@ -44,7 +44,7 @@ enum SessionCommander {
         case failed(String)
     }
 
-    private static let log = Logger(subsystem: "lol.spyx.app", category: "sessions")
+    private static let log = Logger(subsystem: "lol.pillr.app", category: "sessions")
 
     static func reach(_ session: AgentSession) -> Reach {
         guard let pid = session.processID else { return .none }
@@ -106,12 +106,12 @@ enum SessionCommander {
         switch reach {
         case .iterm(let tty):
             guard EffortInjector.itermAllowed else {
-                return .failed(L10n.t("iTerm2 hasn't allowed spyx yet — allow it in Settings → General → Run Setup Again… → Terminals"))
+                return .failed(L10n.t("iTerm2 hasn't allowed pillr yet — allow it in Settings → General → Run Setup Again… → Terminals"))
             }
             return outcome(ITermWriter.write(line, tty: tty), host: "iTerm2")
         case .terminal(let tty):
             guard EffortInjector.terminalAllowed else {
-                return .failed(L10n.t("Terminal hasn't allowed spyx yet — allow it in Settings → General → Run Setup Again… → Terminals"))
+                return .failed(L10n.t("Terminal hasn't allowed pillr yet — allow it in Settings → General → Run Setup Again… → Terminals"))
             }
             return outcome(EffortInjector.typeMessage(line, tty: tty), host: "Terminal")
         case .superset:
@@ -176,7 +176,7 @@ enum SessionCommander {
     /// can work.
     private static func accessibilityOff() -> String {
         AccessibilityAccess.request()
-        return L10n.t("Accessibility is off for spyx — switch it on in System Settings → Privacy & Security → Accessibility")
+        return L10n.t("Accessibility is off for pillr — switch it on in System Settings → Privacy & Security → Accessibility")
     }
 
     private static func outcome(_ result: EffortInjector.Outcome, host: String) -> ReplyOutcome {
@@ -184,8 +184,8 @@ enum SessionCommander {
         case .sent: return .sent
         case .promptNotIdle: return .busy
         case .tabNotFound: return .failed(L10n.t("Its \(host) tab wasn't found"))
-        case .contentUnreadable: return .failed(L10n.t("\(host) wouldn't let spyx read the tab"))
-        case .appleScriptError: return .failed(L10n.t("\(host) refused the message — check spyx is allowed under Automation"))
+        case .contentUnreadable: return .failed(L10n.t("\(host) wouldn't let pillr read the tab"))
+        case .appleScriptError: return .failed(L10n.t("\(host) refused the message — check pillr is allowed under Automation"))
         case .noTTY, .hostedBy: return .failed(L10n.t("This session has no terminal to write to"))
         }
     }

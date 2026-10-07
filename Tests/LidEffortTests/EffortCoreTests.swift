@@ -394,7 +394,7 @@ final class LiveEffortReachTests: XCTestCase {
         let live = [
             EffortController.LiveSession(ref: EffortSessionRef(pid: 10, tty: nil, hostName: "Claude",
                                                                hostBundleID: "com.anthropic.claudefordesktop"),
-                                         name: "SPYX"),
+                                         name: "PILLR"),
             EffortController.LiveSession(ref: EffortSessionRef(pid: 20, tty: "ttys004", hostName: "Terminal",
                                                                hostBundleID: "com.apple.Terminal", agent: "grok"),
                                          name: "Grok"),

@@ -215,7 +215,7 @@ final class ClaudeUsageCLITests: XCTestCase {
         let second = try ClaudeUsageCLI.scratchDirectory(applicationSupport: support)
 
         XCTAssertEqual(first, second)
-        XCTAssertEqual(first.path, support.appendingPathComponent("spyx/usage-scratch").path)
+        XCTAssertEqual(first.path, support.appendingPathComponent("pillr/usage-scratch").path)
         var isDirectory: ObjCBool = false
         XCTAssertTrue(FileManager.default.fileExists(atPath: first.path, isDirectory: &isDirectory))
         XCTAssertTrue(isDirectory.boolValue)
@@ -226,7 +226,7 @@ final class ClaudeUsageCLITests: XCTestCase {
     func testAScratchDirectoryThatCannotBeMadeThrows() throws {
         let support = try makeHome(executableAt: nil)
         // A file where the parent directory has to go.
-        FileManager.default.createFile(atPath: support.appendingPathComponent("spyx").path,
+        FileManager.default.createFile(atPath: support.appendingPathComponent("pillr").path,
                                        contents: Data())
 
         XCTAssertThrowsError(try ClaudeUsageCLI.scratchDirectory(applicationSupport: support))

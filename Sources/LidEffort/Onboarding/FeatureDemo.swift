@@ -1,7 +1,7 @@
 import Foundation
 
 /// A forty-second showcase of what 1.1 added, on the real notch with made-up
-/// sessions: `open -a spyx --args --demo`. It borrows the tour's stand-ins —
+/// sessions: `open -a pillr --args --demo`. It borrows the tour's stand-ins —
 /// real notes and prompts wait while it runs — and nothing in it is sent,
 /// changed or launched: the reply and hand-off panels say what they would do.
 @MainActor

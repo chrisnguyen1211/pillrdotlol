@@ -29,7 +29,7 @@ enum EffortInjector {
         let outcome: Outcome
     }
 
-    private static let log = Logger(subsystem: "lol.spyx.app", category: "effort")
+    private static let log = Logger(subsystem: "lol.pillr.app", category: "effort")
 
     /// One session and what to type into it: `/effort high` for Claude
     /// Code, Grok's own value for Grok.
@@ -140,7 +140,7 @@ enum EffortInjector {
         }
     }
 
-    /// A message you wrote in spyx, typed into the session's Terminal tab —
+    /// A message you wrote in pillr, typed into the session's Terminal tab —
     /// only at an idle, empty prompt, the same rule as `/effort`. One line:
     /// a line break would send the first half on its own.
     static func typeMessage(_ text: String, tty: String) -> Outcome {
@@ -203,7 +203,7 @@ enum EffortInjector {
         }
     }
 
-    /// Whether macOS already lets spyx script Terminal — asked without a
+    /// Whether macOS already lets pillr script Terminal — asked without a
     /// dialog. A lid gesture is no moment for macOS's consent prompt; that
     /// is asked in Setup → Terminals, with the reason beside it.
     /// The script that types `/effort …` into the tab on `tty` — that tab
@@ -233,7 +233,7 @@ enum EffortInjector {
 
     static var terminalAllowed: Bool { allowed("com.apple.Terminal") }
 
-    /// iTerm2 answers Apple Events only once you have allowed spyx — asked
+    /// iTerm2 answers Apple Events only once you have allowed pillr — asked
     /// first, so a reply says so rather than raising macOS's prompt halfway
     /// through, or reading as a tab that could not be found.
     static var itermAllowed: Bool { allowed("com.googlecode.iterm2") }

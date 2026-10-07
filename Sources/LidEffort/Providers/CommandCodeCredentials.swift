@@ -3,7 +3,7 @@ import Foundation
 /// Identity from `~/.commandcode/auth.json`, the same file the Command Code
 /// desktop app writes on login.
 ///
-/// spyx never signs in — it borrows that key. Refreshing is Command
+/// pillr never signs in — it borrows that key. Refreshing is Command
 /// Code's job. `COMMAND_CODE_API_KEY` wins when set, matching the desktop
 /// harness; a differently named Hermes leftover is ignored on purpose.
 struct CommandCodeCredentials {

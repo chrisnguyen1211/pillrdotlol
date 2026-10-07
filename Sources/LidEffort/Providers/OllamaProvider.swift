@@ -48,7 +48,7 @@ actor OllamaProvider: UsageProvider {
         return ProviderAccount(
             label: nil,
             plan: nil,
-            source: extraKey == nil ? "Ollama" : "spyx",
+            source: extraKey == nil ? "Ollama" : "pillr",
             manageURL: URL(string: "https://ollama.com/settings")
         )
     }

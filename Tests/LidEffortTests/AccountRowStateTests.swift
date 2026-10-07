@@ -251,7 +251,7 @@ final class ConnectProbeTests: XCTestCase {
         let store = store(ConnectStub(route: .guidance("x"), signedIn: true))
         store.disconnected = ["stub"]
         _ = await store.probe(providerID: "stub")
-        XCTAssertTrue(store.notchSnapshots.isEmpty, "a check is not a ring")
+        XCTAssertTrue(store.ringIDs.isEmpty, "a check is not a ring")
     }
 }
 

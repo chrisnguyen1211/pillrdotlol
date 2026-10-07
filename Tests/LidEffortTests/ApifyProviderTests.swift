@@ -60,7 +60,7 @@ final class ApifyProviderTests: XCTestCase {
     }
 
     func testLiveApifyUsageWhenExplicitlyEnabled() async throws {
-        guard ProcessInfo.processInfo.environment["SPYX_TEST_APIFY_LIVE"] == "1" else {
+        guard ProcessInfo.processInfo.environment["PILLR_TEST_APIFY_LIVE"] == "1" else {
             throw XCTSkip("Opt-in live check requires an Apify login or APIFY_TOKEN")
         }
         let liveSession = URLSession(configuration: .ephemeral)
@@ -173,8 +173,8 @@ final class ApifyProviderTests: XCTestCase {
         let store = UsageStore(providers: [provider()], archive: archive)
         await store.refresh()
         let snapshot = try XCTUnwrap(store.snapshots.first)
-        // spyx words a server failure rather than printing "HTTP 500".
-        XCTAssertEqual(snapshot.status, .error("its server is having trouble (500); spyx will try again"))
+        // pillr words a server failure rather than printing "HTTP 500".
+        XCTAssertEqual(snapshot.status, .error("its server is having trouble (500); pillr will try again"))
         XCTAssertFalse(snapshot.hasReading)
     }
 
@@ -231,7 +231,7 @@ final class ApifyProviderTests: XCTestCase {
                        "the file is re-read on every fetch, so a new login needs no relaunch")
     }
 
-    func testSwitchingOffForgetsOnlyTheTokenSpyxHolds() async throws {
+    func testSwitchingOffForgetsOnlyTheTokenPillrHolds() async throws {
         var deleted = 0
         let provider = provider(sources: sources(settings: "pasted", deleteSettingsToken: { deleted += 1 }))
         await provider.signOut()

@@ -43,6 +43,9 @@ actor KiloProvider: UsageProvider {
     /// Where the sign-in lives: a new one written there is read at once.
     nonisolated var credentialFiles: [URL] { [KiloCredentials.authURL] }
 
+    /// The vendor's own sign-in, run in Terminal from Connect.
+    nonisolated var signInCommand: String? { "kilo auth login" }
+
     nonisolated var signInRoute: SignInRoute {
         .guidance(L10n.t("Usage rides on the account Kilo CLI signs into — run `kilo` once and sign in, and the notch reads it."))
     }

@@ -192,7 +192,7 @@ struct EffortChangeCard: View {
 }
 
 extension NotchLayout {
-    /// spyx's surface: a capsule, not a flared notch.
+    /// pillr's surface: a capsule, not a flared notch.
     static let pillShape = true
     /// The gauge with nothing to seat: three quarters of a circle, open at
     /// the bottom.

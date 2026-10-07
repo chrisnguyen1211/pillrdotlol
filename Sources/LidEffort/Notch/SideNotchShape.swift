@@ -98,7 +98,7 @@ struct SideNotchShape: Shape {
         let bodyTop = rect.minY + curl
         let bodyBottom = rect.maxY - curl
 
-        // spyx's surface is a plain capsule floating on the edge, not a
+        // pillr's surface is a plain capsule floating on the edge, not a
         // notch growing out of it: no flares, every corner rounded. The ends
         // still reserve the flare's room so nothing else in the layout moves.
         // Not when drawn as the hardware notch: that one has to look like the

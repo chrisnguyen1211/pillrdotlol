@@ -610,6 +610,18 @@ private struct KeyGroupTooltip: View {
                 ProviderGlyphView(glyph: .apiKey)
                     .foregroundStyle(Palette.textPrimary)
             }
+            if keys.isEmpty {
+                VStack(alignment: .leading, spacing: NotchLayout.keyLineGap) {
+                    ForEach(APIKeyGroup.emptyLines, id: \.self) { line in
+                        Text(line)
+                            .font(Typography.cardBody)
+                            .foregroundStyle(Palette.textSecondary)
+                            .lineLimit(1)
+                            .frame(height: NotchLayout.cardBodyLineHeight)
+                    }
+                }
+                .padding(.top, NotchLayout.headerToBlock)
+            }
             ForEach(Array(keys.prefix(shown).enumerated()), id: \.element.id) { index, key in
                 KeyGroupRow(key: key, now: now, resetTimeFormat: resetTimeFormat)
                     .padding(.top, index == 0 ? NotchLayout.headerToBlock : NotchLayout.blockSpacing)

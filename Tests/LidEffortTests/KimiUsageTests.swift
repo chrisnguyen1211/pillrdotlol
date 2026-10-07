@@ -50,7 +50,7 @@ final class KimiUsageTests: XCTestCase {
         XCTAssertEqual(read.plan, "Advanced")
     }
 
-    /// A window whose unit spyx cannot name is dropped rather than
+    /// A window whose unit pillr cannot name is dropped rather than
     /// mislabelled; the weekly summary carries no window of its own and is a
     /// week by the CLI's own assumption.
     func testAnUnnamedWindowIsDroppedNotInvented() throws {

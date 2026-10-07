@@ -1,5 +1,5 @@
 #!/bin/bash
-# Sign spyx.app inside-out: Sparkle's helpers first, then Sparkle, then the
+# Sign pillr.app inside-out: Sparkle's helpers first, then Sparkle, then the
 # app — the order Sparkle documents, and the one notarization accepts.
 # `codesign --deep` signs nested code with the app's options, which gives
 # Sparkle's Downloader the wrong entitlements.
@@ -7,7 +7,7 @@
 #   script/sign.sh <app> <identity>            # Apple Development or ad-hoc
 #   script/sign.sh <app> <identity> runtime    # Developer ID: + secure timestamp
 #
-# Always with the hardened runtime, whatever the identity. spyx holds
+# Always with the hardened runtime, whatever the identity. pillr holds
 # Accessibility, Automation of Terminal and the keychain's Always Allow for
 # other apps' logins; without the runtime, dyld loads any library named in
 # DYLD_INSERT_LIBRARIES into it, and that library would hold them too.

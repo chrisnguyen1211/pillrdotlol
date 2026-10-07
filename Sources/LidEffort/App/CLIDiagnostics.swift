@@ -5,16 +5,16 @@ import LidEffortCore
 /// notch — for a machine without a hinge sensor, a CI box, or checking what
 /// a lid angle would do to each agent's config without moving anything.
 ///
-///   spyx.app/Contents/MacOS/spyx --probe
-///   spyx.app/Contents/MacOS/spyx --simulate 175 --dry-run
+///   pillr.app/Contents/MacOS/pillr --probe
+///   pillr.app/Contents/MacOS/pillr --simulate 175 --dry-run
 enum CLIDiagnostics {
     static func runIfRequested() {
         let args = CommandLine.arguments
         if args.contains("--uninstall") {
             let removed = AgentHooks.removeEverything()
-            print(removed.isEmpty ? "spyx had nothing in any agent's config."
-                                  : "Removed spyx from: \(removed.joined(separator: ", ")).")
-            print("You can now move spyx.app to the Trash.")
+            print(removed.isEmpty ? "pillr had nothing in any agent's config."
+                                  : "Removed pillr from: \(removed.joined(separator: ", ")).")
+            print("You can now move pillr.app to the Trash.")
             exit(0)
         }
         if args.contains("--probe") {

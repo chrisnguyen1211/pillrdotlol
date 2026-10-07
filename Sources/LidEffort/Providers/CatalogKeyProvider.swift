@@ -5,7 +5,7 @@ import os
 
 /// Over what stretch of time a spend or a count was added up.
 enum APIPeriod: Equatable, Sendable {
-    /// The calendar month so far, in UTC — what spyx asks for when the
+    /// The calendar month so far, in UTC — what pillr asks for when the
     /// endpoint wants a range.
     case month
     /// Whatever cycle the provider bills on, when it chooses the range itself.
@@ -32,7 +32,7 @@ enum APIKeyNote: Equatable, Sendable {
     case noUsageAPI
     /// The key was accepted and the account has nothing left to spend.
     case outOfCredits
-    /// The key was accepted, and the answer did not carry the usage spyx
+    /// The key was accepted, and the answer did not carry the usage pillr
     /// knows how to read. Only for endpoints marked best-effort.
     case usageUnreadable
     /// Checking costs a billed request, so the key is not re-checked on a
@@ -406,9 +406,9 @@ extension APIKeyNote {
         case .outOfCredits:
             return L10n.t("Key works · out of credits")
         case .usageUnreadable:
-            return L10n.t("Key works · spyx couldn't read the usage in \(name)'s answer")
+            return L10n.t("Key works · pillr couldn't read the usage in \(name)'s answer")
         case .keptUnchecked:
-            return L10n.t("Key kept · each check is billed, so spyx checks only when you ask")
+            return L10n.t("Key kept · each check is billed, so pillr checks only when you ask")
         case .requestsLeft(let remaining, let limit?, true):
             let left = APIAmount.number(Double(remaining), .requests)
             let of = APIAmount.number(Double(limit), .requests)
@@ -501,10 +501,10 @@ actor CatalogKeyProvider: UsageProvider {
 
     nonisolated func account() -> ProviderAccount? {
         guard secret() != nil else { return nil }
-        return ProviderAccount(label: nil, plan: nil, source: "spyx", manageURL: entry.consoleURL)
+        return ProviderAccount(label: nil, plan: nil, source: "pillr", manageURL: entry.consoleURL)
     }
 
-    /// The key is spyx's own, and Settings' Remove deletes it.
+    /// The key is pillr's own, and Settings' Remove deletes it.
     nonisolated func signOut() async {}
     nonisolated func presentSignIn() {}
 
@@ -594,7 +594,7 @@ actor CatalogKeyProvider: UsageProvider {
                     reading = .keyWorks(.usageUnreadable)
                 } else {
                     throw UsageProviderError.apiError(
-                        L10n.t("\(entry.name) answered in a way spyx doesn't recognise"))
+                        L10n.t("\(entry.name) answered in a way pillr doesn't recognise"))
                 }
             }
         }
@@ -636,7 +636,7 @@ actor CatalogKeyProvider: UsageProvider {
         do {
             request = try recipe.makeRequest(spec, key: key, context: context)
         } catch {
-            throw UsageProviderError.apiError(L10n.t("spyx only sends keys over HTTPS"))
+            throw UsageProviderError.apiError(L10n.t("pillr only sends keys over HTTPS"))
         }
 
         let data: Data

@@ -466,13 +466,13 @@ final class OllamaLifecycleTests: XCTestCase {
         local.models = try OllamaLocalUsage.parse(Data(#"{"models":[{"name":"qwen3:8b"},{"name":"llama3.1:8b"}]}"#.utf8)).models
         await store.refresh()
         let llama = "ollama-local:model:llama3.1:8b", qwen = "ollama-local:model:qwen3:8b"
-        XCTAssertEqual(store.notchSnapshots.map(\.id), [cloud.id, llama, qwen])
+        XCTAssertEqual(store.ringIDs, [cloud.id, llama, qwen])
         XCTAssertEqual(store.providerSummaries.filter { $0.localModel != nil }.map(\.id), [llama, qwen])
 
         store.order = [qwen, cloud.id, llama]
-        XCTAssertEqual(store.notchSnapshots.map(\.id), [qwen, cloud.id, llama])
+        XCTAssertEqual(store.ringIDs, [qwen, cloud.id, llama])
         XCTAssertEqual(store.providerSummaries.filter { $0.kind == .usage || $0.localModel != nil }.map(\.id),
-                       store.notchSnapshots.map(\.id))
+                       store.ringIDs)
         XCTAssertEqual(cloud.calls, 1)
         XCTAssertEqual(local.calls, 1, "Dragging changes display order without polling")
 
@@ -482,17 +482,17 @@ final class OllamaLifecycleTests: XCTestCase {
         fleet.show()
         defer { fleet.stop() }
         for controller in fleet.controllersForTesting {
-            XCTAssertEqual(controller.model.snapshots.map(\.id), [qwen, cloud.id, llama])
+            XCTAssertEqual(controller.model.snapshots.map(\.id).filter { $0 != APIKeyGroup.id }, [qwen, cloud.id, llama])
         }
 
         local.models.removeAll { $0.name == "qwen3:8b" }
         await store.refresh(providerID: "ollama-local")?.value
         XCTAssertEqual(store.localModelSummaries.map(\.id), [llama])
-        XCTAssertEqual(store.notchSnapshots.map(\.id), [cloud.id, llama])
+        XCTAssertEqual(store.ringIDs, [cloud.id, llama])
         local.fails = true
         await store.refresh(providerID: "ollama-local")?.value
         XCTAssertTrue(store.localModelSummaries.isEmpty)
-        XCTAssertEqual(store.notchSnapshots.map(\.id), [cloud.id])
+        XCTAssertEqual(store.ringIDs, [cloud.id])
     }
 
     func testModelVisibilityPersistsWithoutStoppingTheSharedRuntime() async throws {
@@ -507,7 +507,7 @@ final class OllamaLifecycleTests: XCTestCase {
         store.order = preferences.providerOrder
         preferences.setConnected(false, for: qwen)
         store.disconnected = preferences.disconnectedProviders
-        XCTAssertEqual(store.notchSnapshots.map(\.id), [cloud.id, llama])
+        XCTAssertEqual(store.ringIDs, [cloud.id, llama])
         XCTAssertTrue(store.localModelSummaries.contains { $0.id == qwen }, "Hidden models remain available in Not connected")
         XCTAssertTrue(preferences.isConnected("ollama-local"))
         for _ in 0..<10 { await Task.yield() }
@@ -518,16 +518,16 @@ final class OllamaLifecycleTests: XCTestCase {
         let relaunched = UsageStore(providers: [cloud, local], archive: UsageArchive(defaults: defaults),
                                     disconnected: restored.disconnectedProviders, order: restored.providerOrder)
         await relaunched.refresh()
-        XCTAssertEqual(relaunched.notchSnapshots.map(\.id), [cloud.id, llama])
+        XCTAssertEqual(relaunched.ringIDs, [cloud.id, llama])
         restored.setConnected(true, for: qwen)
         restored.setProviderOrder(ProviderOrder.joiningConnected(qwen, in: restored.providerOrder,
                                                                  isConnected: restored.isConnected))
         relaunched.disconnected = restored.disconnectedProviders
         relaunched.order = restored.providerOrder
-        XCTAssertEqual(relaunched.notchSnapshots.map(\.id), [cloud.id, llama, qwen])
+        XCTAssertEqual(relaunched.ringIDs, [cloud.id, llama, qwen])
         relaunched.disconnected.insert("ollama-local")
         XCTAssertTrue(relaunched.localModelSummaries.isEmpty)
-        XCTAssertEqual(relaunched.notchSnapshots.map(\.id), [cloud.id])
+        XCTAssertEqual(relaunched.ringIDs, [cloud.id])
     }
 
     func testNewlyLoadedModelsDoNotShuffleExistingRowsBeforeAnOrderIsChosen() async throws {
@@ -538,9 +538,9 @@ final class OllamaLifecycleTests: XCTestCase {
             local.models = try OllamaLocalUsage.parse(data).models
             await store.refresh()
         }
-        XCTAssertEqual(store.notchSnapshots.map(\.id), ["ollama-local:model:z-model", "ollama-local:model:a-model", cloud.id])
+        XCTAssertEqual(store.ringIDs, ["ollama-local:model:z-model", "ollama-local:model:a-model", cloud.id])
         XCTAssertEqual(store.providerSummaries.filter { $0.kind == .usage || $0.localModel != nil }.map(\.id),
-                       store.notchSnapshots.map(\.id))
+                       store.ringIDs)
     }
 
     func testInventoryDefaultsOnAndPreservesOtherChoices() {
@@ -877,15 +877,15 @@ final class OllamaRenderTests: XCTestCase {
     }
 
     func testLiveLocalListingWhenExplicitlyEnabled() async throws {
-        guard ProcessInfo.processInfo.environment["SPYX_OLLAMA_LIVE"] == "1" else {
+        guard ProcessInfo.processInfo.environment["PILLR_OLLAMA_LIVE"] == "1" else {
             throw XCTSkip("Opt-in live Ollama check")
         }
         let provider = OllamaLocalProvider(endpoint: try OllamaEndpoint.parse(OllamaEndpoint.defaultAddress))
         let snapshot = try await provider.fetchSnapshot()
         XCTAssertTrue(snapshot.hasReading)
         XCTAssertNil(snapshot.ringFraction)
-        if let expectedName = ProcessInfo.processInfo.environment["SPYX_OLLAMA_EXPECTED_MODEL"],
-           let expectedBrand = ProcessInfo.processInfo.environment["SPYX_OLLAMA_EXPECTED_BRAND"] {
+        if let expectedName = ProcessInfo.processInfo.environment["PILLR_OLLAMA_EXPECTED_MODEL"],
+           let expectedBrand = ProcessInfo.processInfo.environment["PILLR_OLLAMA_EXPECTED_BRAND"] {
             let cell = try XCTUnwrap(snapshot.notchSnapshots.first { $0.localModel?.name == expectedName })
             XCTAssertEqual(cell.localModel?.brand?.rawValue ?? "ollama", expectedBrand)
             XCTAssertEqual(cell.glyph, cell.localModel?.brand?.glyph ?? .ollamaLocal)
@@ -1016,4 +1016,10 @@ final class OllamaRenderTests: XCTestCase {
         let png = try XCTUnwrap(NSBitmapImageRep(data: data)?.representation(using: .png, properties: [:]))
         try png.write(to: URL(fileURLWithPath: directory).appendingPathComponent(name))
     }
+}
+
+extension UsageStore {
+    /// The pill's cells other than the API keys cell, which stands there
+    /// until a key is added.
+    var ringIDs: [String] { notchSnapshots.map(\.id).filter { $0 != APIKeyGroup.id } }
 }

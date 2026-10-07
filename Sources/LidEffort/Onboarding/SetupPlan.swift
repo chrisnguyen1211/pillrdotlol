@@ -20,7 +20,7 @@ enum SetupStep: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .welcome: return L10n.t("Welcome to spyx")
+        case .welcome: return L10n.t("Welcome to pillr")
         case .move: return L10n.t("Move to Applications")
         case .agents: return L10n.t("Your agents")
         case .hooks: return L10n.t("Done & approvals")

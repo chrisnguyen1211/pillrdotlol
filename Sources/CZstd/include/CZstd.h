@@ -1,4 +1,4 @@
-// The four Zstandard entry points spyx uses, and nothing else.
+// The four Zstandard entry points pillr uses, and nothing else.
 //
 // `zstddeclib.c` beside this file is the official single-file *decoder*
 // amalgamation, and it carries the whole of `zstd.h` inside itself rather than

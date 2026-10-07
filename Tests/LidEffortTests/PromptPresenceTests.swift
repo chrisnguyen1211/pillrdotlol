@@ -20,7 +20,7 @@ final class PromptPresenceTests: XCTestCase {
     func testTheHookIsWrittenWithTheLongTimeout() throws {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".json")
         try "{}".write(to: url, atomically: true, encoding: .utf8)
-        try ClaudeHookInstaller.install(executable: "/A/spyx", at: url)
+        try ClaudeHookInstaller.install(executable: "/A/pillr", at: url)
         let text = try String(contentsOf: url, encoding: .utf8)
         XCTAssertTrue(text.contains("86400"), text)
     }

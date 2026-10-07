@@ -22,7 +22,7 @@ extension AgentSession {
 }
 
 /// Reads "what is it doing" from the tails of the three transcript formats
-/// spyx follows: Claude Code's JSONL, Codex's rollout, Grok's ACP updates.
+/// pillr follows: Claude Code's JSONL, Codex's rollout, Grok's ACP updates.
 /// Each reader walks back from the last line to the first one that says
 /// something about the current step, and stops there.
 enum SessionDoing {

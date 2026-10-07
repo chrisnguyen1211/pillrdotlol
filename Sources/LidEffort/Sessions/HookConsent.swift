@@ -1,14 +1,14 @@
 import Foundation
 
-/// When spyx may add its hooks to the agents' configs: once the person has
+/// When pillr may add its hooks to the agents' configs: once the person has
 /// seen what they are — the setup page that explains them, or a switch in
 /// Settings turned on — and only from a copy of the app that stays put. A
 /// hook pointing into a disk image or a translocated copy breaks the moment
-/// that copy is gone, and with it Codex's own notify program, which spyx
+/// that copy is gone, and with it Codex's own notify program, which pillr
 /// passes calls on to.
 enum HookConsent {
     static let key = "hooks.consented"
-    static let changed = Notification.Name("lol.spyx.hookConsentChanged")
+    static let changed = Notification.Name("lol.pillr.hookConsentChanged")
 
     static func given(_ defaults: UserDefaults = .standard) -> Bool { defaults.bool(forKey: key) }
 
@@ -18,7 +18,7 @@ enum HookConsent {
         NotificationCenter.default.post(name: changed, object: nil)
     }
 
-    /// Someone who set spyx up before hooks waited for consent already had
+    /// Someone who set pillr up before hooks waited for consent already had
     /// them: kept, not asked again. Read once, at launch.
     static func migrate(_ defaults: UserDefaults = .standard) {
         if defaults.object(forKey: key) == nil, defaults.bool(forKey: SetupGate.seenKey) {
@@ -27,12 +27,12 @@ enum HookConsent {
     }
 
     /// Applications, where the path outlives this launch. A build folder is
-    /// allowed only when asked for, for working on spyx itself.
+    /// allowed only when asked for, for working on pillr itself.
     static func locationAllows(_ location: AppLocation = .current,
                                environment: [String: String] = ProcessInfo.processInfo.environment,
                                defaults: UserDefaults = .standard) -> Bool {
         if location == .applications { return true }
-        if location == .elsewhere, environment["SPYX_HOOKS_ANYWHERE"] != nil || defaults.bool(forKey: "hooks.anyLocation") {
+        if location == .elsewhere, environment["PILLR_HOOKS_ANYWHERE"] != nil || defaults.bool(forKey: "hooks.anyLocation") {
             return true
         }
         return false

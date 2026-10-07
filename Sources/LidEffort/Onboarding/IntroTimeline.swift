@@ -60,10 +60,10 @@ enum IntroTimeline {
     }()
 
     /// Items scrolled past before the reader's own agents land: three laps
-    /// of every mark spyx knows.
+    /// of every mark pillr knows.
     static let laps = 1
 
-    /// Every mark spyx reads, in the order the scroll runs them.
+    /// Every mark pillr reads, in the order the scroll runs them.
     static let scrollGlyphs: [ProviderGlyph] = [
         .claude, .openai, .cursor, .antigravity, .grok, .copilot, .devin, .deepseek, .kimi, .glm,
         .qwen, .mistral, .geminiSpark, .opencode, .commandcode, .meta, .ollama, .lmstudio, .gemma,

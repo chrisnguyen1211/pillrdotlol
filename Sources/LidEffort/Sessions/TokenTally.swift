@@ -1,7 +1,7 @@
 import Foundation
 
 /// How many tokens a session has gone through, read from its transcript —
-/// tokens, not dollars: the models are newer than any price table spyx
+/// tokens, not dollars: the models are newer than any price table pillr
 /// could ship, and a wrong price is worse than none.
 struct TokenCount: Equatable {
     var total: Int = 0

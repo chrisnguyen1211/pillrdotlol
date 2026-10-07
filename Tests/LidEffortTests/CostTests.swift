@@ -10,7 +10,7 @@ final class CostTests: XCTestCase {
 
     override func setUpWithError() throws {
         dir = FileManager.default.temporaryDirectory
-            .appendingPathComponent("spyx-cost-tests-\(UUID().uuidString)", isDirectory: true)
+            .appendingPathComponent("pillr-cost-tests-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
     }
 
@@ -143,7 +143,7 @@ final class CostTests: XCTestCase {
         XCTAssertTrue(s.currentPeriod(window: .weekly).allSatisfy { $0.pct >= 0 })
     }
 
-    /// The rows add up to the card's percentage: whatever was used while spyx
+    /// The rows add up to the card's percentage: whatever was used while pillr
     /// was not watching is spread over the turns of the period.
     func testCurrentPeriodFillsTheGap() throws {
         let s = try store()
@@ -180,7 +180,7 @@ final class CostTests: XCTestCase {
 
     func testGenericFolderKeepsItsParent() {
         XCTAssertEqual(ProjectCost.shortName(for: "/Users/x/nodes/src"), "nodes/src")
-        XCTAssertEqual(ProjectCost.shortName(for: "/Users/x/spyx"), "spyx")
+        XCTAssertEqual(ProjectCost.shortName(for: "/Users/x/pillr"), "pillr")
     }
 
     // MARK: Indexing

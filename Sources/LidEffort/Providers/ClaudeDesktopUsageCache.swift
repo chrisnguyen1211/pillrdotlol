@@ -101,7 +101,7 @@ struct ClaudeDesktopUsageCache: Sendable {
     /// The most recent usable reading for one organization, or nil.
     ///
     /// `organization` is not optional and not cosmetic. Claude Desktop is signed
-    /// into exactly one account, while spyx draws a ring per Claude Code
+    /// into exactly one account, while pillr draws a ring per Claude Code
     /// profile — so handing Desktop's numbers to whichever ring asked first would
     /// put the personal account's session percentage on the work ring. The cache
     /// key carries the organization's UUID and Claude Code records the same UUID

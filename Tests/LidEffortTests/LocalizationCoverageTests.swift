@@ -1,7 +1,7 @@
 import XCTest
 @testable import LidEffort
 
-/// Strings added with spyx's own features — the lid, approvals, Settings —
+/// Strings added with pillr's own features — the lid, approvals, Settings —
 /// are translated, and are looked up under the same keys the code asks for:
 /// with interpolations, and with a literal percent sign written as `%%`.
 final class LocalizationCoverageTests: XCTestCase {

@@ -1,6 +1,6 @@
 import AppKit
 
-/// Where spyx shows itself, apart from the notch.
+/// Where pillr shows itself, apart from the notch.
 ///
 /// The notch is the product; this is only about how the *app* is reached — to
 /// open settings, or to quit it. Three states because the two obvious ones
@@ -27,13 +27,13 @@ enum AppPresence: String, CaseIterable, Identifiable {
     var explanation: String {
         switch self {
         case .dock:
-            return L10n.t("A normal app icon in the Dock while spyx is running.")
+            return L10n.t("A normal app icon in the Dock while pillr is running.")
         case .menuBar:
             return L10n.t("A small icon in the menu bar instead, and nothing in the Dock.")
         case .hidden:
             // Said here because choosing this removes every visible way back to
             // these settings, and finding that out afterwards is too late.
-            return L10n.t("No icon anywhere. Open spyx again from Applications to bring these settings back.")
+            return L10n.t("No icon anywhere. Open pillr again from Applications to bring these settings back.")
         }
     }
 

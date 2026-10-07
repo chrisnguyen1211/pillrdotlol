@@ -253,12 +253,12 @@ extension ClaudeSessionRecordTests {
     }
 }
 
-/// The session spyx starts itself must never reach the notch.
+/// The session pillr starts itself must never reach the notch.
 ///
 /// Renewing the OAuth token runs the Claude CLI, and the CLI registers a
 /// session file for the second or so it is alive — verified on a real machine:
 /// the count under `~/.claude/sessions` goes six, seven, six, and the file
-/// carries the pid of the process spyx spawned. Left alone it draws a row
+/// carries the pid of the process pillr spawned. Left alone it draws a row
 /// nobody asked for, and `isBusy` reads it as work in progress and starts
 /// polling usage hard on the strength of it.
 @MainActor

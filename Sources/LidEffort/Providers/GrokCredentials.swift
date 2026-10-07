@@ -2,7 +2,7 @@ import Foundation
 
 /// Identity and token from `~/.grok/auth.json`.
 ///
-/// Grok CLI signs in through `auth.x.ai` and writes the session here. spyx
+/// Grok CLI signs in through `auth.x.ai` and writes the session here. pillr
 /// only reads it — refreshing is Grok's job, the same bargain as Claude Code's
 /// keychain token. Writing a new access token would race the CLI for the file.
 struct GrokCredentials {

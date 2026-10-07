@@ -8,7 +8,7 @@ của Claude Code ngay trên notch (Settings → Approvals and questions).
 - **Render**: vẽ card ra PNG, không đụng màn hình —
   `EFFORT_RENDER_DIR=/tmp/r swift test --filter "PromptRenderTests|PromptDesignRenderTests"`.
 - **E2E**: prompt giả gửi vào app đang chạy bằng
-  `build/spyx.app/Contents/MacOS/spyx --prompt-hook < prompt.json`,
+  `build/pillr.app/Contents/MacOS/pillr --prompt-hook < prompt.json`,
   đối chiếu với log `/usr/bin/log show --predicate 'subsystem == "dev.lideffort"'`.
 - **Thủ công**: cần người ngồi máy (hover, click thật) hoặc Claude thật (đã `/login`, bật công tắc).
 
@@ -58,7 +58,7 @@ Claude — đó là TC05). Ctrl-C giả lập session bị ngắt (TC33).
 |---|---|---|---|---|
 | TC08 | Bấm Allow | Hook in `behavior: allow` | Auto `testTheHookOutputForEachAnswer` | Pass |
 | TC09 | Bấm Always | `allow` + `updatedPermissions` lấy từ gợi ý của Claude | như trên | Pass |
-| TC10 | Bấm Deny | `deny` + message "Declined from the spyx notch." | như trên | Pass |
+| TC10 | Bấm Deny | `deny` + message "Declined from the pillr notch." | như trên | Pass |
 | TC11 | Bấm icon Open ↗ | Trả prompt về dialog của Claude + nhảy tới session | Auto `PromptClickMapTests` (vùng bấm ↗ ≥ 4 ô lưới, trước đây chỉ 1) · tay: `fake-prompt.sh open` | Lỗi → đã sửa, chờ test tay lại |
 
 ## C. Trả lời câu hỏi

@@ -4,7 +4,7 @@ import Foundation
 ///
 /// Kimi Code CLI signs in through auth.kimi.com and writes the OAuth session
 /// here — one file per managed provider, and `kimi-code` is the Kimi Code
-/// account itself. spyx only reads it: the access token lives fifteen
+/// account itself. pillr only reads it: the access token lives fifteen
 /// minutes (`expires_in: 900`) and refreshing is the CLI's job, the same
 /// bargain as Grok's — writing a new one would race the CLI for the file.
 /// `KIMI_CODE_HOME` moves the whole data root, so the path honours it.

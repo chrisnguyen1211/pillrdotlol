@@ -323,6 +323,33 @@ final class APIKeysRenderTests: XCTestCase {
         XCTAssertLessThanOrEqual(image.size.height - 40, NotchLayout.defaultMaxCardHeight + 1)
         try write(image, "apikeys-tooltip-long.png")
     }
+
+    /// No key yet: the cell is there anyway, and its card says what it is for.
+    func testTheEmptyCellAndItsCardDraw() throws {
+        let now = Date()
+        let empty = APIKeyGroup.snapshot(members: [])
+        XCTAssertEqual(empty.status, .ok, "an empty group is not dimmed as failing")
+        let model = NotchViewModel()
+        model.updateSnapshots([
+            ProviderSnapshot(id: "claude", displayName: "Claude", glyph: .claude, fidelity: .official, status: .ok,
+                             windows: [LimitWindow(id: "session", label: "Session", usedFraction: 0.31)]),
+            empty,
+        ])
+        model.now = now
+        model.isExpanded = true
+        model.surfaceStyle = .solid
+        model.hoveredIndex = 1
+        let size = model.panelSize
+        try write(try render(NotchRootView(model: model).frame(width: size.width, height: size.height)
+            .background(Color(white: 0.55)), dark: true), "notch-apikeys-empty.png")
+
+        let plan = NotchLayout.keyGroupPlan([])
+        let budgeted = NotchLayout.cardHeight(windowCount: 1, keyGroupBody: plan.body)
+        let card = try render(TooltipCard(snapshot: empty, now: now).padding(20).background(Color(white: 0.16))
+            .environment(\.notchSurfaceStyle, .solid), dark: true)
+        XCTAssertEqual(card.size.height - 40, budgeted, accuracy: 3, "the card is as tall as it was budgeted")
+        try write(card, "apikeys-tooltip-empty.png")
+    }
 }
 
 @MainActor

@@ -3,7 +3,7 @@ import Combine
 import LidEffortCore
 import SwiftUI
 
-/// The intro tour: once spyx is set up, a few sticky notes walk through what
+/// The intro tour: once pillr is set up, a few sticky notes walk through what
 /// the pill does — by doing it. The notes point at the real notch with
 /// marker doodles drawn over the screen, and the demos are real too: a
 /// finished session slides out of the pill, a reply is typed out beside it,
@@ -187,6 +187,14 @@ final class IntroTour: ObservableObject {
         // tour shows its own, and the real readings come back at the end.
         fleet?.showTourDemo(snapshots: TourDemo.pill(), sessions: TourDemo.sessions())
         makePanels()
+        // pillr's own light or dark reaches the tour's card and drawings too,
+        // not only the Mac's.
+        preferences.$interfaceMode
+            .sink { [weak self] mode in
+                self?.cardPanel?.appearance = mode.appearance
+                self?.overlayPanel?.appearance = mode.appearance
+            }
+            .store(in: &cancellables)
         preferences.$notchEdge
             .dropFirst()
             .receive(on: RunLoop.main)
@@ -409,6 +417,7 @@ final class IntroTour: ObservableObject {
             nudge(L10n.t("Go on — pick one and press Send. Nothing is sent."))
         case .anywhere:
             visitedEdges = [preferences.notchEdge]
+            showWholePill()
             nudge(L10n.t("Press Show me — watch it flow round the screen."))
         case .lid:
             levelAtLidStep = effort()?.state.level
@@ -551,10 +560,14 @@ final class IntroTour: ObservableObject {
     func arrived(at edge: NotchEdge) {
         visitedEdges.insert(edge)
         play(.flow)
+        // The whole pill, rings and all, on the edge it reached — not the
+        // folded sliver, which says nothing about where pillr now lives.
+        // Held past the next hop, so a round of Show me stays open the way.
+        showWholePill()
         if hasVisitedEveryEdge {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.9) { [weak self] in self?.play(.answer) }
-            cheer(edge == Self.homeEdge ? L10n.t("All four sides, and home. spyx can be anywhere!")
-                                        : L10n.t("All four sides! spyx can be anywhere."))
+            cheer(edge == Self.homeEdge ? L10n.t("All four sides, and home. pillr can be anywhere!")
+                                        : L10n.t("All four sides! pillr can be anywhere."))
             return
         }
         switch edge {
@@ -563,6 +576,12 @@ final class IntroTour: ObservableObject {
         case .left:   cheer(L10n.t("Over on the left!"))
         case .top:    cheer(L10n.t("Up top, like a notch!"))
         }
+    }
+
+    /// Opens the pill on the edge it is on, for a little longer than a hop.
+    private func showWholePill() {
+        guard step == .anywhere else { return }
+        fleet?.peek(for: Self.hopInterval + 1.2, focusing: nil)
     }
 
     /// Says it again a few seconds in, if the step is still waiting on you.
@@ -666,12 +685,13 @@ final class IntroTour: ObservableObject {
     private func makePanels() {
         let overlay = NSPanel(contentRect: .zero, styleMask: [.borderless, .nonactivatingPanel],
                               backing: .buffered, defer: false)
+        overlay.appearance = preferences.interfaceMode.appearance
         overlay.isOpaque = false
         overlay.backgroundColor = .clear
         overlay.hasShadow = false
         overlay.ignoresMouseEvents = true
         // A panel hides when its app stops being the active one, which for
-        // spyx is nearly always — and took the doodles with it.
+        // pillr is nearly always — and took the doodles with it.
         overlay.hidesOnDeactivate = false
         overlay.level = .floating
         overlay.collectionBehavior = [.canJoinAllSpaces, .stationary, .fullScreenAuxiliary, .ignoresCycle]
@@ -681,6 +701,7 @@ final class IntroTour: ObservableObject {
 
         let card = NSPanel(contentRect: CGRect(origin: .zero, size: Self.cardSize),
                            styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+        card.appearance = preferences.interfaceMode.appearance
         card.isOpaque = false
         card.backgroundColor = .clear
         card.hasShadow = false
@@ -700,7 +721,7 @@ final class IntroTour: ObservableObject {
     // MARK: The demos
 
     static func demoFinished() -> SessionCompletionWatcher.Event {
-        let session = AgentSession(id: "spyx-tour", name: "my-app", detail: L10n.t("Refactored the auth flow"),
+        let session = AgentSession(id: "pillr-tour", name: "my-app", detail: L10n.t("Refactored the auth flow"),
                                    state: .success, waitingFor: nil, since: Date())
         return SessionCompletionWatcher.Event(session: session, reason: .finished, providerID: ClaudeProfile.defaultID)
     }
@@ -708,7 +729,7 @@ final class IntroTour: ObservableObject {
     static func demoApproval() -> PendingPrompt? {
         prompt([
             "tool_name": "Bash",
-            "session_id": "spyx-tour",
+            "session_id": "pillr-tour",
             "cwd": "/Users/you/my-app",
             "tool_input": ["command": "npm run build", "description": "Build the app"],
             "permission_suggestions": [["type": "addRules", "behavior": "allow"]],
@@ -719,7 +740,7 @@ final class IntroTour: ObservableObject {
     static func demoQuestion() -> PendingPrompt? {
         prompt([
             "tool_name": "AskUserQuestion",
-            "session_id": "spyx-tour",
+            "session_id": "pillr-tour",
             "cwd": "/Users/you/my-app",
             "tool_input": ["questions": [[
                 "question": L10n.t("Which database should the sync job write to?"),
@@ -756,7 +777,7 @@ extension IntroTour {
         case .reply: return L10n.t("Reply right from here")
         case .approval: return L10n.t("Approve from right here")
         case .question: return L10n.t("Answer questions too")
-        case .anywhere: return L10n.t("spyx can be anywhere!")
+        case .anywhere: return L10n.t("pillr can be anywhere!")
         case .lid: return L10n.t("Tilt the lid to think harder")
         case .finish: return leadsIntoSetup ? L10n.t("One more minute") : L10n.t("You're all set ✨")
         }
@@ -773,7 +794,7 @@ extension IntroTour {
         case .done:
             return L10n.t("When an agent finishes, a note slides out of the pill — even with the notch folded. Click it to jump straight to that session.")
         case .reply:
-            return L10n.t("Hover a session and press Reply. spyx types it into that session's terminal or the Claude app — only when it's idle, never mid-task.")
+            return L10n.t("Hover a session and press Reply. pillr types it into that session's terminal or the Claude app — only when it's idle, never mid-task.")
         case .approval:
             return result == nil
                 ? L10n.t("Claude wants to run something? Allow or deny it without leaving what you're doing. Try it now: press Allow on the card beside the pill — it's only a demo.")

@@ -13,7 +13,7 @@ final class Diagnostics: NSObject, MXMetricManagerSubscriber {
 
     static var folder: URL {
         FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("spyx/Diagnostics", isDirectory: true)
+            .appendingPathComponent("pillr/Diagnostics", isDirectory: true)
     }
 
     /// Kept to the newest few: they are for a bug report, not an archive.
@@ -56,7 +56,7 @@ final class Diagnostics: NSObject, MXMetricManagerSubscriber {
     static func summary(limit: Int = 5) -> String {
         let info = Bundle.main.infoDictionary ?? [:]
         let version = "\(info["CFBundleShortVersionString"] as? String ?? "?") (\(info["CFBundleVersion"] as? String ?? "?"))"
-        var text = "spyx \(version) · macOS \(ProcessInfo.processInfo.operatingSystemVersionString)\n"
+        var text = "pillr \(version) · macOS \(ProcessInfo.processInfo.operatingSystemVersionString)\n"
         let recent = reports().prefix(limit)
         if recent.isEmpty { text += "No crash or hang reports on this Mac.\n" }
         for url in recent {

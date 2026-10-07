@@ -26,6 +26,9 @@ actor KimiProvider: UsageProvider {
     /// Where the sign-in lives: a new one written there is read at once.
     nonisolated var credentialFiles: [URL] { [KimiCredentials.authURL] }
 
+    /// The vendor's own sign-in, run in Terminal from Connect.
+    nonisolated var signInCommand: String? { "kimi login" }
+
     nonisolated var signInRoute: SignInRoute {
         .guidance(L10n.t("Run kimi and sign in with /login — it writes and refreshes the token this reads."))
     }

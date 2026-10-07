@@ -3,7 +3,7 @@ import XCTest
 
 /// A reply sent for real, end to end, into a Terminal tab running a stand-in
 /// agent (`fake-agent.sh`: an idle `❯` prompt that writes each line it gets
-/// to `received.txt`). Skipped unless `SPYX_LIVE_REPLY_DIR` names that
+/// to `received.txt`). Skipped unless `PILLR_LIVE_REPLY_DIR` names that
 /// stand-in's folder — it types into a real window, so it is never run by
 /// accident.
 @MainActor
@@ -11,8 +11,8 @@ final class LiveReplyTests: XCTestCase {
     private var dir: URL!
 
     override func setUpWithError() throws {
-        guard let path = ProcessInfo.processInfo.environment["SPYX_LIVE_REPLY_DIR"] else {
-            throw XCTSkip("live reply test: set SPYX_LIVE_REPLY_DIR")
+        guard let path = ProcessInfo.processInfo.environment["PILLR_LIVE_REPLY_DIR"] else {
+            throw XCTSkip("live reply test: set PILLR_LIVE_REPLY_DIR")
         }
         dir = URL(fileURLWithPath: path)
     }
@@ -42,7 +42,7 @@ final class LiveReplyTests: XCTestCase {
 
         // Idle: sent, and the agent got exactly the line.
         try setMode("idle")
-        let message = "spyx reply test — xin chào \"quoted\" & $HOME `tick` \\ end"
+        let message = "pillr reply test — xin chào \"quoted\" & $HOME `tick` \\ end"
         let outcome1 = await SessionCommander.reply(message, to: session)
 
         XCTAssertEqual(outcome1, .sent)
@@ -80,14 +80,14 @@ final class LiveReplyTests: XCTestCase {
     }
 }
 
-/// What spyx makes of the Claude Code sessions on this Mac right now: state,
+/// What pillr makes of the Claude Code sessions on this Mac right now: state,
 /// pid and route, so a missing Reply button can be told from a busy row.
-/// Skipped unless `SPYX_LIVE_SESSIONS` is set. Prints, never writes.
+/// Skipped unless `PILLR_LIVE_SESSIONS` is set. Prints, never writes.
 @MainActor
 final class LiveSessionReachDiagnostics: XCTestCase {
     func testPrintEachSessionsRoute() throws {
-        guard ProcessInfo.processInfo.environment["SPYX_LIVE_SESSIONS"] != nil else {
-            throw XCTSkip("set SPYX_LIVE_SESSIONS")
+        guard ProcessInfo.processInfo.environment["PILLR_LIVE_SESSIONS"] != nil else {
+            throw XCTSkip("set PILLR_LIVE_SESSIONS")
         }
         let folder = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".claude/sessions")
         for file in try FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil)

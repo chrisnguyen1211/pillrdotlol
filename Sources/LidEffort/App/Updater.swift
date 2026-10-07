@@ -15,7 +15,7 @@ final class Updater: NSObject, ObservableObject {
         case checking
         case upToDate(Date)
         case found(String)
-        /// Downloaded and waiting for spyx to quit — which a login item that
+        /// Downloaded and waiting for pillr to quit — which a login item that
         /// never quits would not do on its own.
         case ready(String)
         case unreachable
@@ -25,10 +25,10 @@ final class Updater: NSObject, ObservableObject {
             switch self {
             case .idle: return nil
             case .checking: return L10n.t("Checking…")
-            case .upToDate: return L10n.t("spyx is up to date.")
+            case .upToDate: return L10n.t("pillr is up to date.")
             case .found(let v): return L10n.t("Version \(v) is available.")
-            case .ready(let v): return L10n.t("Version \(v) is ready. Restart spyx to finish updating.")
-            case .unreachable: return L10n.t("Couldn't reach the update server. spyx will try again on its own — nothing is wrong with this copy.")
+            case .ready(let v): return L10n.t("Version \(v) is ready. Restart pillr to finish updating.")
+            case .unreachable: return L10n.t("Couldn't reach the update server. pillr will try again on its own — nothing is wrong with this copy.")
             case .failed(let why): return why
             }
         }

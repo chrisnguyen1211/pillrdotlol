@@ -1,4 +1,4 @@
-// Renders the spyx app icon from its SVG into every size the asset
+// Renders the pillr app icon from its SVG into every size the asset
 // catalogue wants, pixel for pixel — no scaling of one big bitmap.
 //
 //   swift script/icon/render-icon.swift docs/brand/halftone-iris \

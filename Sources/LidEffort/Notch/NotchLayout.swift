@@ -240,7 +240,7 @@ enum NotchLayout {
     ///
     /// Measured, because a status message is the one piece of card text whose
     /// length is not known here. The budget assumed a single line, and the
-    /// longest of them — "spyx was refused access to …'s saved login.
+    /// longest of them — "pillr was refused access to …'s saved login.
     /// Click this ring to ask again, and choose Always Allow." — takes three:
     /// 33pt against 12pt reserved. The card came up 21pt short and clipped the
     /// two lines that said what to do about it, on the one ring a user looks at
@@ -494,6 +494,10 @@ enum NotchLayout {
     /// line of their own — the API tab lists every one.
     static func keyGroupPlan(_ members: [ProviderSnapshot],
                              cardBudget: CGFloat = defaultMaxCardHeight) -> (shown: Int, body: CGFloat) {
+        if members.isEmpty {
+            let lines = CGFloat(APIKeyGroup.emptyLines.count)
+            return (0, lines * cardBodyLineHeight + (lines - 1) * keyLineGap)
+        }
         let header = 2 * cardPadding + max(glyphSize, cardTitleLineHeight) + headerToBlock
         let more = blockSpacing + cardBodyLineHeight
         var body: CGFloat = 0

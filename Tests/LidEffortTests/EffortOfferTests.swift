@@ -114,11 +114,11 @@ final class EffortOfferTests: XCTestCase {
         let codex = dir.appendingPathComponent("config.toml")
         try "model = \"x\"\n".write(to: codex, atomically: true, encoding: .utf8)
         XCTAssertFalse(AgentHooks.isCodexInstalled(at: codex))
-        try AgentHooks.installCodex(executable: "/A/spyx", at: codex)
+        try AgentHooks.installCodex(executable: "/A/pillr", at: codex)
         XCTAssertTrue(AgentHooks.isCodexInstalled(at: codex))
         let cursor = dir.appendingPathComponent("hooks.json")
         XCTAssertFalse(AgentHooks.isCursorInstalled(at: cursor))
-        try AgentHooks.installCursor(executable: "/A/spyx", at: cursor)
+        try AgentHooks.installCursor(executable: "/A/pillr", at: cursor)
         XCTAssertTrue(AgentHooks.isCursorInstalled(at: cursor))
         XCTAssertEqual(AgentHooks.links().map(\.id),
                        ["claude", "codex", "grok", "cursor", "droid", "antigravity", "copilot", "kimi", "gemini-api", "opencode"])

@@ -6,7 +6,7 @@ import os
 ///
 /// Google refuses us: `retrieveUserQuotaSummary` on `cloudcode-pa` answers 403
 /// "You do not have a valid license of this product" for a personal account,
-/// because the API judges *which client* is asking and spyx cannot
+/// because the API judges *which client* is asking and pillr cannot
 /// honestly claim to be Antigravity. Antigravity's window has the same problem
 /// and solves it the same way — it never calls Google for this either. It calls
 /// the language server running on this machine, which already holds the

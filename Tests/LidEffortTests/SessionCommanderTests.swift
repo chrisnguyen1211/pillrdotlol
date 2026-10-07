@@ -37,7 +37,7 @@ final class SessionCommanderTests: XCTestCase {
 }
 
 /// What the composer may take back out of the Claude app's message box:
-/// only what spyx put there — never a draft of yours.
+/// only what pillr put there — never a draft of yours.
 final class ComposerOwnershipTests: XCTestCase {
     func testOnlyOurOwnTextIsOurs() {
         XCTAssertTrue(ClaudeDesktopComposer.isOurs("hi", "hi"))
@@ -163,7 +163,7 @@ final class ReplyDeliveryTests: XCTestCase {
     }
 
     func testTheClipboardIsPutBackOnlyIfNothingWasCopiedSince() {
-        let board = NSPasteboard(name: NSPasteboard.Name("spyx-test-\(UUID().uuidString)"))
+        let board = NSPasteboard(name: NSPasteboard.Name("pillr-test-\(UUID().uuidString)"))
         defer { board.releaseGlobally() }
         let saved: [[(NSPasteboard.PasteboardType, Data)]] = [[(.string, Data("what you had".utf8))]]
 

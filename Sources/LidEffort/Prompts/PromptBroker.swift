@@ -31,11 +31,11 @@ final class PromptBroker: @unchecked Sendable {
     /// finished its answer. Nothing is held and nothing is answered.
     var onStop: (@MainActor (AgentStop) -> Void)?
 
-    private let queue = DispatchQueue(label: "lol.spyx.app.prompts")
+    private let queue = DispatchQueue(label: "lol.pillr.app.prompts")
     private let lock = NSLock()
     private var held: [UUID: (fd: Int32, prompt: PendingPrompt, source: DispatchSourceRead)] = [:]
     private var listener: Int32 = -1
-    private let log = Logger(subsystem: "lol.spyx.app", category: "prompts")
+    private let log = Logger(subsystem: "lol.pillr.app", category: "prompts")
 
     /// Just under the hook's own timeout. Letting go earlier is the app's
     /// call, made only while someone is at the Mac (`UserPresence`).
@@ -62,7 +62,7 @@ final class PromptBroker: @unchecked Sendable {
         chmod(path, 0o600)
         listener = fd
         let thread = Thread { [weak self] in self?.acceptLoop(fd) }
-        thread.name = "lol.spyx.app.prompts.accept"
+        thread.name = "lol.pillr.app.prompts.accept"
         thread.start()
         log.notice("prompt broker listening at \(self.path, privacy: .public)")
     }
@@ -228,7 +228,7 @@ enum PromptHookClient {
 
     static func runIfRequested() {
         // Stop: hand the payload over and go — Claude Code waits on a hook,
-        // and the end of an answer must never be held up by spyx.
+        // and the end of an answer must never be held up by pillr.
         let arguments = CommandLine.arguments
         if arguments.contains(ClaudeHookInstaller.stopMarker) {
             let agent = arguments.firstIndex(of: "--agent").flatMap { arguments.indices.contains($0 + 1) ? arguments[$0 + 1] : nil } ?? "claude"
@@ -237,7 +237,7 @@ enum PromptHookClient {
             exit(0)
         }
         // Codex's notify program: the turn's JSON comes as the last argument.
-        // Whoever had notify before spyx is called first, exactly as before.
+        // Whoever had notify before pillr is called first, exactly as before.
         if let marker = arguments.firstIndex(of: AgentHooks.codexMarker) {
             let rest = Array(arguments[(marker + 1)...])
             let payload = rest.last ?? "{}"
@@ -276,14 +276,14 @@ struct AgentStop: Equatable {
     /// What the hook client sends: the agent's own payload, tagged.
     static func envelope(agent: String, payload: Data) -> Data {
         var json = (try? JSONSerialization.jsonObject(with: payload) as? [String: Any]) ?? [:]
-        json["spyx_agent"] = agent
-        json["spyx_event"] = "stop"
+        json["pillr_agent"] = agent
+        json["pillr_event"] = "stop"
         return (try? JSONSerialization.data(withJSONObject: json)) ?? Data()
     }
 
     init?(_ request: Data) {
         guard let json = try? JSONSerialization.jsonObject(with: request) as? [String: Any] else { return nil }
-        if let agent = json["spyx_agent"] as? String, json["spyx_event"] as? String == "stop" {
+        if let agent = json["pillr_agent"] as? String, json["pillr_event"] as? String == "stop" {
             // A subagent's stop is not the answer's end.
             let event = (json["hook_event_name"] as? String) ?? (json["hookEventName"] as? String) ?? "Stop"
             guard !event.lowercased().hasPrefix("subagent") else { return nil }

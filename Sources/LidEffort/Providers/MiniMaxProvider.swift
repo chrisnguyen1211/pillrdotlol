@@ -98,7 +98,7 @@ actor MiniMaxProvider: UsageProvider {
     nonisolated func account() -> ProviderAccount? {
         if let extraKey {
             guard extraKey() != nil else { return nil }
-            return ProviderAccount(label: nil, plan: lastKnownPlan, source: "spyx",
+            return ProviderAccount(label: nil, plan: lastKnownPlan, source: "pillr",
                                    manageURL: resolveRegion().codingPlanPage)
         }
         guard let base = MiniMaxCredentials.account(region: resolveRegion()) else { return nil }

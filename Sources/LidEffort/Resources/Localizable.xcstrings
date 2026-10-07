@@ -1557,36 +1557,36 @@
         }
       }
     },
-    "A normal app icon in the Dock while spyx is running." : {
+    "A normal app icon in the Dock while pillr is running." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Une icône d'app normale dans le Dock tant que spyx fonctionne."
+            "value" : "Une icône d'app normale dans le Dock tant que pillr fonctionne."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx の実行中、Dock に通常のアプリアイコンが出ます。"
+            "value" : "pillr の実行中、Dock に通常のアプリアイコンが出ます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Um ícone de app normal no Dock enquanto o spyx está em execução."
+            "value" : "Um ícone de app normal no Dock enquanto o pillr está em execução."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Обычный значок приложения в Dock во время работы spyx."
+            "value" : "Обычный значок приложения в Dock во время работы pillr."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 运行时，程序坞里有一个普通应用图标。"
+            "value" : "pillr 运行时，程序坞里有一个普通应用图标。"
           }
         }
       }
@@ -3351,36 +3351,36 @@
         }
       }
     },
-    "Choose where spyx appears" : {
+    "Choose where pillr appears" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choisissez où spyx apparaît"
+            "value" : "Choisissez où pillr apparaît"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx の表示場所を選択"
+            "value" : "pillr の表示場所を選択"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Escolha onde o spyx aparece"
+            "value" : "Escolha onde o pillr aparece"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Выберите, где показывать spyx"
+            "value" : "Выберите, где показывать pillr"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "选择 spyx 出现在哪里"
+            "value" : "选择 pillr 出现在哪里"
           }
         }
       }
@@ -3643,352 +3643,352 @@
         }
       }
     },
-    "spyx" : {
+    "pillr" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx"
+            "value" : "pillr"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx"
+            "value" : "pillr"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx"
+            "value" : "pillr"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx"
+            "value" : "pillr"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx"
+            "value" : "pillr"
           }
         }
       }
     },
-    "spyx Settings" : {
+    "pillr Settings" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Réglages de spyx"
+            "value" : "Réglages de pillr"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 設定"
+            "value" : "pillr 設定"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajustes do spyx"
+            "value" : "Ajustes do pillr"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Настройки spyx"
+            "value" : "Настройки pillr"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 设置"
+            "value" : "pillr 设置"
           }
         }
       }
     },
-    "spyx already knows the moment an agent stops working or stops to ask you something. Clicking the notch while it is open brings that session's app to the front — the app, not the tab: only some terminals let anything outside them choose a tab, so the tooltip names the session instead." : {
+    "pillr already knows the moment an agent stops working or stops to ask you something. Clicking the notch while it is open brings that session's app to the front — the app, not the tab: only some terminals let anything outside them choose a tab, so the tooltip names the session instead." : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 已经知道助手何时停下来、或停下来问你。刘海展开时点一下，会把那个会话的应用带到前台 — 是应用，不是标签页：只有部分终端允许外部选定标签，所以提示里会写会话名称。"
+            "value" : "pillr 已经知道助手何时停下来、或停下来问你。刘海展开时点一下，会把那个会话的应用带到前台 — 是应用，不是标签页：只有部分终端允许外部选定标签，所以提示里会写会话名称。"
           }
         }
       }
     },
-    "spyx is set to Always show. Change it in Settings." : {
+    "pillr is set to Always show. Change it in Settings." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx est réglé sur Toujours afficher. Modifiez-le dans les Réglages."
+            "value" : "pillr est réglé sur Toujours afficher. Modifiez-le dans les Réglages."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx は「常に表示」に設定されています。設定で変更してください。"
+            "value" : "pillr は「常に表示」に設定されています。設定で変更してください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O spyx está definido como Sempre exibir. Altere isso nos Ajustes."
+            "value" : "O pillr está definido como Sempre exibir. Altere isso nos Ajustes."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Для spyx включён режим «Показывать всегда». Измените его в настройках."
+            "value" : "Для pillr включён режим «Показывать всегда». Измените его в настройках."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 已设为「始终显示」。请在设置里更改。"
+            "value" : "pillr 已设为「始终显示」。请在设置里更改。"
           }
         }
       }
     },
-    "spyx is up to date." : {
+    "pillr is up to date." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx est à jour."
+            "value" : "pillr est à jour."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx は最新です。"
+            "value" : "pillr は最新です。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O spyx está atualizado."
+            "value" : "O pillr está atualizado."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx обновлён."
+            "value" : "pillr обновлён."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 已是最新版本。"
+            "value" : "pillr 已是最新版本。"
           }
         }
       }
     },
-    "spyx never signs in — each reading is borrowed from the tool that already holds the account. Signing out here stops the credential being read and forgets the numbers, but leaves you signed in to that tool. macOS asks once per tool the first time, and again whenever you sign in to a different account; Always Allow keeps it quiet." : {
+    "pillr never signs in — each reading is borrowed from the tool that already holds the account. Signing out here stops the credential being read and forgets the numbers, but leaves you signed in to that tool. macOS asks once per tool the first time, and again whenever you sign in to a different account; Always Allow keeps it quiet." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx ne se connecte jamais — chaque relevé est emprunté à l'outil qui détient déjà le compte. Vous déconnecter ici arrête la lecture de l'identifiant et oublie les chiffres, mais vous restez connecté à cet outil. macOS demande une fois par outil la première fois, puis à nouveau chaque fois que vous vous connectez à un autre compte ; Toujours autoriser évite les rappels."
+            "value" : "pillr ne se connecte jamais — chaque relevé est emprunté à l'outil qui détient déjà le compte. Vous déconnecter ici arrête la lecture de l'identifiant et oublie les chiffres, mais vous restez connecté à cet outil. macOS demande une fois par outil la première fois, puis à nouveau chaque fois que vous vous connectez à un autre compte ; Toujours autoriser évite les rappels."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx がサインインすることはありません。読み取りはすべて、すでにアカウントを保持しているツールから借りたものです。ここでサインアウトすると資格情報の読み取りが止まり、数値も忘れられますが、そのツールへのサインインはそのまま残ります。macOS はツールごとに初回の一度、そして別のアカウントにサインインするたびに確認します。「常に許可」を選べば以後は尋ねられません。"
+            "value" : "pillr がサインインすることはありません。読み取りはすべて、すでにアカウントを保持しているツールから借りたものです。ここでサインアウトすると資格情報の読み取りが止まり、数値も忘れられますが、そのツールへのサインインはそのまま残ります。macOS はツールごとに初回の一度、そして別のアカウントにサインインするたびに確認します。「常に許可」を選べば以後は尋ねられません。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O spyx nunca faz login — cada leitura é emprestada da ferramenta que já tem a conta. Sair daqui interrompe a leitura da credencial e esquece os números, mas você continua conectado naquela ferramenta. O macOS pergunta uma vez por ferramenta na primeira vez, e de novo sempre que você entrar em outra conta; Sempre Permitir mantém isso em silêncio."
+            "value" : "O pillr nunca faz login — cada leitura é emprestada da ferramenta que já tem a conta. Sair daqui interrompe a leitura da credencial e esquece os números, mas você continua conectado naquela ferramenta. O macOS pergunta uma vez por ferramenta na primeira vez, e de novo sempre que você entrar em outra conta; Sempre Permitir mantém isso em silêncio."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx не выполняет вход — каждое показание берётся из уже авторизованного инструмента. Выход здесь прекращает чтение учётных данных и удаляет числа, но не выполняет выход из инструмента. macOS спрашивает разрешение один раз для каждого инструмента и при смене аккаунта; «Разрешать всегда» отключает повторные запросы."
+            "value" : "pillr не выполняет вход — каждое показание берётся из уже авторизованного инструмента. Выход здесь прекращает чтение учётных данных и удаляет числа, но не выполняет выход из инструмента. macOS спрашивает разрешение один раз для каждого инструмента и при смене аккаунта; «Разрешать всегда» отключает повторные запросы."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 从不自己登录 — 每条读数都借自已经持有该账号的工具。在这里退出只会停止读取凭证并忘掉数字，你在那个工具里仍然是登录状态。macOS 每种工具第一次会问一次，换账号再登录时还会再问；选「始终允许」就不会再打扰。"
+            "value" : "pillr 从不自己登录 — 每条读数都借自已经持有该账号的工具。在这里退出只会停止读取凭证并忘掉数字，你在那个工具里仍然是登录状态。macOS 每种工具第一次会问一次，换账号再登录时还会再问；选「始终允许」就不会再打扰。"
           }
         }
       }
     },
-    "spyx reads usage from tools already signed in on this Mac — it never asks for your password. Install and sign in to any of Claude Code (the terminal tool, not the Claude app), Cursor (the editor or cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, Command Code, GitHub Copilot or a Gemini API key (via Gemini CLI, OpenCode or Hermes), and its ring appears in the notch." : {
+    "pillr reads usage from tools already signed in on this Mac — it never asks for your password. Install and sign in to any of Claude Code (the terminal tool, not the Claude app), Cursor (the editor or cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, Command Code, GitHub Copilot or a Gemini API key (via Gemini CLI, OpenCode or Hermes), and its ring appears in the notch." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx lit la consommation des outils déjà connectés sur ce Mac — il ne demande jamais votre mot de passe. Installez l'un de Claude Code (l'outil en terminal, pas l'app Claude), Cursor (l'éditeur ou cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, Command Code, GitHub Copilot ou une clé API Gemini (via Gemini CLI, OpenCode ou Hermes) et connectez-vous : son anneau apparaît dans l'encoche."
+            "value" : "pillr lit la consommation des outils déjà connectés sur ce Mac — il ne demande jamais votre mot de passe. Installez l'un de Claude Code (l'outil en terminal, pas l'app Claude), Cursor (l'éditeur ou cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, Command Code, GitHub Copilot ou une clé API Gemini (via Gemini CLI, OpenCode ou Hermes) et connectez-vous : son anneau apparaît dans l'encoche."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx は、この Mac ですでにサインイン済みのツールから使用量を読み取ります。パスワードを尋ねることはありません。Claude Code（Claude アプリではなくターミナルのツール）、Cursor（エディタまたは cursor-agent）、Codex、Antigravity、GLM、Grok、OpenCode、Command Code、GitHub Copilot、または Gemini API キー（Gemini CLI、OpenCode、Hermes 経由）のいずれかをインストールしてサインインすると、そのリングがノッチに現れます。"
+            "value" : "pillr は、この Mac ですでにサインイン済みのツールから使用量を読み取ります。パスワードを尋ねることはありません。Claude Code（Claude アプリではなくターミナルのツール）、Cursor（エディタまたは cursor-agent）、Codex、Antigravity、GLM、Grok、OpenCode、Command Code、GitHub Copilot、または Gemini API キー（Gemini CLI、OpenCode、Hermes 経由）のいずれかをインストールしてサインインすると、そのリングがノッチに現れます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O spyx lê o uso de ferramentas já conectadas neste Mac — ele nunca pede sua senha. Instale e entre em qualquer um destes: Claude Code (a ferramenta de terminal, não o app Claude), Cursor (o editor ou o cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, Command Code, GitHub Copilot ou uma chave de API do Gemini (via CLI do Gemini, OpenCode ou Hermes), e o anel correspondente aparece no notch."
+            "value" : "O pillr lê o uso de ferramentas já conectadas neste Mac — ele nunca pede sua senha. Instale e entre em qualquer um destes: Claude Code (a ferramenta de terminal, não o app Claude), Cursor (o editor ou o cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, Command Code, GitHub Copilot ou uma chave de API do Gemini (via CLI do Gemini, OpenCode ou Hermes), e o anel correspondente aparece no notch."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx читает использование из инструментов, уже авторизованных на этом Mac, и никогда не спрашивает пароль. Установите и авторизуйтесь в Claude Code (терминальном инструменте, не приложении Claude), Cursor (редакторе или cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, Command Code, GitHub Copilot или Gemini API через Gemini CLI, OpenCode или Hermes — и кольцо появится на панели."
+            "value" : "pillr читает использование из инструментов, уже авторизованных на этом Mac, и никогда не спрашивает пароль. Установите и авторизуйтесь в Claude Code (терминальном инструменте, не приложении Claude), Cursor (редакторе или cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, Command Code, GitHub Copilot или Gemini API через Gemini CLI, OpenCode или Hermes — и кольцо появится на панели."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 读取这台 Mac 上已经登录的工具的用量 — 从不问你的密码。安装并登录 Claude Code（终端工具，不是 Claude 应用）、Cursor（编辑器或 cursor-agent）、Codex、Antigravity、GLM、Grok、OpenCode、Command Code、GitHub Copilot 或 Gemini API 密钥（经由 Gemini CLI、OpenCode 或 Hermes）中的任意一个，刘海里就会出现对应的圆环。"
+            "value" : "pillr 读取这台 Mac 上已经登录的工具的用量 — 从不问你的密码。安装并登录 Claude Code（终端工具，不是 Claude 应用）、Cursor（编辑器或 cursor-agent）、Codex、Antigravity、GLM、Grok、OpenCode、Command Code、GitHub Copilot 或 Gemini API 密钥（经由 Gemini CLI、OpenCode 或 Hermes）中的任意一个，刘海里就会出现对应的圆环。"
           }
         }
       }
     },
-    "spyx reads usage from tools already signed in on this Mac — it never asks for your password. Install and sign in to any of Claude Code (the terminal tool, not the Claude app), Cursor (the editor or cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, GitHub Copilot or a Gemini API key (via Gemini CLI, OpenCode or Hermes), and its ring appears in the notch." : {
+    "pillr reads usage from tools already signed in on this Mac — it never asks for your password. Install and sign in to any of Claude Code (the terminal tool, not the Claude app), Cursor (the editor or cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, GitHub Copilot or a Gemini API key (via Gemini CLI, OpenCode or Hermes), and its ring appears in the notch." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx lit la consommation des outils déjà connectés sur ce Mac — il ne demande jamais votre mot de passe. Installez l'un de Claude Code (l'outil en terminal, pas l'app Claude), Cursor (l'éditeur ou cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, GitHub Copilot ou une clé API Gemini (via Gemini CLI, OpenCode ou Hermes) et connectez-vous : son anneau apparaît dans l'encoche."
+            "value" : "pillr lit la consommation des outils déjà connectés sur ce Mac — il ne demande jamais votre mot de passe. Installez l'un de Claude Code (l'outil en terminal, pas l'app Claude), Cursor (l'éditeur ou cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, GitHub Copilot ou une clé API Gemini (via Gemini CLI, OpenCode ou Hermes) et connectez-vous : son anneau apparaît dans l'encoche."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx は、この Mac ですでにサインイン済みのツールから使用量を読み取ります。パスワードを尋ねることはありません。Claude Code（Claude アプリではなくターミナルのツール）、Cursor（エディタまたは cursor-agent）、Codex、Antigravity、GLM、Grok、OpenCode、GitHub Copilot、または Gemini API キー（Gemini CLI、OpenCode、Hermes 経由）のいずれかをインストールしてサインインすると、そのリングがノッチに現れます。"
+            "value" : "pillr は、この Mac ですでにサインイン済みのツールから使用量を読み取ります。パスワードを尋ねることはありません。Claude Code（Claude アプリではなくターミナルのツール）、Cursor（エディタまたは cursor-agent）、Codex、Antigravity、GLM、Grok、OpenCode、GitHub Copilot、または Gemini API キー（Gemini CLI、OpenCode、Hermes 経由）のいずれかをインストールしてサインインすると、そのリングがノッチに現れます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O spyx lê o uso de ferramentas já conectadas neste Mac — ele nunca pede sua senha. Instale e entre em qualquer um destes: Claude Code (a ferramenta de terminal, não o app Claude), Cursor (o editor ou o cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, GitHub Copilot ou uma chave de API do Gemini (via CLI do Gemini, OpenCode ou Hermes), e o anel correspondente aparece no notch."
+            "value" : "O pillr lê o uso de ferramentas já conectadas neste Mac — ele nunca pede sua senha. Instale e entre em qualquer um destes: Claude Code (a ferramenta de terminal, não o app Claude), Cursor (o editor ou o cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, GitHub Copilot ou uma chave de API do Gemini (via CLI do Gemini, OpenCode ou Hermes), e o anel correspondente aparece no notch."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx читает использование из инструментов, уже авторизованных на этом Mac, и никогда не спрашивает пароль. Установите и авторизуйтесь в Claude Code (терминальном инструменте, не приложении Claude), Cursor (редакторе или cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, GitHub Copilot или Gemini API через Gemini CLI, OpenCode или Hermes — и кольцо появится на панели."
+            "value" : "pillr читает использование из инструментов, уже авторизованных на этом Mac, и никогда не спрашивает пароль. Установите и авторизуйтесь в Claude Code (терминальном инструменте, не приложении Claude), Cursor (редакторе или cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, GitHub Copilot или Gemini API через Gemini CLI, OpenCode или Hermes — и кольцо появится на панели."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 读取这台 Mac 上已经登录的工具的用量 — 从不问你的密码。安装并登录 Claude Code（终端工具，不是 Claude 应用）、Cursor（编辑器或 cursor-agent）、Codex、Antigravity、GLM、Grok、OpenCode、GitHub Copilot 或 Gemini API 密钥（经由 Gemini CLI、OpenCode 或 Hermes）中的任意一个，刘海里就会出现对应的圆环。"
+            "value" : "pillr 读取这台 Mac 上已经登录的工具的用量 — 从不问你的密码。安装并登录 Claude Code（终端工具，不是 Claude 应用）、Cursor（编辑器或 cursor-agent）、Codex、Antigravity、GLM、Grok、OpenCode、GitHub Copilot 或 Gemini API 密钥（经由 Gemini CLI、OpenCode 或 Hermes）中的任意一个，刘海里就会出现对应的圆环。"
           }
         }
       }
     },
-    "spyx reads usage from tools already signed in on this Mac — it never asks for your password. Install and sign in to any of Claude Code (the terminal tool, not the Claude app), Cursor, Codex, Antigravity, GLM, Grok or OpenCode, and its ring appears in the notch." : {
+    "pillr reads usage from tools already signed in on this Mac — it never asks for your password. Install and sign in to any of Claude Code (the terminal tool, not the Claude app), Cursor, Codex, Antigravity, GLM, Grok or OpenCode, and its ring appears in the notch." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx lit la consommation des outils déjà connectés sur ce Mac — il ne demande jamais votre mot de passe. Installez l'un de Claude Code (l'outil en terminal, pas l'app Claude), Cursor, Codex, Antigravity, GLM, Grok ou OpenCode et connectez-vous : son anneau apparaît dans l'encoche."
+            "value" : "pillr lit la consommation des outils déjà connectés sur ce Mac — il ne demande jamais votre mot de passe. Installez l'un de Claude Code (l'outil en terminal, pas l'app Claude), Cursor, Codex, Antigravity, GLM, Grok ou OpenCode et connectez-vous : son anneau apparaît dans l'encoche."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx は、この Mac ですでにサインイン済みのツールから使用量を読み取ります。パスワードを尋ねることはありません。Claude Code（Claude アプリではなくターミナルのツール）、Cursor、Codex、Antigravity、GLM、Grok、OpenCode のいずれかをインストールしてサインインすると、そのリングがノッチに現れます。"
+            "value" : "pillr は、この Mac ですでにサインイン済みのツールから使用量を読み取ります。パスワードを尋ねることはありません。Claude Code（Claude アプリではなくターミナルのツール）、Cursor、Codex、Antigravity、GLM、Grok、OpenCode のいずれかをインストールしてサインインすると、そのリングがノッチに現れます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O spyx lê o uso de ferramentas já conectadas neste Mac — ele nunca pede sua senha. Instale e entre em qualquer um destes: Claude Code (a ferramenta de terminal, não o app Claude), Cursor, Codex, Antigravity, GLM, Grok ou OpenCode, e o anel correspondente aparece no notch."
+            "value" : "O pillr lê o uso de ferramentas já conectadas neste Mac — ele nunca pede sua senha. Instale e entre em qualquer um destes: Claude Code (a ferramenta de terminal, não o app Claude), Cursor, Codex, Antigravity, GLM, Grok ou OpenCode, e o anel correspondente aparece no notch."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx читает использование из инструментов, уже авторизованных на этом Mac, и никогда не спрашивает пароль. Установите и авторизуйтесь в Claude Code (терминальном инструменте, не приложении Claude), Cursor, Codex, Antigravity, GLM, Grok или OpenCode — и кольцо появится на панели."
+            "value" : "pillr читает использование из инструментов, уже авторизованных на этом Mac, и никогда не спрашивает пароль. Установите и авторизуйтесь в Claude Code (терминальном инструменте, не приложении Claude), Cursor, Codex, Antigravity, GLM, Grok или OpenCode — и кольцо появится на панели."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 读取这台 Mac 上已经登录的工具的用量 — 从不问你的密码。安装并登录 Claude Code（终端工具，不是 Claude 应用）、Cursor、Codex、Antigravity、GLM、Grok 或 OpenCode 中的任意一个，刘海里就会出现对应的圆环。"
+            "value" : "pillr 读取这台 Mac 上已经登录的工具的用量 — 从不问你的密码。安装并登录 Claude Code（终端工具，不是 Claude 应用）、Cursor、Codex、Antigravity、GLM、Grok 或 OpenCode 中的任意一个，刘海里就会出现对应的圆环。"
           }
         }
       }
     },
-    "spyx uses this language even if the Mac does not." : {
+    "pillr uses this language even if the Mac does not." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx utilise cette langue même si le Mac ne le fait pas."
+            "value" : "pillr utilise cette langue même si le Mac ne le fait pas."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mac がこの言語でなくても、spyx はこの言語を使います。"
+            "value" : "Mac がこの言語でなくても、pillr はこの言語を使います。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O spyx usa este idioma mesmo que o Mac não use."
+            "value" : "O pillr usa este idioma mesmo que o Mac não use."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx использует этот язык независимо от языка Mac."
+            "value" : "pillr использует этот язык независимо от языка Mac."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "即使 Mac 不是这种语言，spyx 也使用它。"
+            "value" : "即使 Mac 不是这种语言，pillr 也使用它。"
           }
         }
       }
     },
-    "spyx was refused access to %@'s saved login. Click this ring to ask again, and choose Always Allow." : {
+    "pillr was refused access to %@'s saved login. Click this ring to ask again, and choose Always Allow." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx s'est vu refuser l'accès aux identifiants enregistrés de %@. Cliquez sur cet anneau pour redemander, puis choisissez Toujours autoriser."
+            "value" : "pillr s'est vu refuser l'accès aux identifiants enregistrés de %@. Cliquez sur cet anneau pour redemander, puis choisissez Toujours autoriser."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx は %@ の保存済みログインへのアクセスを拒否されました。このリングをクリックして再度要求し、「常に許可」を選んでください。"
+            "value" : "pillr は %@ の保存済みログインへのアクセスを拒否されました。このリングをクリックして再度要求し、「常に許可」を選んでください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O spyx teve acesso negado ao login salvo do %@. Clique neste anel para pedir de novo e escolha Sempre Permitir."
+            "value" : "O pillr teve acesso negado ao login salvo do %@. Clique neste anel para pedir de novo e escolha Sempre Permitir."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx не получил доступ к сохранённому входу %@. Нажмите это кольцо, повторите запрос и выберите «Разрешать всегда»."
+            "value" : "pillr не получил доступ к сохранённому входу %@. Нажмите это кольцо, повторите запрос и выберите «Разрешать всегда»."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 未能读取 %@ 已保存的登录信息。点击这个圆环再试一次，并选择「始终允许」。"
+            "value" : "pillr 未能读取 %@ 已保存的登录信息。点击这个圆环再试一次，并选择「始终允许」。"
           }
         }
       }
@@ -4475,36 +4475,36 @@
         }
       }
     },
-    "Couldn't reach the update server. spyx will try again on its own — nothing is wrong with this copy." : {
+    "Couldn't reach the update server. pillr will try again on its own — nothing is wrong with this copy." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Serveur de mise à jour injoignable. spyx réessaiera de lui-même — cette copie n'a aucun problème."
+            "value" : "Serveur de mise à jour injoignable. pillr réessaiera de lui-même — cette copie n'a aucun problème."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "アップデートサーバーに接続できませんでした。spyx が自動で再試行します — このコピーに問題はありません。"
+            "value" : "アップデートサーバーに接続できませんでした。pillr が自動で再試行します — このコピーに問題はありません。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Não foi possível acessar o servidor de atualizações. O spyx tentará de novo sozinho — não há nada de errado com esta cópia."
+            "value" : "Não foi possível acessar o servidor de atualizações. O pillr tentará de novo sozinho — não há nada de errado com esta cópia."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Не удалось связаться с сервером обновлений. spyx повторит попытку автоматически — с этой копией всё в порядке."
+            "value" : "Не удалось связаться с сервером обновлений. pillr повторит попытку автоматически — с этой копией всё в порядке."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "连不上更新服务器。spyx 会自己再试 — 这份安装没有问题。"
+            "value" : "连不上更新服务器。pillr 会自己再试 — 这份安装没有问题。"
           }
         }
       }
@@ -5115,36 +5115,36 @@
         }
       }
     },
-    "Each read from the tool already signed in on this Mac. spyx never asks for a password." : {
+    "Each read from the tool already signed in on this Mac. pillr never asks for a password." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chacun lu depuis l'outil déjà connecté sur ce Mac. spyx ne demande jamais de mot de passe."
+            "value" : "Chacun lu depuis l'outil déjà connecté sur ce Mac. pillr ne demande jamais de mot de passe."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "いずれもこの Mac ですでにサインイン済みのツールから読み取ります。spyx がパスワードを尋ねることはありません。"
+            "value" : "いずれもこの Mac ですでにサインイン済みのツールから読み取ります。pillr がパスワードを尋ねることはありません。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cada um lido da ferramenta já conectada neste Mac. O spyx nunca pede uma senha."
+            "value" : "Cada um lido da ferramenta já conectada neste Mac. O pillr nunca pede uma senha."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Данные читаются из уже авторизованного на этом Mac инструмента. spyx никогда не спрашивает пароль."
+            "value" : "Данные читаются из уже авторизованного на этом Mac инструмента. pillr никогда не спрашивает пароль."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "各自读取这台 Mac 上已经登录的工具。spyx 从不问密码。"
+            "value" : "各自读取这台 Mac 上已经登录的工具。pillr 从不问密码。"
           }
         }
       }
@@ -5893,36 +5893,36 @@
         }
       }
     },
-    "Google will not answer spyx directly, so it asks Antigravity's own language server instead — the same place Antigravity's usage panel gets its figure." : {
+    "Google will not answer pillr directly, so it asks Antigravity's own language server instead — the same place Antigravity's usage panel gets its figure." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google ne répond pas directement à spyx, qui interroge donc le serveur de langage d'Antigravity — là où le panneau de consommation d'Antigravity prend son chiffre."
+            "value" : "Google ne répond pas directement à pillr, qui interroge donc le serveur de langage d'Antigravity — là où le panneau de consommation d'Antigravity prend son chiffre."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google は spyx に直接応答しないため、代わりに Antigravity 自身の言語サーバーに問い合わせます。Antigravity の使用量パネルが数値を得ているのと同じ場所です。"
+            "value" : "Google は pillr に直接応答しないため、代わりに Antigravity 自身の言語サーバーに問い合わせます。Antigravity の使用量パネルが数値を得ているのと同じ場所です。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Google não responde ao spyx diretamente, então ele pergunta ao servidor de linguagem do próprio Antigravity — o mesmo lugar de onde o painel de uso do Antigravity tira o número dele."
+            "value" : "O Google não responde ao pillr diretamente, então ele pergunta ao servidor de linguagem do próprio Antigravity — o mesmo lugar de onde o painel de uso do Antigravity tira o número dele."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google не отвечает spyx напрямую, поэтому приложение спрашивает языковой сервер Antigravity — тот же источник использует панель использования Antigravity."
+            "value" : "Google не отвечает pillr напрямую, поэтому приложение спрашивает языковой сервер Antigravity — тот же источник использует панель использования Antigravity."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Google 不会直接回答 spyx，所以改问 Antigravity 自己的语言服务器 — 也就是 Antigravity 用量面板取数字的地方。"
+            "value" : "Google 不会直接回答 pillr，所以改问 Antigravity 自己的语言服务器 — 也就是 Antigravity 用量面板取数字的地方。"
           }
         }
       }
@@ -7367,12 +7367,12 @@
         }
       }
     },
-    "Most readings are borrowed from a tool that already holds the account. DeepSeek is the exception: clicking Sign in opens its own spyx WebView, and signing out here clears only that session and its saved reading." : {
+    "Most readings are borrowed from a tool that already holds the account. DeepSeek is the exception: clicking Sign in opens its own pillr WebView, and signing out here clears only that session and its saved reading." : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "大多数读数借自已经持有该账号的工具。DeepSeek 是例外：点「登录」会打开 spyx 自己的 WebView，在这里退出只会清掉这次会话和已保存的读数。"
+            "value" : "大多数读数借自已经持有该账号的工具。DeepSeek 是例外：点「登录」会打开 pillr 自己的 WebView，在这里退出只会清掉这次会话和已保存的读数。"
           }
         }
       }
@@ -7761,36 +7761,36 @@
         }
       }
     },
-    "No icon anywhere. Open spyx again from Applications to bring these settings back." : {
+    "No icon anywhere. Open pillr again from Applications to bring these settings back." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aucune icône nulle part. Rouvrez spyx depuis Applications pour retrouver ces réglages."
+            "value" : "Aucune icône nulle part. Rouvrez pillr depuis Applications pour retrouver ces réglages."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "どこにもアイコンが出ません。この設定に戻るには、アプリケーションから spyx をもう一度開いてください。"
+            "value" : "どこにもアイコンが出ません。この設定に戻るには、アプリケーションから pillr をもう一度開いてください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nenhum ícone em lugar algum. Abra o spyx novamente em Aplicativos para trazer estes ajustes de volta."
+            "value" : "Nenhum ícone em lugar algum. Abra o pillr novamente em Aplicativos para trazer estes ajustes de volta."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ни одного значка. Откройте spyx снова из Программ, чтобы вернуть эти настройки."
+            "value" : "Ни одного значка. Откройте pillr снова из Программ, чтобы вернуть эти настройки."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "哪里都没有图标。从「应用程序」再打开 spyx，才能回到这些设置。"
+            "value" : "哪里都没有图标。从「应用程序」再打开 pillr，才能回到这些设置。"
           }
         }
       }
@@ -8065,70 +8065,70 @@
         }
       }
     },
-    "Nothing on screen. Open spyx again from Applications to bring these settings back." : {
+    "Nothing on screen. Open pillr again from Applications to bring these settings back." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rien à l'écran. Rouvrez spyx depuis Applications pour retrouver ces réglages."
+            "value" : "Rien à l'écran. Rouvrez pillr depuis Applications pour retrouver ces réglages."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "画面には何も出ません。この設定に戻るには、アプリケーションから spyx をもう一度開いてください。"
+            "value" : "画面には何も出ません。この設定に戻るには、アプリケーションから pillr をもう一度開いてください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nada na tela. Abra o spyx novamente em Aplicativos para trazer estes ajustes de volta."
+            "value" : "Nada na tela. Abra o pillr novamente em Aplicativos para trazer estes ajustes de volta."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ничего не показывать. Откройте spyx снова из Программ, чтобы вернуть эти настройки."
+            "value" : "Ничего не показывать. Откройте pillr снова из Программ, чтобы вернуть эти настройки."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "屏幕上什么都没有。从「应用程序」再打开 spyx，才能回到这些设置。"
+            "value" : "屏幕上什么都没有。从「应用程序」再打开 pillr，才能回到这些设置。"
           }
         }
       }
     },
-    "Nothing on screen. The readings stay in the menu bar menu when App icon is Menu bar. Otherwise, open spyx again from Applications to bring these settings back." : {
+    "Nothing on screen. The readings stay in the menu bar menu when App icon is Menu bar. Otherwise, open pillr again from Applications to bring these settings back." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rien à l'écran. Les relevés restent dans le menu de la barre des menus quand Icône de l'app est réglée sur Barre des menus. Sinon, rouvrez spyx depuis Applications pour retrouver ces réglages."
+            "value" : "Rien à l'écran. Les relevés restent dans le menu de la barre des menus quand Icône de l'app est réglée sur Barre des menus. Sinon, rouvrez pillr depuis Applications pour retrouver ces réglages."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "画面には何も出ません。「アプリアイコン」が「メニューバー」なら、読み取りはメニューバーのメニューに残ります。それ以外の場合、この設定に戻るには、アプリケーションから spyx をもう一度開いてください。"
+            "value" : "画面には何も出ません。「アプリアイコン」が「メニューバー」なら、読み取りはメニューバーのメニューに残ります。それ以外の場合、この設定に戻るには、アプリケーションから pillr をもう一度開いてください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nada na tela. As leituras continuam no menu da barra de menus quando o Ícone do app é Barra de menus. Caso contrário, abra o spyx novamente em Aplicativos para trazer estes ajustes de volta."
+            "value" : "Nada na tela. As leituras continuam no menu da barra de menus quando o Ícone do app é Barra de menus. Caso contrário, abra o pillr novamente em Aplicativos para trazer estes ajustes de volta."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "На экране ничего нет. Если значок приложения находится в строке меню, показания остаются в её меню. Иначе снова откройте spyx из папки «Программы», чтобы вернуть эти настройки."
+            "value" : "На экране ничего нет. Если значок приложения находится в строке меню, показания остаются в её меню. Иначе снова откройте pillr из папки «Программы», чтобы вернуть эти настройки."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "屏幕上什么都没有。应用图标选「菜单栏」时，读数仍在菜单栏菜单里。否则，从「应用程序」再打开 spyx，才能回到这些设置。"
+            "value" : "屏幕上什么都没有。应用图标选「菜单栏」时，读数仍在菜单栏菜单里。否则，从「应用程序」再打开 pillr，才能回到这些设置。"
           }
         }
       }
@@ -8503,36 +8503,36 @@
         }
       }
     },
-    "Open spyx at login" : {
+    "Open pillr at login" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ouvrir spyx à l'ouverture de session"
+            "value" : "Ouvrir pillr à l'ouverture de session"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ログイン時に spyx を開く"
+            "value" : "ログイン時に pillr を開く"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abrir o spyx ao iniciar a sessão"
+            "value" : "Abrir o pillr ao iniciar a sessão"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Открывать spyx при входе"
+            "value" : "Открывать pillr при входе"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "登录时打开 spyx"
+            "value" : "登录时打开 pillr"
           }
         }
       }
@@ -9151,36 +9151,36 @@
         }
       }
     },
-    "Quit spyx" : {
+    "Quit pillr" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quitter spyx"
+            "value" : "Quitter pillr"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyxを終了"
+            "value" : "pillrを終了"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Encerrar spyx"
+            "value" : "Encerrar pillr"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Завершить spyx"
+            "value" : "Завершить pillr"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "退出 spyx"
+            "value" : "退出 pillr"
           }
         }
       }
@@ -11273,36 +11273,36 @@
         }
       }
     },
-    "Signs out of %@ — the session belongs to spyx." : {
+    "Signs out of %@ — the session belongs to pillr." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vous déconnecte de %@ — la session appartient à spyx."
+            "value" : "Vous déconnecte de %@ — la session appartient à pillr."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ からサインアウトします — このセッションは spyx のものです。"
+            "value" : "%@ からサインアウトします — このセッションは pillr のものです。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sai do %@ — a sessão pertence ao spyx."
+            "value" : "Sai do %@ — a sessão pertence ao pillr."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Выход из %@ — сессия принадлежит spyx."
+            "value" : "Выход из %@ — сессия принадлежит pillr."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "会退出 %@ — 这个会话属于 spyx。"
+            "value" : "会退出 %@ — 这个会话属于 pillr。"
           }
         }
       }
@@ -12063,36 +12063,36 @@
         }
       }
     },
-    "That display is disconnected. spyx follows the active window until it returns." : {
+    "That display is disconnected. pillr follows the active window until it returns." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cet écran est déconnecté. spyx suit la fenêtre active jusqu'à son retour."
+            "value" : "Cet écran est déconnecté. pillr suit la fenêtre active jusqu'à son retour."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "そのディスプレイは接続されていません。復帰するまで、spyx はアクティブなウインドウに追従します。"
+            "value" : "そのディスプレイは接続されていません。復帰するまで、pillr はアクティブなウインドウに追従します。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Essa tela está desconectada. O spyx acompanha a janela ativa até ela voltar."
+            "value" : "Essa tela está desconectada. O pillr acompanha a janela ativa até ela voltar."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Этот дисплей отключён. spyx следует за активным окном, пока дисплей не вернётся."
+            "value" : "Этот дисплей отключён. pillr следует за активным окном, пока дисплей не вернётся."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "那台显示器已断开。spyx 会跟随活动窗口，直到它回来。"
+            "value" : "那台显示器已断开。pillr 会跟随活动窗口，直到它回来。"
           }
         }
       }
@@ -12199,12 +12199,12 @@
         }
       }
     },
-    "The figure came from a file Codex writes during a turn, so it was as old as the last time you used it — three days stale in one case. spyx now asks Codex itself, and matches its own panel." : {
+    "The figure came from a file Codex writes during a turn, so it was as old as the last time you used it — three days stale in one case. pillr now asks Codex itself, and matches its own panel." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Le chiffre venait d'un fichier que Codex écrit pendant un tour : il datait donc de votre dernière utilisation — trois jours de retard dans un cas. spyx interroge désormais Codex lui-même, et correspond à son propre panneau."
+            "value" : "Le chiffre venait d'un fichier que Codex écrit pendant un tour : il datait donc de votre dernière utilisation — trois jours de retard dans un cas. pillr interroge désormais Codex lui-même, et correspond à son propre panneau."
           }
         },
         "ja" : {
@@ -12216,19 +12216,19 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O número vinha de um arquivo que o Codex escreve durante um turno, então era tão antigo quanto a última vez que você o usou — três dias desatualizado em um caso. Agora o spyx pergunta ao próprio Codex, e bate com o painel dele."
+            "value" : "O número vinha de um arquivo que o Codex escreve durante um turno, então era tão antigo quanto a última vez que você o usou — três dias desatualizado em um caso. Agora o pillr pergunta ao próprio Codex, e bate com o painel dele."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Число бралась из файла, который Codex записывает во время хода, поэтому могло устареть на несколько дней. Теперь spyx спрашивает сам Codex и показывает данные его панели."
+            "value" : "Число бралась из файла, который Codex записывает во время хода, поэтому могло устареть на несколько дней. Теперь pillr спрашивает сам Codex и показывает данные его панели."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "数字来自 Codex 在一轮对话里写的文件，所以有多旧取决于你上次用它是什么时候 — 有一次旧了三天。spyx 现在直接问 Codex，并与它自己的面板一致。"
+            "value" : "数字来自 Codex 在一轮对话里写的文件，所以有多旧取决于你上次用它是什么时候 — 有一次旧了三天。pillr 现在直接问 Codex，并与它自己的面板一致。"
           }
         }
       }
@@ -12819,12 +12819,12 @@
         }
       }
     },
-    "To measure responses, point your chat client to http://127.0.0.1:11435 and keep spyx open." : {
+    "To measure responses, point your chat client to http://127.0.0.1:11435 and keep pillr open." : {
       "localizations" : {
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "要测量回复，把聊天客户端指向 http://127.0.0.1:11435，并保持 spyx 打开。"
+            "value" : "要测量回复，把聊天客户端指向 http://127.0.0.1:11435，并保持 pillr 打开。"
           }
         }
       }
@@ -13459,36 +13459,36 @@
         }
       }
     },
-    "Version %@. Updates install in the background and apply next time spyx starts." : {
+    "Version %@. Updates install in the background and apply next time pillr starts." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Version %@. Les mises à jour s'installent en arrière-plan et s'appliquent au prochain démarrage de spyx."
+            "value" : "Version %@. Les mises à jour s'installent en arrière-plan et s'appliquent au prochain démarrage de pillr."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "バージョン %@。アップデートはバックグラウンドでインストールされ、次回 spyx を起動したときに適用されます。"
+            "value" : "バージョン %@。アップデートはバックグラウンドでインストールされ、次回 pillr を起動したときに適用されます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Versão %@. As atualizações são instaladas em segundo plano e valem na próxima vez que o spyx iniciar."
+            "value" : "Versão %@. As atualizações são instaladas em segundo plano e valem na próxima vez que o pillr iniciar."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Версия %@. Обновления устанавливаются в фоне и применяются при следующем запуске spyx."
+            "value" : "Версия %@. Обновления устанавливаются в фоне и применяются при следующем запуске pillr."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "版本 %@。更新在后台安装，下次启动 spyx 时生效。"
+            "value" : "版本 %@。更新在后台安装，下次启动 pillr 时生效。"
           }
         }
       }
@@ -13831,36 +13831,36 @@
         }
       }
     },
-    "What's new in spyx" : {
+    "What's new in pillr" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les nouveautés de spyx"
+            "value" : "Les nouveautés de pillr"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx の新機能"
+            "value" : "pillr の新機能"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Novidades do spyx"
+            "value" : "Novidades do pillr"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Что нового в spyx"
+            "value" : "Что нового в pillr"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 新变化"
+            "value" : "pillr 新变化"
           }
         }
       }
@@ -14215,12 +14215,12 @@
         }
       }
     },
-    "macOS is not letting spyx read %@'s saved login. Choose Allow access… above, then Always Allow." : {
+    "macOS is not letting pillr read %@'s saved login. Choose Allow access… above, then Always Allow." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS n'autorise pas spyx à lire les identifiants enregistrés de %@. Choisissez Autoriser l'accès… ci-dessus, puis Toujours autoriser."
+            "value" : "macOS n'autorise pas pillr à lire les identifiants enregistrés de %@. Choisissez Autoriser l'accès… ci-dessus, puis Toujours autoriser."
           }
         },
         "ja" : {
@@ -14232,53 +14232,53 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O macOS não está deixando o spyx ler o login salvo do %@. Escolha Permitir acesso… acima e depois Sempre Permitir."
+            "value" : "O macOS não está deixando o pillr ler o login salvo do %@. Escolha Permitir acesso… acima e depois Sempre Permitir."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS не разрешает spyx читать сохранённый вход %@. Выберите выше «Разрешить доступ…», затем «Разрешать всегда»."
+            "value" : "macOS не разрешает pillr читать сохранённый вход %@. Выберите выше «Разрешить доступ…», затем «Разрешать всегда»."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 不让 spyx 读取 %@ 已保存的登录信息。点上面的「允许访问…」，然后选「始终允许」。"
+            "value" : "macOS 不让 pillr 读取 %@ 已保存的登录信息。点上面的「允许访问…」，然后选「始终允许」。"
           }
         }
       }
     },
-    "macOS refused this — try moving spyx to /Applications." : {
+    "macOS refused this — try moving pillr to /Applications." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS a refusé — essayez de déplacer spyx dans /Applications."
+            "value" : "macOS a refusé — essayez de déplacer pillr dans /Applications."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS に拒否されました — spyx を /Applications に移動してみてください。"
+            "value" : "macOS に拒否されました — pillr を /Applications に移動してみてください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O macOS recusou isso — tente mover o spyx para /Applications."
+            "value" : "O macOS recusou isso — tente mover o pillr para /Applications."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS отказала — попробуйте переместить spyx в /Applications."
+            "value" : "macOS отказала — попробуйте переместить pillr в /Applications."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 拒绝了 — 试着把 spyx 移到「应用程序」。"
+            "value" : "macOS 拒绝了 — 试着把 pillr 移到「应用程序」。"
           }
         }
       }
@@ -17023,70 +17023,70 @@
         }
       }
     },
-    "All four sides! spyx can be anywhere." : {
+    "All four sides! pillr can be anywhere." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les quatre côtés ! spyx peut être n'importe où."
+            "value" : "Les quatre côtés ! pillr peut être n'importe où."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "4 辺すべて！spyx はどこにでも置けます。"
+            "value" : "4 辺すべて！pillr はどこにでも置けます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Os quatro lados! O spyx pode ficar em qualquer lugar."
+            "value" : "Os quatro lados! O pillr pode ficar em qualquer lugar."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Все четыре стороны! spyx может быть где угодно."
+            "value" : "Все четыре стороны! pillr может быть где угодно."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "四条边都行！spyx 哪里都能待。"
+            "value" : "四条边都行！pillr 哪里都能待。"
           }
         }
       }
     },
-    "All four sides, and home. spyx can be anywhere!" : {
+    "All four sides, and home. pillr can be anywhere!" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les quatre côtés, et retour à la maison. spyx peut être n'importe où !"
+            "value" : "Les quatre côtés, et retour à la maison. pillr peut être n'importe où !"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "4 辺をひと回りして、定位置へ。spyx はどこにでも置けます！"
+            "value" : "4 辺をひと回りして、定位置へ。pillr はどこにでも置けます！"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Os quatro lados, e de volta para casa. O spyx pode ficar em qualquer lugar!"
+            "value" : "Os quatro lados, e de volta para casa. O pillr pode ficar em qualquer lugar!"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Все четыре стороны — и домой. spyx может быть где угодно!"
+            "value" : "Все четыре стороны — и домой. pillr может быть где угодно!"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "四条边转一圈，再回家。spyx 哪里都能待！"
+            "value" : "四条边转一圈，再回家。pillr 哪里都能待！"
           }
         }
       }
@@ -18587,70 +18587,70 @@
         }
       }
     },
-    "Claude Desktop has no terminal to type into, so its sessions otherwise pick the level up next session. With this on, spyx types /effort and Return into the focused, empty message box through Accessibility. Every check is a reason not to type." : {
+    "Claude Desktop has no terminal to type into, so its sessions otherwise pick the level up next session. With this on, pillr types /effort and Return into the focused, empty message box through Accessibility. Every check is a reason not to type." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Claude Desktop n'a pas de terminal où taper : sans ceci, ses sessions ne prennent le niveau qu'à la session suivante. Avec ceci activé, spyx tape /effort puis Retour dans le champ de message actif et vide, via l'Accessibilité. Chaque vérification est une raison de ne pas taper."
+            "value" : "Claude Desktop n'a pas de terminal où taper : sans ceci, ses sessions ne prennent le niveau qu'à la session suivante. Avec ceci activé, pillr tape /effort puis Retour dans le champ de message actif et vide, via l'Accessibilité. Chaque vérification est une raison de ne pas taper."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Claude Desktop には入力先のターミナルがないため、通常はレベルが次のセッションから反映されます。これをオンにすると、spyx がアクセシビリティ経由で、フォーカスされた空のメッセージ欄に /effort と Return を入力します。確認項目が一つでも満たされなければ入力しません。"
+            "value" : "Claude Desktop には入力先のターミナルがないため、通常はレベルが次のセッションから反映されます。これをオンにすると、pillr がアクセシビリティ経由で、フォーカスされた空のメッセージ欄に /effort と Return を入力します。確認項目が一つでも満たされなければ入力しません。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Claude Desktop não tem terminal onde digitar, então, sem isto, as sessões dele só aplicam o nível na próxima sessão. Com isto ativado, o spyx digita /effort e Return na caixa de mensagem vazia e em foco, via Acessibilidade. Cada verificação é um motivo para não digitar."
+            "value" : "O Claude Desktop não tem terminal onde digitar, então, sem isto, as sessões dele só aplicam o nível na próxima sessão. Com isto ativado, o pillr digita /effort e Return na caixa de mensagem vazia e em foco, via Acessibilidade. Cada verificação é um motivo para não digitar."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "У Claude Desktop нет терминала для ввода, поэтому иначе его сеансы получают уровень только в следующем сеансе. Если это включено, spyx вводит /effort и Return в активное пустое поле сообщения через Универсальный доступ. Каждая проверка — повод ничего не вводить."
+            "value" : "У Claude Desktop нет терминала для ввода, поэтому иначе его сеансы получают уровень только в следующем сеансе. Если это включено, pillr вводит /effort и Return в активное пустое поле сообщения через Универсальный доступ. Каждая проверка — повод ничего не вводить."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Claude Desktop 没有可输入的终端，所以它的会话本来要到下个会话才会用上新档位。打开这项后，spyx 会通过辅助功能在聚焦且为空的消息框里输入 /effort 并按回车。每一项检查都是不输入的理由。"
+            "value" : "Claude Desktop 没有可输入的终端，所以它的会话本来要到下个会话才会用上新档位。打开这项后，pillr 会通过辅助功能在聚焦且为空的消息框里输入 /effort 并按回车。每一项检查都是不输入的理由。"
           }
         }
       }
     },
-    "Claude Desktop has no terminal to type into. With Accessibility, spyx types /effort into its message box — only when it's in front, idle and empty." : {
+    "Claude Desktop has no terminal to type into. With Accessibility, pillr types /effort into its message box — only when it's in front, idle and empty." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Claude Desktop n'a pas de terminal où taper. Avec l'Accessibilité, spyx tape /effort dans son champ de message — seulement quand il est au premier plan, inactif et vide."
+            "value" : "Claude Desktop n'a pas de terminal où taper. Avec l'Accessibilité, pillr tape /effort dans son champ de message — seulement quand il est au premier plan, inactif et vide."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Claude Desktop には入力先のターミナルがありません。アクセシビリティを使って、spyx がメッセージ欄に /effort を入力します — 前面にあり、アイドル状態で、欄が空のときだけです。"
+            "value" : "Claude Desktop には入力先のターミナルがありません。アクセシビリティを使って、pillr がメッセージ欄に /effort を入力します — 前面にあり、アイドル状態で、欄が空のときだけです。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Claude Desktop não tem terminal onde digitar. Com a Acessibilidade, o spyx digita /effort na caixa de mensagem dele — só quando ele está na frente, ocioso e vazio."
+            "value" : "O Claude Desktop não tem terminal onde digitar. Com a Acessibilidade, o pillr digita /effort na caixa de mensagem dele — só quando ele está na frente, ocioso e vazio."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "У Claude Desktop нет терминала для ввода. С Универсальным доступом spyx вводит /effort в его поле сообщения — только когда приложение на переднем плане, простаивает и поле пустое."
+            "value" : "У Claude Desktop нет терминала для ввода. С Универсальным доступом pillr вводит /effort в его поле сообщения — только когда приложение на переднем плане, простаивает и поле пустое."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Claude Desktop 没有可输入的终端。有了辅助功能，spyx 会把 /effort 输入它的消息框 — 仅当它在前台、空闲且为空时。"
+            "value" : "Claude Desktop 没有可输入的终端。有了辅助功能，pillr 会把 /effort 输入它的消息框 — 仅当它在前台、空闲且为空时。"
           }
         }
       }
@@ -19233,36 +19233,36 @@
         }
       }
     },
-    "Couldn't copy spyx into Applications: %@" : {
+    "Couldn't copy pillr into Applications: %@" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Impossible de copier spyx dans Applications : %@"
+            "value" : "Impossible de copier pillr dans Applications : %@"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx をアプリケーションにコピーできませんでした: %@"
+            "value" : "pillr をアプリケーションにコピーできませんでした: %@"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Não foi possível copiar o spyx para Aplicativos: %@"
+            "value" : "Não foi possível copiar o pillr para Aplicativos: %@"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Не удалось скопировать spyx в папку «Программы»: %@"
+            "value" : "Не удалось скопировать pillr в папку «Программы»: %@"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "无法把 spyx 复制到「应用程序」：%@"
+            "value" : "无法把 pillr 复制到「应用程序」：%@"
           }
         }
       }
@@ -21137,70 +21137,70 @@
         }
       }
     },
-    "In the background; they apply the next time spyx starts." : {
+    "In the background; they apply the next time pillr starts." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "En arrière-plan ; elles s'appliquent au prochain démarrage de spyx."
+            "value" : "En arrière-plan ; elles s'appliquent au prochain démarrage de pillr."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "バックグラウンドで。次回 spyx を起動したときに適用されます。"
+            "value" : "バックグラウンドで。次回 pillr を起動したときに適用されます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Em segundo plano; valem na próxima vez que o spyx iniciar."
+            "value" : "Em segundo plano; valem na próxima vez que o pillr iniciar."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "В фоне; они применяются при следующем запуске spyx."
+            "value" : "В фоне; они применяются при следующем запуске pillr."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在后台进行；下次 spyx 启动时生效。"
+            "value" : "在后台进行；下次 pillr 启动时生效。"
           }
         }
       }
     },
-    "In the list that opens, switch on spyx." : {
+    "In the list that opens, switch on pillr." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dans la liste qui s'ouvre, activez spyx."
+            "value" : "Dans la liste qui s'ouvre, activez pillr."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "開いたリストで spyx をオンにしてください。"
+            "value" : "開いたリストで pillr をオンにしてください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Na lista que abrir, ative o spyx."
+            "value" : "Na lista que abrir, ative o pillr."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "В открывшемся списке включите spyx."
+            "value" : "В открывшемся списке включите pillr."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在打开的列表里，打开 spyx。"
+            "value" : "在打开的列表里，打开 pillr。"
           }
         }
       }
@@ -25455,70 +25455,70 @@
         }
       }
     },
-    "Set Up spyx" : {
+    "Set Up pillr" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configurer spyx"
+            "value" : "Configurer pillr"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx をセットアップ"
+            "value" : "pillr をセットアップ"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configurar o spyx"
+            "value" : "Configurar o pillr"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Настроить spyx"
+            "value" : "Настроить pillr"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "设置 spyx"
+            "value" : "设置 pillr"
           }
         }
       }
     },
-    "Set Up spyx…" : {
+    "Set Up pillr…" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configurer spyx…"
+            "value" : "Configurer pillr…"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx をセットアップ…"
+            "value" : "pillr をセットアップ…"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configurar o spyx…"
+            "value" : "Configurar o pillr…"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Настроить spyx…"
+            "value" : "Настроить pillr…"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "设置 spyx…"
+            "value" : "设置 pillr…"
           }
         }
       }
@@ -26509,36 +26509,36 @@
         }
       }
     },
-    "Switch on the agents you use. spyx reads each one's usage with the login it already has on this Mac, and sends nothing anywhere but that agent's own servers." : {
+    "Switch on the agents you use. pillr reads each one's usage with the login it already has on this Mac, and sends nothing anywhere but that agent's own servers." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Activez les agents que vous utilisez. spyx lit la consommation de chacun avec les identifiants déjà présents sur ce Mac, et n'envoie rien ailleurs qu'aux propres serveurs de cet agent."
+            "value" : "Activez les agents que vous utilisez. pillr lit la consommation de chacun avec les identifiants déjà présents sur ce Mac, et n'envoie rien ailleurs qu'aux propres serveurs de cet agent."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "使っているエージェントをオンにしてください。spyx はこの Mac にある既存のログインでそれぞれの使用量を読み取り、そのエージェント自身のサーバー以外には何も送信しません。"
+            "value" : "使っているエージェントをオンにしてください。pillr はこの Mac にある既存のログインでそれぞれの使用量を読み取り、そのエージェント自身のサーバー以外には何も送信しません。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ative os agentes que você usa. O spyx lê o uso de cada um com o login que ele já tem neste Mac, e não envia nada a lugar algum além dos próprios servidores desse agente."
+            "value" : "Ative os agentes que você usa. O pillr lê o uso de cada um com o login que ele já tem neste Mac, e não envia nada a lugar algum além dos próprios servidores desse agente."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Включите агенты, которыми пользуетесь. spyx читает использование каждого через вход, который уже есть на этом Mac, и ничего не отправляет никуда, кроме серверов самого агента."
+            "value" : "Включите агенты, которыми пользуетесь. pillr читает использование каждого через вход, который уже есть на этом Mac, и ничего не отправляет никуда, кроме серверов самого агента."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "打开你在用的智能体。spyx 用它们在这台 Mac 上已有的登录读取各自的用量，除了该智能体自己的服务器，不向任何地方发送数据。"
+            "value" : "打开你在用的智能体。pillr 用它们在这台 Mac 上已有的登录读取各自的用量，除了该智能体自己的服务器，不向任何地方发送数据。"
           }
         }
       }
@@ -28141,36 +28141,36 @@
         }
       }
     },
-    "Welcome to spyx" : {
+    "Welcome to pillr" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bienvenue dans spyx"
+            "value" : "Bienvenue dans pillr"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx へようこそ"
+            "value" : "pillr へようこそ"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Boas-vindas ao spyx"
+            "value" : "Boas-vindas ao pillr"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Добро пожаловать в spyx"
+            "value" : "Добро пожаловать в pillr"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "欢迎使用 spyx"
+            "value" : "欢迎使用 pillr"
           }
         }
       }
@@ -29365,240 +29365,240 @@
         }
       }
     },
-    "macOS refused spyx access to %@'s saved login. Use Allow access… in Settings to ask again." : {
+    "macOS refused pillr access to %@'s saved login. Use Allow access… in Settings to ask again." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS a refusé à spyx l'accès aux identifiants enregistrés de %@. Utilisez Autoriser l'accès… dans les Réglages pour redemander."
+            "value" : "macOS a refusé à pillr l'accès aux identifiants enregistrés de %@. Utilisez Autoriser l'accès… dans les Réglages pour redemander."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS は spyx による %@ の保存済みログインへのアクセスを拒否しました。再度要求するには、設定の「アクセスを許可…」を使ってください。"
+            "value" : "macOS は pillr による %@ の保存済みログインへのアクセスを拒否しました。再度要求するには、設定の「アクセスを許可…」を使ってください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O macOS negou ao spyx acesso ao login salvo do %@. Use Permitir acesso… nos Ajustes para pedir de novo."
+            "value" : "O macOS negou ao pillr acesso ao login salvo do %@. Use Permitir acesso… nos Ajustes para pedir de novo."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS отказала spyx в доступе к сохранённому входу %@. Нажмите «Разрешить доступ…» в настройках, чтобы запросить снова."
+            "value" : "macOS отказала pillr в доступе к сохранённому входу %@. Нажмите «Разрешить доступ…» в настройках, чтобы запросить снова."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS 拒绝 spyx 访问 %@ 已保存的登录信息。在设置里用「允许访问…」再请求一次。"
+            "value" : "macOS 拒绝 pillr 访问 %@ 已保存的登录信息。在设置里用「允许访问…」再请求一次。"
           }
         }
       }
     },
-    "spyx can be anywhere!" : {
+    "pillr can be anywhere!" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx peut être n'importe où !"
+            "value" : "pillr peut être n'importe où !"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx はどこにでも置けます！"
+            "value" : "pillr はどこにでも置けます！"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O spyx pode ficar em qualquer lugar!"
+            "value" : "O pillr pode ficar em qualquer lugar!"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx может быть где угодно!"
+            "value" : "pillr может быть где угодно!"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 哪里都能待！"
+            "value" : "pillr 哪里都能待！"
           }
         }
       }
     },
-    "spyx copies itself there and reopens. Any older copy goes to the Trash." : {
+    "pillr copies itself there and reopens. Any older copy goes to the Trash." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx s'y copie et se rouvre. Toute ancienne copie part à la Corbeille."
+            "value" : "pillr s'y copie et se rouvre. Toute ancienne copie part à la Corbeille."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx が自身をそこへコピーして開き直します。古いコピーはゴミ箱に移動します。"
+            "value" : "pillr が自身をそこへコピーして開き直します。古いコピーはゴミ箱に移動します。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O spyx se copia para lá e reabre. Qualquer cópia antiga vai para a Lixeira."
+            "value" : "O pillr se copia para lá e reabre. Qualquer cópia antiga vai para a Lixeira."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx скопирует себя туда и перезапустится. Старые копии отправятся в Корзину."
+            "value" : "pillr скопирует себя туда и перезапустится. Старые копии отправятся в Корзину."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 会把自己复制过去并重新打开。旧副本会移到废纸篓。"
+            "value" : "pillr 会把自己复制过去并重新打开。旧副本会移到废纸篓。"
           }
         }
       }
     },
-    "spyx is running from %@. macOS forgets permissions given to a copy there, and won't open it at login." : {
+    "pillr is running from %@. macOS forgets permissions given to a copy there, and won't open it at login." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx s'exécute depuis %@. macOS oublie les autorisations données à une copie à cet endroit, et ne l'ouvrira pas à l'ouverture de session."
+            "value" : "pillr s'exécute depuis %@. macOS oublie les autorisations données à une copie à cet endroit, et ne l'ouvrira pas à l'ouverture de session."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx は %@ から実行されています。macOS はそこにあるコピーに与えた許可を忘れ、ログイン時にも開きません。"
+            "value" : "pillr は %@ から実行されています。macOS はそこにあるコピーに与えた許可を忘れ、ログイン時にも開きません。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O spyx está rodando a partir de %@. O macOS esquece as permissões dadas a uma cópia ali, e não a abre ao iniciar a sessão."
+            "value" : "O pillr está rodando a partir de %@. O macOS esquece as permissões dadas a uma cópia ali, e não a abre ao iniciar a sessão."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx запущен из %@. macOS забывает разрешения, выданные копии в этом месте, и не будет открывать её при входе."
+            "value" : "pillr запущен из %@. macOS забывает разрешения, выданные копии в этом месте, и не будет открывать её при входе."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 正从%@运行。macOS 会忘记授予那里副本的权限，也不会在登录时打开它。"
+            "value" : "pillr 正从%@运行。macOS 会忘记授予那里副本的权限，也不会在登录时打开它。"
           }
         }
       }
     },
-    "spyx lives in the notch now. Try the gesture before you go." : {
+    "pillr lives in the notch now. Try the gesture before you go." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx vit désormais dans l'encoche. Essayez le geste avant de partir."
+            "value" : "pillr vit désormais dans l'encoche. Essayez le geste avant de partir."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx はノッチに住むようになりました。終える前にジェスチャを試してみてください。"
+            "value" : "pillr はノッチに住むようになりました。終える前にジェスチャを試してみてください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O spyx agora mora no notch. Experimente o gesto antes de ir."
+            "value" : "O pillr agora mora no notch. Experimente o gesto antes de ir."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx теперь живёт на панели. Попробуйте жест, прежде чем идти дальше."
+            "value" : "pillr теперь живёт на панели. Попробуйте жест, прежде чем идти дальше."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 现在住在刘海里了。走之前试试这个手势。"
+            "value" : "pillr 现在住在刘海里了。走之前试试这个手势。"
           }
         }
       }
     },
-    "spyx reads usage from tools already signed in on this Mac — it never asks for your password. Install and sign in to any of Claude Code (the terminal tool, not the Claude app), Cursor (the editor or cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, Command Code, GitHub Copilot, Kimi Code or a Gemini API key (via Gemini CLI, OpenCode or Hermes), and its ring appears in the notch." : {
+    "pillr reads usage from tools already signed in on this Mac — it never asks for your password. Install and sign in to any of Claude Code (the terminal tool, not the Claude app), Cursor (the editor or cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, Command Code, GitHub Copilot, Kimi Code or a Gemini API key (via Gemini CLI, OpenCode or Hermes), and its ring appears in the notch." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx lit la consommation des outils déjà connectés sur ce Mac — il ne demande jamais votre mot de passe. Installez l'un de Claude Code (l'outil en terminal, pas l'app Claude), Cursor (l'éditeur ou cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, Command Code, GitHub Copilot, Kimi Code ou une clé API Gemini (via Gemini CLI, OpenCode ou Hermes) et connectez-vous : son anneau apparaît dans l'encoche."
+            "value" : "pillr lit la consommation des outils déjà connectés sur ce Mac — il ne demande jamais votre mot de passe. Installez l'un de Claude Code (l'outil en terminal, pas l'app Claude), Cursor (l'éditeur ou cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, Command Code, GitHub Copilot, Kimi Code ou une clé API Gemini (via Gemini CLI, OpenCode ou Hermes) et connectez-vous : son anneau apparaît dans l'encoche."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx は、この Mac ですでにサインイン済みのツールから使用量を読み取ります。パスワードを尋ねることはありません。Claude Code（Claude アプリではなくターミナルのツール）、Cursor（エディタまたは cursor-agent）、Codex、Antigravity、GLM、Grok、OpenCode、Command Code、GitHub Copilot、Kimi Code、または Gemini API キー（Gemini CLI、OpenCode、Hermes 経由）のいずれかをインストールしてサインインすると、そのリングがノッチに現れます。"
+            "value" : "pillr は、この Mac ですでにサインイン済みのツールから使用量を読み取ります。パスワードを尋ねることはありません。Claude Code（Claude アプリではなくターミナルのツール）、Cursor（エディタまたは cursor-agent）、Codex、Antigravity、GLM、Grok、OpenCode、Command Code、GitHub Copilot、Kimi Code、または Gemini API キー（Gemini CLI、OpenCode、Hermes 経由）のいずれかをインストールしてサインインすると、そのリングがノッチに現れます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O spyx lê o uso de ferramentas já conectadas neste Mac — ele nunca pede sua senha. Instale e entre em qualquer um destes: Claude Code (a ferramenta de terminal, não o app Claude), Cursor (o editor ou o cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, Command Code, GitHub Copilot, Kimi Code ou uma chave de API do Gemini (via CLI do Gemini, OpenCode ou Hermes), e o anel correspondente aparece no notch."
+            "value" : "O pillr lê o uso de ferramentas já conectadas neste Mac — ele nunca pede sua senha. Instale e entre em qualquer um destes: Claude Code (a ferramenta de terminal, não o app Claude), Cursor (o editor ou o cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, Command Code, GitHub Copilot, Kimi Code ou uma chave de API do Gemini (via CLI do Gemini, OpenCode ou Hermes), e o anel correspondente aparece no notch."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx читает использование из инструментов, уже авторизованных на этом Mac, и никогда не спрашивает пароль. Установите и авторизуйтесь в Claude Code (терминальном инструменте, не приложении Claude), Cursor (редакторе или cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, Command Code, GitHub Copilot, Kimi Code или Gemini API через Gemini CLI, OpenCode или Hermes — и кольцо появится на панели."
+            "value" : "pillr читает использование из инструментов, уже авторизованных на этом Mac, и никогда не спрашивает пароль. Установите и авторизуйтесь в Claude Code (терминальном инструменте, не приложении Claude), Cursor (редакторе или cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, Command Code, GitHub Copilot, Kimi Code или Gemini API через Gemini CLI, OpenCode или Hermes — и кольцо появится на панели."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 从这台 Mac 上已登录的工具读取用量 — 从不索要你的密码。安装并登录以下任一工具：Claude Code（终端工具，不是 Claude 应用）、Cursor（编辑器或 cursor-agent）、Codex、Antigravity、GLM、Grok、OpenCode、Command Code、GitHub Copilot、Kimi Code，或 Gemini API 密钥（通过 Gemini CLI、OpenCode 或 Hermes），它的圆环就会出现在刘海里。"
+            "value" : "pillr 从这台 Mac 上已登录的工具读取用量 — 从不索要你的密码。安装并登录以下任一工具：Claude Code（终端工具，不是 Claude 应用）、Cursor（编辑器或 cursor-agent）、Codex、Antigravity、GLM、Grok、OpenCode、Command Code、GitHub Copilot、Kimi Code，或 Gemini API 密钥（通过 Gemini CLI、OpenCode 或 Hermes），它的圆环就会出现在刘海里。"
           }
         }
       }
     },
-    "spyx talks to the terminal a session runs in — to take you to it, and to set the effort level live. macOS asks you once for each app." : {
+    "pillr talks to the terminal a session runs in — to take you to it, and to set the effort level live. macOS asks you once for each app." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx communique avec le terminal où tourne une session — pour vous y emmener, et pour régler le niveau d'effort en direct. macOS vous le demande une fois pour chaque app."
+            "value" : "pillr communique avec le terminal où tourne une session — pour vous y emmener, et pour régler le niveau d'effort en direct. macOS vous le demande une fois pour chaque app."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx はセッションが動いているターミナルとやり取りします — そこへ移動するため、そして推論レベルをその場で設定するためです。macOS はアプリごとに一度だけ確認します。"
+            "value" : "pillr はセッションが動いているターミナルとやり取りします — そこへ移動するため、そして推論レベルをその場で設定するためです。macOS はアプリごとに一度だけ確認します。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O spyx conversa com o terminal em que uma sessão roda — para levar você até ela e para definir o nível de esforço ao vivo. O macOS pergunta uma vez para cada app."
+            "value" : "O pillr conversa com o terminal em que uma sessão roda — para levar você até ela e para definir o nível de esforço ao vivo. O macOS pergunta uma vez para cada app."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx взаимодействует с терминалом, в котором работает сеанс, — чтобы перенести вас к нему и задавать уровень усилия сразу. macOS спросит один раз для каждого приложения."
+            "value" : "pillr взаимодействует с терминалом, в котором работает сеанс, — чтобы перенести вас к нему и задавать уровень усилия сразу. macOS спросит один раз для каждого приложения."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 会与会话所在的终端通信 — 带你跳过去，并实时设置推理强度。macOS 会为每个应用问你一次。"
+            "value" : "pillr 会与会话所在的终端通信 — 带你跳过去，并实时设置推理强度。macOS 会为每个应用问你一次。"
           }
         }
       }
@@ -30079,36 +30079,36 @@
         }
       }
     },
-    "Allow spyx in Accessibility to change Claude app sessions live" : {
+    "Allow pillr in Accessibility to change Claude app sessions live" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Autorisez spyx dans Accessibilité pour modifier en direct les sessions de l'app Claude"
+            "value" : "Autorisez pillr dans Accessibilité pour modifier en direct les sessions de l'app Claude"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Claude アプリのセッションをその場で変えるには、アクセシビリティで spyx を許可してください"
+            "value" : "Claude アプリのセッションをその場で変えるには、アクセシビリティで pillr を許可してください"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Permita o spyx em Acessibilidade para mudar sessões do app Claude na hora"
+            "value" : "Permita o pillr em Acessibilidade para mudar sessões do app Claude na hora"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Разрешите spyx в Универсальном доступе, чтобы менять сессии приложения Claude сразу"
+            "value" : "Разрешите pillr в Универсальном доступе, чтобы менять сессии приложения Claude сразу"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在“辅助功能”中允许 spyx，才能即时更改 Claude 应用的会话"
+            "value" : "在“辅助功能”中允许 pillr，才能即时更改 Claude 应用的会话"
           }
         }
       }
@@ -30793,70 +30793,70 @@
         }
       }
     },
-    "spyx's permissions stay spyx's" : {
+    "pillr's permissions stay pillr's" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les autorisations de spyx restent à spyx"
+            "value" : "Les autorisations de pillr restent à pillr"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx の権限は spyx だけのもの"
+            "value" : "pillr の権限は pillr だけのもの"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "As permissões do spyx ficam com o spyx"
+            "value" : "As permissões do pillr ficam com o pillr"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Разрешения spyx остаются у spyx"
+            "value" : "Разрешения pillr остаются у pillr"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 的权限只属于 spyx"
+            "value" : "pillr 的权限只属于 pillr"
           }
         }
       }
     },
-    "The app now runs with macOS's hardened runtime, so no other program can load itself into spyx and use its Accessibility or Terminal access." : {
+    "The app now runs with macOS's hardened runtime, so no other program can load itself into pillr and use its Accessibility or Terminal access." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "L'app tourne désormais avec le runtime renforcé de macOS : aucun autre programme ne peut se charger dans spyx pour utiliser son accès Accessibilité ou Terminal."
+            "value" : "L'app tourne désormais avec le runtime renforcé de macOS : aucun autre programme ne peut se charger dans pillr pour utiliser son accès Accessibilité ou Terminal."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "アプリは macOS の Hardened Runtime で動作するようになり、他のプログラムが spyx に入り込んでアクセシビリティやターミナルの権限を使うことはできません。"
+            "value" : "アプリは macOS の Hardened Runtime で動作するようになり、他のプログラムが pillr に入り込んでアクセシビリティやターミナルの権限を使うことはできません。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O app agora roda com o hardened runtime do macOS, então nenhum outro programa consegue se carregar no spyx e usar o acesso de Acessibilidade ou ao Terminal."
+            "value" : "O app agora roda com o hardened runtime do macOS, então nenhum outro programa consegue se carregar no pillr e usar o acesso de Acessibilidade ou ao Terminal."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Приложение теперь работает с усиленной средой выполнения macOS, и никакая другая программа не может загрузиться в spyx и воспользоваться его доступом к Универсальному доступу или Терминалу."
+            "value" : "Приложение теперь работает с усиленной средой выполнения macOS, и никакая другая программа не может загрузиться в pillr и воспользоваться его доступом к Универсальному доступу или Терминалу."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "应用现在启用 macOS 的强化运行时，其他程序无法把自己加载进 spyx 来使用它的辅助功能或终端权限。"
+            "value" : "应用现在启用 macOS 的强化运行时，其他程序无法把自己加载进 pillr 来使用它的辅助功能或终端权限。"
           }
         }
       }
@@ -33377,36 +33377,36 @@
         }
       }
     },
-    "Accessibility is off for spyx" : {
+    "Accessibility is off for pillr" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "L'accessibilité est désactivée pour spyx"
+            "value" : "L'accessibilité est désactivée pour pillr"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx のアクセシビリティがオフです"
+            "value" : "pillr のアクセシビリティがオフです"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A Acessibilidade está desligada para o spyx"
+            "value" : "A Acessibilidade está desligada para o pillr"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Для spyx выключен Универсальный доступ"
+            "value" : "Для pillr выключен Универсальный доступ"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 的辅助功能权限已关闭"
+            "value" : "pillr 的辅助功能权限已关闭"
           }
         }
       }
@@ -33581,36 +33581,36 @@
         }
       }
     },
-    "%@ wouldn't let spyx read the tab" : {
+    "%@ wouldn't let pillr read the tab" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ n'a pas laissé spyx lire l'onglet"
+            "value" : "%@ n'a pas laissé pillr lire l'onglet"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ が spyx にタブの読み取りを許可しませんでした"
+            "value" : "%@ が pillr にタブの読み取りを許可しませんでした"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ não deixou o spyx ler a aba"
+            "value" : "%@ não deixou o pillr ler a aba"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ не дал spyx прочитать вкладку"
+            "value" : "%@ не дал pillr прочитать вкладку"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ 不允许 spyx 读取标签页"
+            "value" : "%@ 不允许 pillr 读取标签页"
           }
         }
       }
@@ -33989,80 +33989,80 @@
         }
       }
     },
-    "Adds spyx's own hook to each agent below. Nothing else in their configs is touched, and switching this off takes it out." : {
+    "Adds pillr's own hook to each agent below. Nothing else in their configs is touched, and switching this off takes it out." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ajoute le hook de spyx à chaque agent ci-dessous. Rien d’autre n’est modifié dans leurs configs, et désactiver ceci le retire."
+            "value" : "Ajoute le hook de pillr à chaque agent ci-dessous. Rien d’autre n’est modifié dans leurs configs, et désactiver ceci le retire."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "下の各エージェントに spyx 自身のフックを追加します。設定の他の部分には触れず、オフにすると取り除きます。"
+            "value" : "下の各エージェントに pillr 自身のフックを追加します。設定の他の部分には触れず、オフにすると取り除きます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Adiciona o hook do próprio spyx a cada agente abaixo. Nada mais nas configs deles é alterado, e desligar isto o remove."
+            "value" : "Adiciona o hook do próprio pillr a cada agente abaixo. Nada mais nas configs deles é alterado, e desligar isto o remove."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Добавляет собственный хук spyx каждому агенту ниже. Больше ничего в их конфигах не меняется, а выключение убирает его."
+            "value" : "Добавляет собственный хук pillr каждому агенту ниже. Больше ничего в их конфигах не меняется, а выключение убирает его."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "为下方每个代理添加 spyx 自己的 hook。不改动其配置中的任何其他内容，关闭即移除。"
+            "value" : "为下方每个代理添加 pillr 自己的 hook。不改动其配置中的任何其他内容，关闭即移除。"
           }
         }
       }
     },
-    "An agent installed later is hooked on its own the next time spyx starts." : {
+    "An agent installed later is hooked on its own the next time pillr starts." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Un agent installé plus tard est relié tout seul au prochain démarrage de spyx."
+            "value" : "Un agent installé plus tard est relié tout seul au prochain démarrage de pillr."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "後からインストールしたエージェントも、次に spyx が起動したとき自動でつながります。"
+            "value" : "後からインストールしたエージェントも、次に pillr が起動したとき自動でつながります。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Um agente instalado depois é ligado sozinho na próxima vez que o spyx abrir."
+            "value" : "Um agente instalado depois é ligado sozinho na próxima vez que o pillr abrir."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Агент, установленный позже, подключится сам при следующем запуске spyx."
+            "value" : "Агент, установленный позже, подключится сам при следующем запуске pillr."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "之后安装的代理会在 spyx 下次启动时自动接入。"
+            "value" : "之后安装的代理会在 pillr 下次启动时自动接入。"
           }
         }
       }
     },
-    "An agent's desktop app has no terminal to type into. With Accessibility, spyx can reach the ones listed here; the rest pick the lid's level up next session." : {
+    "An agent's desktop app has no terminal to type into. With Accessibility, pillr can reach the ones listed here; the rest pick the lid's level up next session." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "L’app de bureau d’un agent n’a pas de terminal où taper. Avec l’Accessibilité, spyx atteint celles listées ici ; les autres prennent le niveau du couvercle à la session suivante."
+            "value" : "L’app de bureau d’un agent n’a pas de terminal où taper. Avec l’Accessibilité, pillr atteint celles listées ici ; les autres prennent le niveau du couvercle à la session suivante."
           }
         },
         "ja" : {
@@ -34074,19 +34074,19 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O app de desktop de um agente não tem terminal para digitar. Com Acessibilidade, o spyx alcança os listados aqui; os demais pegam o nível da tampa na próxima sessão."
+            "value" : "O app de desktop de um agente não tem terminal para digitar. Com Acessibilidade, o pillr alcança os listados aqui; os demais pegam o nível da tampa na próxima sessão."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "У настольного приложения агента нет терминала для ввода. С Универсальным доступом spyx достаёт до перечисленных здесь; остальные возьмут уровень крышки в следующей сессии."
+            "value" : "У настольного приложения агента нет терминала для ввода. С Универсальным доступом pillr достаёт до перечисленных здесь; остальные возьмут уровень крышки в следующей сессии."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "代理的桌面 App 没有可输入的终端。开启辅助功能后，spyx 可以触达这里列出的 App；其余的会在下一次会话采用合盖级别。"
+            "value" : "代理的桌面 App 没有可输入的终端。开启辅助功能后，pillr 可以触达这里列出的 App；其余的会在下一次会话采用合盖级别。"
           }
         }
       }
@@ -34329,36 +34329,36 @@
         }
       }
     },
-    "Each agent tells spyx the moment its turn ends, so the done card is never a guess. Where an agent can ask for approval through a hook, you answer it from the notch." : {
+    "Each agent tells pillr the moment its turn ends, so the done card is never a guess. Where an agent can ask for approval through a hook, you answer it from the notch." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chaque agent prévient spyx dès que son tour se termine : la carte « terminé » n’est jamais une supposition. Quand un agent peut demander une approbation par un hook, vous répondez depuis l’encoche."
+            "value" : "Chaque agent prévient pillr dès que son tour se termine : la carte « terminé » n’est jamais une supposition. Quand un agent peut demander une approbation par un hook, vous répondez depuis l’encoche."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "各エージェントはターンが終わった瞬間に spyx に知らせるので、完了カードは推測になりません。フックで承認を求められるエージェントには、ノッチから答えられます。"
+            "value" : "各エージェントはターンが終わった瞬間に pillr に知らせるので、完了カードは推測になりません。フックで承認を求められるエージェントには、ノッチから答えられます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cada agente avisa o spyx no instante em que o turno termina, então o cartão de concluído nunca é um palpite. Onde um agente pode pedir aprovação por hook, você responde pelo notch."
+            "value" : "Cada agente avisa o pillr no instante em que o turno termina, então o cartão de concluído nunca é um palpite. Onde um agente pode pedir aprovação por hook, você responde pelo notch."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Каждый агент сообщает spyx, как только его ход закончен, — карточка «готово» никогда не бывает догадкой. Если агент умеет просить одобрение через хук, вы отвечаете из выреза."
+            "value" : "Каждый агент сообщает pillr, как только его ход закончен, — карточка «готово» никогда не бывает догадкой. Если агент умеет просить одобрение через хук, вы отвечаете из выреза."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每个代理在回合结束的瞬间通知 spyx，完成卡片绝不靠猜。代理能通过 hook 请求批准时，你可以直接在刘海里回答。"
+            "value" : "每个代理在回合结束的瞬间通知 pillr，完成卡片绝不靠猜。代理能通过 hook 请求批准时，你可以直接在刘海里回答。"
           }
         }
       }
@@ -34397,36 +34397,36 @@
         }
       }
     },
-    "Every agent you use, on one list. spyx reads each one's usage with the login it already has on this Mac, and sends nothing anywhere but that agent's own servers." : {
+    "Every agent you use, on one list. pillr reads each one's usage with the login it already has on this Mac, and sends nothing anywhere but that agent's own servers." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tous vos agents, sur une seule liste. spyx lit l’usage de chacun avec la connexion déjà présente sur ce Mac, et n’envoie rien ailleurs qu’aux serveurs de cet agent."
+            "value" : "Tous vos agents, sur une seule liste. pillr lit l’usage de chacun avec la connexion déjà présente sur ce Mac, et n’envoie rien ailleurs qu’aux serveurs de cet agent."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "使っているエージェントをすべて一覧に。spyx はこの Mac にある既存のログインで各エージェントの使用量を読み取り、そのエージェント自身のサーバー以外には何も送りません。"
+            "value" : "使っているエージェントをすべて一覧に。pillr はこの Mac にある既存のログインで各エージェントの使用量を読み取り、そのエージェント自身のサーバー以外には何も送りません。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Todos os agentes que você usa, numa só lista. O spyx lê o uso de cada um com o login que já existe neste Mac e não envia nada a lugar nenhum além dos servidores do próprio agente."
+            "value" : "Todos os agentes que você usa, numa só lista. O pillr lê o uso de cada um com o login que já existe neste Mac e não envia nada a lugar nenhum além dos servidores do próprio agente."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Все ваши агенты — в одном списке. spyx читает расход каждого через вход, который уже есть на этом Mac, и ничего не отправляет никуда, кроме серверов самого агента."
+            "value" : "Все ваши агенты — в одном списке. pillr читает расход каждого через вход, который уже есть на этом Mac, и ничего не отправляет никуда, кроме серверов самого агента."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "你用的所有代理，都在一张列表里。spyx 用此 Mac 上已有的登录读取每个代理的用量，除了该代理自己的服务器外不发送任何内容。"
+            "value" : "你用的所有代理，都在一张列表里。pillr 用此 Mac 上已有的登录读取每个代理的用量，除了该代理自己的服务器外不发送任何内容。"
           }
         }
       }
@@ -34907,36 +34907,36 @@
         }
       }
     },
-    "Also linked when installed: %@. An agent installed later is hooked on its own the next time spyx starts." : {
+    "Also linked when installed: %@. An agent installed later is hooked on its own the next time pillr starts." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aussi relié une fois installé : %@. Un agent installé plus tard est relié tout seul au prochain démarrage de spyx."
+            "value" : "Aussi relié une fois installé : %@. Un agent installé plus tard est relié tout seul au prochain démarrage de pillr."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "インストールすると接続されるもの:%@。後からインストールしたエージェントも、次に spyx が起動したとき自動でつながります。"
+            "value" : "インストールすると接続されるもの:%@。後からインストールしたエージェントも、次に pillr が起動したとき自動でつながります。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Também ligado quando instalado: %@. Um agente instalado depois é ligado sozinho na próxima vez que o spyx abrir."
+            "value" : "Também ligado quando instalado: %@. Um agente instalado depois é ligado sozinho na próxima vez que o pillr abrir."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Также подключается после установки: %@. Агент, установленный позже, подключится сам при следующем запуске spyx."
+            "value" : "Также подключается после установки: %@. Агент, установленный позже, подключится сам при следующем запуске pillr."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "安装后同样会接入：%@。之后安装的代理会在 spyx 下次启动时自动接入。"
+            "value" : "安装后同样会接入：%@。之后安装的代理会在 pillr 下次启动时自动接入。"
           }
         }
       }
@@ -35145,70 +35145,70 @@
         }
       }
     },
-    "About spyx" : {
+    "About pillr" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "À propos de spyx"
+            "value" : "À propos de pillr"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx について"
+            "value" : "pillr について"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sobre o spyx"
+            "value" : "Sobre o pillr"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "О spyx"
+            "value" : "О pillr"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "关于 spyx"
+            "value" : "关于 pillr"
           }
         }
       }
     },
-    "Accessibility is off for spyx — switch it on in System Settings → Privacy & Security → Accessibility" : {
+    "Accessibility is off for pillr — switch it on in System Settings → Privacy & Security → Accessibility" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "L’Accessibilité est désactivée pour spyx — activez-la dans Réglages Système → Confidentialité et sécurité → Accessibilité"
+            "value" : "L’Accessibilité est désactivée pour pillr — activez-la dans Réglages Système → Confidentialité et sécurité → Accessibilité"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx のアクセシビリティがオフです — システム設定 → プライバシーとセキュリティ → アクセシビリティ でオンにしてください"
+            "value" : "pillr のアクセシビリティがオフです — システム設定 → プライバシーとセキュリティ → アクセシビリティ でオンにしてください"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A Acessibilidade está desligada para o spyx — ative em Ajustes do Sistema → Privacidade e Segurança → Acessibilidade"
+            "value" : "A Acessibilidade está desligada para o pillr — ative em Ajustes do Sistema → Privacidade e Segurança → Acessibilidade"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Универсальный доступ для spyx выключен — включите его в Системных настройках → Конфиденциальность и безопасность → Универсальный доступ"
+            "value" : "Универсальный доступ для pillr выключен — включите его в Системных настройках → Конфиденциальность и безопасность → Универсальный доступ"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 的辅助功能已关闭 — 请在系统设置 → 隐私与安全性 → 辅助功能中打开"
+            "value" : "pillr 的辅助功能已关闭 — 请在系统设置 → 隐私与安全性 → 辅助功能中打开"
           }
         }
       }
@@ -35281,36 +35281,36 @@
         }
       }
     },
-    "Before you delete spyx: takes its hooks out of every agent's config and puts Codex's notify back as it was." : {
+    "Before you delete pillr: takes its hooks out of every agent's config and puts Codex's notify back as it was." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Avant de supprimer spyx : retire ses hooks de la config de chaque agent et remet le notify de Codex comme avant."
+            "value" : "Avant de supprimer pillr : retire ses hooks de la config de chaque agent et remet le notify de Codex comme avant."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx を削除する前に:各エージェントの設定から spyx のフックを外し、Codex の notify を元に戻します。"
+            "value" : "pillr を削除する前に:各エージェントの設定から pillr のフックを外し、Codex の notify を元に戻します。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Antes de apagar o spyx: tira os hooks dele da config de cada agente e devolve o notify do Codex como era."
+            "value" : "Antes de apagar o pillr: tira os hooks dele da config de cada agente e devolve o notify do Codex como era."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Перед удалением spyx: убирает его хуки из конфигов всех агентов и возвращает notify Codex как было."
+            "value" : "Перед удалением pillr: убирает его хуки из конфигов всех агентов и возвращает notify Codex как было."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "删除 spyx 之前：从每个代理的配置中移除它的 hook，并把 Codex 的 notify 恢复原样。"
+            "value" : "删除 pillr 之前：从每个代理的配置中移除它的 hook，并把 Codex 的 notify 恢复原样。"
           }
         }
       }
@@ -35485,36 +35485,36 @@
         }
       }
     },
-    "Downloaded in the background. spyx asks before it restarts to finish." : {
+    "Downloaded in the background. pillr asks before it restarts to finish." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Téléchargées en arrière-plan. spyx demande avant de redémarrer pour terminer."
+            "value" : "Téléchargées en arrière-plan. pillr demande avant de redémarrer pour terminer."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "バックグラウンドでダウンロードします。完了のための再起動は spyx が確認します。"
+            "value" : "バックグラウンドでダウンロードします。完了のための再起動は pillr が確認します。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Baixadas em segundo plano. O spyx pergunta antes de reiniciar para concluir."
+            "value" : "Baixadas em segundo plano. O pillr pergunta antes de reiniciar para concluir."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Загружаются в фоне. spyx спросит, прежде чем перезапуститься."
+            "value" : "Загружаются в фоне. pillr спросит, прежде чем перезапуститься."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在后台下载。spyx 会在重启完成更新前先询问你。"
+            "value" : "在后台下载。pillr 会在重启完成更新前先询问你。"
           }
         }
       }
@@ -35689,36 +35689,36 @@
         }
       }
     },
-    "Hooks go in once spyx is in Applications — they point at where spyx lives, and a copy on the disk image disappears." : {
+    "Hooks go in once pillr is in Applications — they point at where pillr lives, and a copy on the disk image disappears." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les hooks sont ajoutés une fois spyx dans Applications — ils pointent vers spyx, et une copie sur l’image disque disparaît."
+            "value" : "Les hooks sont ajoutés une fois pillr dans Applications — ils pointent vers pillr, et une copie sur l’image disque disparaît."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "hooks は spyx が「アプリケーション」に入ってから追加されます — hook は spyx の場所を指すため、ディスクイメージ上のコピーは消えてしまいます。"
+            "value" : "hooks は pillr が「アプリケーション」に入ってから追加されます — hook は pillr の場所を指すため、ディスクイメージ上のコピーは消えてしまいます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Os hooks entram quando o spyx estiver em Aplicativos — eles apontam para onde o spyx está, e uma cópia na imagem de disco desaparece."
+            "value" : "Os hooks entram quando o pillr estiver em Aplicativos — eles apontam para onde o pillr está, e uma cópia na imagem de disco desaparece."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Хуки добавляются, когда spyx в «Программах»: они указывают на spyx, а копия на образе диска исчезнет."
+            "value" : "Хуки добавляются, когда pillr в «Программах»: они указывают на pillr, а копия на образе диска исчезнет."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 放进“应用程序”后才会加入 hook — hook 指向 spyx 所在的位置，磁盘映像上的副本会消失。"
+            "value" : "pillr 放进“应用程序”后才会加入 hook — hook 指向 pillr 所在的位置，磁盘映像上的副本会消失。"
           }
         }
       }
@@ -35859,70 +35859,70 @@
         }
       }
     },
-    "No reading yet — spyx keeps trying. If this lasts, open %@ once to refresh its login." : {
+    "No reading yet — pillr keeps trying. If this lasts, open %@ once to refresh its login." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pas encore de relevé — spyx réessaie. Si ça dure, ouvrez %@ une fois pour rafraîchir sa connexion."
+            "value" : "Pas encore de relevé — pillr réessaie. Si ça dure, ouvrez %@ une fois pour rafraîchir sa connexion."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "まだ読み取れていません — spyx は試し続けます。続く場合は %@ を一度開いてログインを更新してください。"
+            "value" : "まだ読み取れていません — pillr は試し続けます。続く場合は %@ を一度開いてログインを更新してください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ainda sem leitura — o spyx continua tentando. Se demorar, abra o %@ uma vez para renovar o login."
+            "value" : "Ainda sem leitura — o pillr continua tentando. Se demorar, abra o %@ uma vez para renovar o login."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Данных пока нет — spyx продолжает пытаться. Если так и останется, откройте %@ один раз, чтобы обновить вход."
+            "value" : "Данных пока нет — pillr продолжает пытаться. Если так и останется, откройте %@ один раз, чтобы обновить вход."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "暂无读数 — spyx 会继续尝试。如果一直如此，请打开一次 %@ 刷新登录。"
+            "value" : "暂无读数 — pillr 会继续尝试。如果一直如此，请打开一次 %@ 刷新登录。"
           }
         }
       }
     },
-    "Nothing was left in any agent. You can move spyx to the Trash." : {
+    "Nothing was left in any agent. You can move pillr to the Trash." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rien ne restait dans aucun agent. Vous pouvez mettre spyx à la Corbeille."
+            "value" : "Rien ne restait dans aucun agent. Vous pouvez mettre pillr à la Corbeille."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "どのエージェントにも何も残っていませんでした。spyx をゴミ箱に入れて構いません。"
+            "value" : "どのエージェントにも何も残っていませんでした。pillr をゴミ箱に入れて構いません。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nada ficou em nenhum agente. Você pode mover o spyx para o Lixo."
+            "value" : "Nada ficou em nenhum agente. Você pode mover o pillr para o Lixo."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ни в одном агенте ничего не осталось. spyx можно переместить в Корзину."
+            "value" : "Ни в одном агенте ничего не осталось. pillr можно переместить в Корзину."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "没有任何代理中残留内容。现在可以把 spyx 移到废纸篓。"
+            "value" : "没有任何代理中残留内容。现在可以把 pillr 移到废纸篓。"
           }
         }
       }
@@ -35961,104 +35961,104 @@
         }
       }
     },
-    "Remove spyx from my agents" : {
+    "Remove pillr from my agents" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Retirer spyx de mes agents"
+            "value" : "Retirer pillr de mes agents"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "エージェントから spyx を取り除く"
+            "value" : "エージェントから pillr を取り除く"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remover o spyx dos meus agentes"
+            "value" : "Remover o pillr dos meus agentes"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Убрать spyx из моих агентов"
+            "value" : "Убрать pillr из моих агентов"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "从我的代理中移除 spyx"
+            "value" : "从我的代理中移除 pillr"
           }
         }
       }
     },
-    "Remove spyx from your agents?" : {
+    "Remove pillr from your agents?" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Retirer spyx de vos agents ?"
+            "value" : "Retirer pillr de vos agents ?"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "エージェントから spyx を取り除きますか?"
+            "value" : "エージェントから pillr を取り除きますか?"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remover o spyx dos seus agentes?"
+            "value" : "Remover o pillr dos seus agentes?"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Убрать spyx из ваших агентов?"
+            "value" : "Убрать pillr из ваших агентов?"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "要从你的代理中移除 spyx 吗？"
+            "value" : "要从你的代理中移除 pillr 吗？"
           }
         }
       }
     },
-    "Removed from %@. You can move spyx to the Trash." : {
+    "Removed from %@. You can move pillr to the Trash." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Retiré de %@. Vous pouvez mettre spyx à la Corbeille."
+            "value" : "Retiré de %@. Vous pouvez mettre pillr à la Corbeille."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ から取り除きました。spyx をゴミ箱に入れて構いません。"
+            "value" : "%@ から取り除きました。pillr をゴミ箱に入れて構いません。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Removido de %@. Você pode mover o spyx para o Lixo."
+            "value" : "Removido de %@. Você pode mover o pillr para o Lixo."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Убрано из: %@. spyx можно переместить в Корзину."
+            "value" : "Убрано из: %@. pillr можно переместить в Корзину."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已从 %@ 中移除。现在可以把 spyx 移到废纸篓。"
+            "value" : "已从 %@ 中移除。现在可以把 pillr 移到废纸篓。"
           }
         }
       }
@@ -36369,70 +36369,70 @@
         }
       }
     },
-    "Terminal hasn't allowed spyx yet — allow it in Settings → General → Run Setup Again… → Terminals" : {
+    "Terminal hasn't allowed pillr yet — allow it in Settings → General → Run Setup Again… → Terminals" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Terminal n’a pas encore autorisé spyx — autorisez-le dans Réglages → Général → Relancer la configuration… → Terminaux"
+            "value" : "Terminal n’a pas encore autorisé pillr — autorisez-le dans Réglages → Général → Relancer la configuration… → Terminaux"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ターミナルがまだ spyx を許可していません — 設定 → 一般 → セットアップをもう一度… → ターミナル で許可してください"
+            "value" : "ターミナルがまだ pillr を許可していません — 設定 → 一般 → セットアップをもう一度… → ターミナル で許可してください"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O Terminal ainda não permitiu o spyx — permita em Ajustes → Geral → Executar Configuração de Novo… → Terminais"
+            "value" : "O Terminal ainda não permitiu o pillr — permita em Ajustes → Geral → Executar Configuração de Novo… → Terminais"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Терминал ещё не разрешил spyx — разрешите в Настройках → Основные → Запустить настройку снова… → Терминалы"
+            "value" : "Терминал ещё не разрешил pillr — разрешите в Настройках → Основные → Запустить настройку снова… → Терминалы"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "终端尚未允许 spyx — 请在 设置 → 通用 → 再次运行设置… → 终端 中允许"
+            "value" : "终端尚未允许 pillr — 请在 设置 → 通用 → 再次运行设置… → 终端 中允许"
           }
         }
       }
     },
-    "Terminal · allow spyx in Setup → Terminals to apply it live" : {
+    "Terminal · allow pillr in Setup → Terminals to apply it live" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Terminal · autorisez spyx dans Configuration → Terminaux pour l’appliquer en direct"
+            "value" : "Terminal · autorisez pillr dans Configuration → Terminaux pour l’appliquer en direct"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ターミナル · ライブで適用するには セットアップ → ターミナル で spyx を許可"
+            "value" : "ターミナル · ライブで適用するには セットアップ → ターミナル で pillr を許可"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Terminal · permita o spyx em Configuração → Terminais para aplicar ao vivo"
+            "value" : "Terminal · permita o pillr em Configuração → Terminais para aplicar ao vivo"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Терминал · разрешите spyx в Настройке → Терминалы, чтобы применять сразу"
+            "value" : "Терминал · разрешите pillr в Настройке → Терминалы, чтобы применять сразу"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "终端 · 在 设置向导 → 终端 中允许 spyx 才能实时应用"
+            "value" : "终端 · 在 设置向导 → 终端 中允许 pillr 才能实时应用"
           }
         }
       }
@@ -36471,36 +36471,36 @@
         }
       }
     },
-    "To know the moment a turn ends, spyx adds a small hook of its own to each agent's config. Turning this off takes those hooks out again." : {
+    "To know the moment a turn ends, pillr adds a small hook of its own to each agent's config. Turning this off takes those hooks out again." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pour savoir dès qu’un tour se termine, spyx ajoute un petit hook à la config de chaque agent. Désactiver ceci les retire."
+            "value" : "Pour savoir dès qu’un tour se termine, pillr ajoute un petit hook à la config de chaque agent. Désactiver ceci les retire."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ターンの終わりをすぐ知るため、spyx は各エージェントの設定に小さなフックを追加します。オフにするとそのフックを取り除きます。"
+            "value" : "ターンの終わりをすぐ知るため、pillr は各エージェントの設定に小さなフックを追加します。オフにするとそのフックを取り除きます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Para saber no instante em que um turno termina, o spyx adiciona um pequeno hook à config de cada agente. Desligar isto os remove."
+            "value" : "Para saber no instante em que um turno termina, o pillr adiciona um pequeno hook à config de cada agente. Desligar isto os remove."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Чтобы узнавать о конце хода сразу, spyx добавляет небольшой хук в конфиг каждого агента. Выключение убирает эти хуки."
+            "value" : "Чтобы узнавать о конце хода сразу, pillr добавляет небольшой хук в конфиг каждого агента. Выключение убирает эти хуки."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "为了在回合结束时立刻知道，spyx 会在每个代理的配置中加入一个小 hook。关闭此项会移除这些 hook。"
+            "value" : "为了在回合结束时立刻知道，pillr 会在每个代理的配置中加入一个小 hook。关闭此项会移除这些 hook。"
           }
         }
       }
@@ -36539,36 +36539,36 @@
         }
       }
     },
-    "Version %@ is ready. Restart spyx to finish updating." : {
+    "Version %@ is ready. Restart pillr to finish updating." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La version %@ est prête. Redémarrez spyx pour terminer la mise à jour."
+            "value" : "La version %@ est prête. Redémarrez pillr pour terminer la mise à jour."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "バージョン %@ の準備ができました。spyx を再起動して更新を完了してください。"
+            "value" : "バージョン %@ の準備ができました。pillr を再起動して更新を完了してください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A versão %@ está pronta. Reinicie o spyx para concluir a atualização."
+            "value" : "A versão %@ está pronta. Reinicie o pillr para concluir a atualização."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Версия %@ готова. Перезапустите spyx, чтобы завершить обновление."
+            "value" : "Версия %@ готова. Перезапустите pillr, чтобы завершить обновление."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "版本 %@ 已就绪。重启 spyx 以完成更新。"
+            "value" : "版本 %@ 已就绪。重启 pillr 以完成更新。"
           }
         }
       }
@@ -36607,138 +36607,138 @@
         }
       }
     },
-    "an unexpected answer (%lld); spyx will try again" : {
+    "an unexpected answer (%lld); pillr will try again" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "une réponse inattendue (%lld) ; spyx réessaiera"
+            "value" : "une réponse inattendue (%lld) ; pillr réessaiera"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "予期しない応答 (%lld)。spyx は再試行します"
+            "value" : "予期しない応答 (%lld)。pillr は再試行します"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "uma resposta inesperada (%lld); o spyx vai tentar de novo"
+            "value" : "uma resposta inesperada (%lld); o pillr vai tentar de novo"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "неожиданный ответ (%lld); spyx попробует снова"
+            "value" : "неожиданный ответ (%lld); pillr попробует снова"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "意外的响应（%lld）；spyx 会重试"
+            "value" : "意外的响应（%lld）；pillr 会重试"
           }
         }
       }
     },
-    "its server is having trouble (%lld); spyx will try again" : {
+    "its server is having trouble (%lld); pillr will try again" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "son serveur a un problème (%lld) ; spyx réessaiera"
+            "value" : "son serveur a un problème (%lld) ; pillr réessaiera"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "サーバーに問題があります (%lld)。spyx は再試行します"
+            "value" : "サーバーに問題があります (%lld)。pillr は再試行します"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "o servidor está com problemas (%lld); o spyx vai tentar de novo"
+            "value" : "o servidor está com problemas (%lld); o pillr vai tentar de novo"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "у его сервера проблемы (%lld); spyx попробует снова"
+            "value" : "у его сервера проблемы (%lld); pillr попробует снова"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "其服务器出现问题（%lld）；spyx 会重试"
+            "value" : "其服务器出现问题（%lld）；pillr 会重试"
           }
         }
       }
     },
-    "no reply — check your connection; spyx will try again" : {
+    "no reply — check your connection; pillr will try again" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "pas de réponse — vérifiez votre connexion ; spyx réessaiera"
+            "value" : "pas de réponse — vérifiez votre connexion ; pillr réessaiera"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "応答なし — 接続を確認してください。spyx は再試行します"
+            "value" : "応答なし — 接続を確認してください。pillr は再試行します"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "sem resposta — verifique sua conexão; o spyx vai tentar de novo"
+            "value" : "sem resposta — verifique sua conexão; o pillr vai tentar de novo"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "нет ответа — проверьте подключение; spyx попробует снова"
+            "value" : "нет ответа — проверьте подключение; pillr попробует снова"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "无响应 — 请检查网络连接；spyx 会重试"
+            "value" : "无响应 — 请检查网络连接；pillr 会重试"
           }
         }
       }
     },
-    "too many checks for now; spyx will try again in a few minutes" : {
+    "too many checks for now; pillr will try again in a few minutes" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "trop de vérifications pour le moment ; spyx réessaiera dans quelques minutes"
+            "value" : "trop de vérifications pour le moment ; pillr réessaiera dans quelques minutes"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "確認が多すぎます。spyx は数分後に再試行します"
+            "value" : "確認が多すぎます。pillr は数分後に再試行します"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "verificações demais por agora; o spyx tenta de novo em alguns minutos"
+            "value" : "verificações demais por agora; o pillr tenta de novo em alguns minutos"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "слишком много проверок; spyx попробует снова через несколько минут"
+            "value" : "слишком много проверок; pillr попробует снова через несколько минут"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "检查次数过多；spyx 会在几分钟后重试"
+            "value" : "检查次数过多；pillr 会在几分钟后重试"
           }
         }
       }
@@ -38200,7 +38200,7 @@
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在终端运行 amp login，spyx 会读取 ~/.local/share/amp/secrets.json。"
+            "value" : "在终端运行 amp login，pillr 会读取 ~/.local/share/amp/secrets.json。"
           }
         }
       }
@@ -39599,36 +39599,36 @@
         }
       }
     },
-    "Once a day from open.er-api.com and OpenRouter — the only servers spyx reaches that are not an agent's own or GitHub." : {
+    "Once a day from open.er-api.com and OpenRouter — the only servers pillr reaches that are not an agent's own or GitHub." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Une fois par jour depuis open.er-api.com et OpenRouter — les seuls serveurs contactés par spyx qui ne sont ni ceux d'un agent ni GitHub."
+            "value" : "Une fois par jour depuis open.er-api.com et OpenRouter — les seuls serveurs contactés par pillr qui ne sont ni ceux d'un agent ni GitHub."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "1日1回 open.er-api.com と OpenRouter から取得します。spyx が接続する、エージェント自身のサーバーと GitHub 以外の唯一のサーバーです。"
+            "value" : "1日1回 open.er-api.com と OpenRouter から取得します。pillr が接続する、エージェント自身のサーバーと GitHub 以外の唯一のサーバーです。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Uma vez por dia, de open.er-api.com e OpenRouter — os únicos servidores que o spyx acessa que não são de um agente nem o GitHub."
+            "value" : "Uma vez por dia, de open.er-api.com e OpenRouter — os únicos servidores que o pillr acessa que não são de um agente nem o GitHub."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Раз в день с open.er-api.com и OpenRouter — единственные серверы, к которым обращается spyx, помимо серверов самих агентов и GitHub."
+            "value" : "Раз в день с open.er-api.com и OpenRouter — единственные серверы, к которым обращается pillr, помимо серверов самих агентов и GitHub."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每天一次，来自 open.er-api.com 和 OpenRouter——这是 spyx 访问的、除各代理自身服务器和 GitHub 以外仅有的服务器。"
+            "value" : "每天一次，来自 open.er-api.com 和 OpenRouter——这是 pillr 访问的、除各代理自身服务器和 GitHub 以外仅有的服务器。"
           }
         }
       }
@@ -40211,36 +40211,36 @@
         }
       }
     },
-    "Most readings are borrowed from a tool that already holds the account. DeepSeek, MiniMax and QianwenAI are the exceptions: clicking Sign in opens a spyx window for that account, and signing out here clears only that session and its saved reading." : {
+    "Most readings are borrowed from a tool that already holds the account. DeepSeek, MiniMax and QianwenAI are the exceptions: clicking Sign in opens a pillr window for that account, and signing out here clears only that session and its saved reading." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La plupart des relevés sont empruntés à un outil qui détient déjà le compte. DeepSeek, MiniMax et QianwenAI font exception : cliquer sur Se connecter ouvre une fenêtre spyx pour ce compte, et se déconnecter ici efface uniquement cette session et son relevé enregistré."
+            "value" : "La plupart des relevés sont empruntés à un outil qui détient déjà le compte. DeepSeek, MiniMax et QianwenAI font exception : cliquer sur Se connecter ouvre une fenêtre pillr pour ce compte, et se déconnecter ici efface uniquement cette session et son relevé enregistré."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ほとんどの数値は、すでにアカウントを持っているツールから借りています。DeepSeek、MiniMax、QianwenAI は例外です。サインインをクリックするとそのアカウント用の spyx ウインドウが開き、ここでサインアウトすると、そのセッションと保存された数値だけが消去されます。"
+            "value" : "ほとんどの数値は、すでにアカウントを持っているツールから借りています。DeepSeek、MiniMax、QianwenAI は例外です。サインインをクリックするとそのアカウント用の pillr ウインドウが開き、ここでサインアウトすると、そのセッションと保存された数値だけが消去されます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A maioria das leituras vem de uma ferramenta que já tem a conta. DeepSeek, MiniMax e QianwenAI são as exceções: clicar em Entrar abre uma janela do spyx para essa conta, e sair aqui apaga apenas essa sessão e a leitura salva."
+            "value" : "A maioria das leituras vem de uma ferramenta que já tem a conta. DeepSeek, MiniMax e QianwenAI são as exceções: clicar em Entrar abre uma janela do pillr para essa conta, e sair aqui apaga apenas essa sessão e a leitura salva."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Большинство показаний берётся у инструмента, в котором уже есть учётная запись. Исключения — DeepSeek, MiniMax и QianwenAI: кнопка «Войти» открывает окно spyx для этой учётной записи, а выход здесь стирает только эту сессию и её сохранённое показание."
+            "value" : "Большинство показаний берётся у инструмента, в котором уже есть учётная запись. Исключения — DeepSeek, MiniMax и QianwenAI: кнопка «Войти» открывает окно pillr для этой учётной записи, а выход здесь стирает только эту сессию и её сохранённое показание."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "大多数读数借自已经持有账号的工具。DeepSeek、MiniMax 和 QianwenAI 是例外：点「登录」会为该账号打开一个 spyx 窗口，在这里退出只会清除该会话及其保存的读数。"
+            "value" : "大多数读数借自已经持有账号的工具。DeepSeek、MiniMax 和 QianwenAI 是例外：点「登录」会为该账号打开一个 pillr 窗口，在这里退出只会清除该会话及其保存的读数。"
           }
         }
       }
@@ -40347,36 +40347,36 @@
         }
       }
     },
-    "Sign in to MiniMax in spyx, or paste a Coding Plan key. A Cookie header is optional. spyx never reads a browser's cookies." : {
+    "Sign in to MiniMax in pillr, or paste a Coding Plan key. A Cookie header is optional. pillr never reads a browser's cookies." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Connectez-vous à MiniMax dans spyx, ou collez une clé Coding Plan. Un en-tête Cookie est facultatif. spyx ne lit jamais les cookies d'un navigateur."
+            "value" : "Connectez-vous à MiniMax dans pillr, ou collez une clé Coding Plan. Un en-tête Cookie est facultatif. pillr ne lit jamais les cookies d'un navigateur."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx で MiniMax にサインインするか、Coding Plan のキーを貼り付けてください。Cookie ヘッダーは任意です。spyx がブラウザの Cookie を読むことはありません。"
+            "value" : "pillr で MiniMax にサインインするか、Coding Plan のキーを貼り付けてください。Cookie ヘッダーは任意です。pillr がブラウザの Cookie を読むことはありません。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entre no MiniMax pelo spyx ou cole uma chave do Coding Plan. Um cabeçalho Cookie é opcional. O spyx nunca lê os cookies de um navegador."
+            "value" : "Entre no MiniMax pelo pillr ou cole uma chave do Coding Plan. Um cabeçalho Cookie é opcional. O pillr nunca lê os cookies de um navegador."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Войдите в MiniMax в spyx или вставьте ключ Coding Plan. Заголовок Cookie необязателен. spyx никогда не читает cookie браузера."
+            "value" : "Войдите в MiniMax в pillr или вставьте ключ Coding Plan. Заголовок Cookie необязателен. pillr никогда не читает cookie браузера."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在 spyx 中登录 MiniMax，或粘贴 Coding Plan 密钥。Cookie 请求头可选。spyx 从不读取浏览器的 Cookie。"
+            "value" : "在 pillr 中登录 MiniMax，或粘贴 Coding Plan 密钥。Cookie 请求头可选。pillr 从不读取浏览器的 Cookie。"
           }
         }
       }
@@ -45549,36 +45549,36 @@
         }
       }
     },
-    "Most readings are borrowed from a tool that already holds the account. DeepSeek, MiniMax and QianwenAI are the exceptions: Connect opens a spyx window for that account, and Disconnect clears only that session and its saved reading." : {
+    "Most readings are borrowed from a tool that already holds the account. DeepSeek, MiniMax and QianwenAI are the exceptions: Connect opens a pillr window for that account, and Disconnect clears only that session and its saved reading." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La plupart des relevés sont empruntés à un outil qui détient déjà le compte. DeepSeek, MiniMax et QianwenAI font exception : Connecter ouvre une fenêtre spyx pour ce compte, et Déconnecter efface uniquement cette session et son relevé enregistré."
+            "value" : "La plupart des relevés sont empruntés à un outil qui détient déjà le compte. DeepSeek, MiniMax et QianwenAI font exception : Connecter ouvre une fenêtre pillr pour ce compte, et Déconnecter efface uniquement cette session et son relevé enregistré."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ほとんどの数値は、すでにアカウントを持っているツールから借りています。DeepSeek、MiniMax、QianwenAI は例外です。「接続」でそのアカウント用の spyx ウインドウが開き、「接続解除」でそのセッションと保存された数値だけが消去されます。"
+            "value" : "ほとんどの数値は、すでにアカウントを持っているツールから借りています。DeepSeek、MiniMax、QianwenAI は例外です。「接続」でそのアカウント用の pillr ウインドウが開き、「接続解除」でそのセッションと保存された数値だけが消去されます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A maioria das leituras vem de uma ferramenta que já tem a conta. DeepSeek, MiniMax e QianwenAI são as exceções: Conectar abre uma janela do spyx para essa conta, e Desconectar apaga apenas essa sessão e a leitura salva."
+            "value" : "A maioria das leituras vem de uma ferramenta que já tem a conta. DeepSeek, MiniMax e QianwenAI são as exceções: Conectar abre uma janela do pillr para essa conta, e Desconectar apaga apenas essa sessão e a leitura salva."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Большинство показаний берётся у инструмента, в котором уже есть учётная запись. Исключения — DeepSeek, MiniMax и QianwenAI: кнопка «Подключить» открывает окно spyx для этой учётной записи, а «Отключить» стирает только эту сессию и её сохранённое показание."
+            "value" : "Большинство показаний берётся у инструмента, в котором уже есть учётная запись. Исключения — DeepSeek, MiniMax и QianwenAI: кнопка «Подключить» открывает окно pillr для этой учётной записи, а «Отключить» стирает только эту сессию и её сохранённое показание."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "大多数读数借自已经持有账号的工具。DeepSeek、MiniMax 和 QianwenAI 是例外：点「连接」会为该账号打开一个 spyx 窗口，点「断开连接」只会清除该会话及其保存的读数。"
+            "value" : "大多数读数借自已经持有账号的工具。DeepSeek、MiniMax 和 QianwenAI 是例外：点「连接」会为该账号打开一个 pillr 窗口，点「断开连接」只会清除该会话及其保存的读数。"
           }
         }
       }
@@ -46331,36 +46331,36 @@
         }
       }
     },
-    "Setting up — the hook goes in once spyx is in Applications." : {
+    "Setting up — the hook goes in once pillr is in Applications." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configuration — le hook s’installe une fois spyx dans Applications."
+            "value" : "Configuration — le hook s’installe une fois pillr dans Applications."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "準備中 — spyx が「アプリケーション」に入るとフックが追加されます。"
+            "value" : "準備中 — pillr が「アプリケーション」に入るとフックが追加されます。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Configurando — o hook entra quando o spyx estiver em Aplicativos."
+            "value" : "Configurando — o hook entra quando o pillr estiver em Aplicativos."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Настройка — хук добавится, когда spyx будет в «Программах»."
+            "value" : "Настройка — хук добавится, когда pillr будет в «Программах»."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在设置 — spyx 放入“应用程序”后才会加入 hook。"
+            "value" : "正在设置 — pillr 放入“应用程序”后才会加入 hook。"
           }
         }
       }
@@ -46841,36 +46841,36 @@
         }
       }
     },
-    "spyx doesn't know this provider" : {
+    "pillr doesn't know this provider" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx ne connaît pas ce fournisseur"
+            "value" : "pillr ne connaît pas ce fournisseur"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx はこのプロバイダを認識していません"
+            "value" : "pillr はこのプロバイダを認識していません"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O spyx não conhece este provedor"
+            "value" : "O pillr não conhece este provedor"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx не знает этого провайдера"
+            "value" : "pillr не знает этого провайдера"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 不认识此服务商"
+            "value" : "pillr 不认识此服务商"
           }
         }
       }
@@ -46943,36 +46943,36 @@
         }
       }
     },
-    "This key was added in spyx. If it stops working, remove it and add it again." : {
+    "This key was added in pillr. If it stops working, remove it and add it again." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cette clé a été ajoutée dans spyx. Si elle cesse de fonctionner, supprimez-la et ajoutez-la à nouveau."
+            "value" : "Cette clé a été ajoutée dans pillr. Si elle cesse de fonctionner, supprimez-la et ajoutez-la à nouveau."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "このキーは spyx で追加されました。使えなくなったら、削除してもう一度追加してください。"
+            "value" : "このキーは pillr で追加されました。使えなくなったら、削除してもう一度追加してください。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esta chave foi adicionada no spyx. Se ela parar de funcionar, remova-a e adicione-a de novo."
+            "value" : "Esta chave foi adicionada no pillr. Se ela parar de funcionar, remova-a e adicione-a de novo."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Этот ключ добавлен в spyx. Если он перестанет работать, удалите его и добавьте снова."
+            "value" : "Этот ключ добавлен в pillr. Если он перестанет работать, удалите его и добавьте снова."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "此密钥是在 spyx 中添加的。如果它不再可用，请移除后重新添加。"
+            "value" : "此密钥是在 pillr 中添加的。如果它不再可用，请移除后重新添加。"
           }
         }
       }
@@ -48609,36 +48609,36 @@
         }
       }
     },
-    "Each check sends one tiny request that %@ bills, so spyx checks only when you ask." : {
+    "Each check sends one tiny request that %@ bills, so pillr checks only when you ask." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chaque vérification envoie une toute petite requête que %1$@ facture : spyx ne vérifie donc que sur demande."
+            "value" : "Chaque vérification envoie une toute petite requête que %1$@ facture : pillr ne vérifie donc que sur demande."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "確認のたびに %1$@ が課金するごく小さなリクエストを1件送るため、spyx は依頼されたときだけ確認します。"
+            "value" : "確認のたびに %1$@ が課金するごく小さなリクエストを1件送るため、pillr は依頼されたときだけ確認します。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cada verificação envia uma pequena requisição que a %1$@ cobra, então o spyx só verifica quando você pede."
+            "value" : "Cada verificação envia uma pequena requisição que a %1$@ cobra, então o pillr só verifica quando você pede."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Каждая проверка — крошечный платный запрос к %1$@, поэтому spyx проверяет только по вашей просьбе."
+            "value" : "Каждая проверка — крошечный платный запрос к %1$@, поэтому pillr проверяет только по вашей просьбе."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "每次验证都会发送一个由 %1$@ 计费的极小请求，所以 spyx 只在你要求时才验证。"
+            "value" : "每次验证都会发送一个由 %1$@ 计费的极小请求，所以 pillr 只在你要求时才验证。"
           }
         }
       }
@@ -48813,12 +48813,12 @@
         }
       }
     },
-    "Key kept · each check is billed, so spyx checks only when you ask" : {
+    "Key kept · each check is billed, so pillr checks only when you ask" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Clé conservée · chaque vérification est facturée, spyx ne vérifie que sur demande"
+            "value" : "Clé conservée · chaque vérification est facturée, pillr ne vérifie que sur demande"
           }
         },
         "ja" : {
@@ -48830,13 +48830,13 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chave mantida · cada verificação é cobrada, então o spyx só verifica quando você pede"
+            "value" : "Chave mantida · cada verificação é cobrada, então o pillr só verifica quando você pede"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ключ сохранён · каждая проверка платная, поэтому spyx проверяет только по запросу"
+            "value" : "Ключ сохранён · каждая проверка платная, поэтому pillr проверяет только по запросу"
           }
         },
         "zh-Hans" : {
@@ -48881,12 +48881,12 @@
         }
       }
     },
-    "Key works · spyx couldn't read the usage in %@'s answer" : {
+    "Key works · pillr couldn't read the usage in %@'s answer" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La clé fonctionne · spyx n'a pas pu lire l'usage dans la réponse de %1$@"
+            "value" : "La clé fonctionne · pillr n'a pas pu lire l'usage dans la réponse de %1$@"
           }
         },
         "ja" : {
@@ -48898,19 +48898,19 @@
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A chave funciona · o spyx não conseguiu ler o uso na resposta da %1$@"
+            "value" : "A chave funciona · o pillr não conseguiu ler o uso na resposta da %1$@"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ключ работает · spyx не смог прочитать расход в ответе %1$@"
+            "value" : "Ключ работает · pillr не смог прочитать расход в ответе %1$@"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "密钥有效 · spyx 无法从 %1$@ 的响应中读取用量"
+            "value" : "密钥有效 · pillr 无法从 %1$@ 的响应中读取用量"
           }
         }
       }
@@ -49799,36 +49799,36 @@
         }
       }
     },
-    "Sign in to MiniMax in spyx, or add a Coding Plan key under API. A Cookie header is optional. spyx never reads a browser's cookies." : {
+    "Sign in to MiniMax in pillr, or add a Coding Plan key under API. A Cookie header is optional. pillr never reads a browser's cookies." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Connectez-vous à MiniMax dans spyx, ou ajoutez une clé Coding Plan dans API. Un en-tête Cookie est facultatif. spyx ne lit jamais les cookies d'un navigateur."
+            "value" : "Connectez-vous à MiniMax dans pillr, ou ajoutez une clé Coding Plan dans API. Un en-tête Cookie est facultatif. pillr ne lit jamais les cookies d'un navigateur."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx で MiniMax にサインインするか、API タブで Coding Plan のキーを追加してください。Cookie ヘッダーは任意です。spyx はブラウザの Cookie を読み取りません。"
+            "value" : "pillr で MiniMax にサインインするか、API タブで Coding Plan のキーを追加してください。Cookie ヘッダーは任意です。pillr はブラウザの Cookie を読み取りません。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Entre no MiniMax pelo spyx ou adicione uma chave do Coding Plan em API. Um cabeçalho Cookie é opcional. O spyx nunca lê os cookies de um navegador."
+            "value" : "Entre no MiniMax pelo pillr ou adicione uma chave do Coding Plan em API. Um cabeçalho Cookie é opcional. O pillr nunca lê os cookies de um navegador."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Войдите в MiniMax в spyx или добавьте ключ Coding Plan на вкладке API. Заголовок Cookie необязателен. spyx никогда не читает cookie браузера."
+            "value" : "Войдите в MiniMax в pillr или добавьте ключ Coding Plan на вкладке API. Заголовок Cookie необязателен. pillr никогда не читает cookie браузера."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在 spyx 中登录 MiniMax，或在 API 中添加 Coding Plan 密钥。Cookie 头为可选项。spyx 从不读取浏览器的 Cookie。"
+            "value" : "在 pillr 中登录 MiniMax，或在 API 中添加 Coding Plan 密钥。Cookie 头为可选项。pillr 从不读取浏览器的 Cookie。"
           }
         }
       }
@@ -50241,70 +50241,70 @@
         }
       }
     },
-    "spyx only sends keys over HTTPS" : {
+    "pillr only sends keys over HTTPS" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx n'envoie les clés qu'en HTTPS"
+            "value" : "pillr n'envoie les clés qu'en HTTPS"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx はキーを HTTPS でのみ送信します"
+            "value" : "pillr はキーを HTTPS でのみ送信します"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O spyx só envia chaves por HTTPS"
+            "value" : "O pillr só envia chaves por HTTPS"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx отправляет ключи только по HTTPS"
+            "value" : "pillr отправляет ключи только по HTTPS"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "spyx 只通过 HTTPS 发送密钥"
+            "value" : "pillr 只通过 HTTPS 发送密钥"
           }
         }
       }
     },
-    "%@ answered in a way spyx doesn't recognise" : {
+    "%@ answered in a way pillr doesn't recognise" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ a répondu dans un format que spyx ne reconnaît pas"
+            "value" : "%1$@ a répondu dans un format que pillr ne reconnaît pas"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ の応答は spyx が認識できない形式でした"
+            "value" : "%1$@ の応答は pillr が認識できない形式でした"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A %1$@ respondeu num formato que o spyx não reconhece"
+            "value" : "A %1$@ respondeu num formato que o pillr não reconhece"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ ответил в формате, который spyx не распознаёт"
+            "value" : "%1$@ ответил в формате, который pillr не распознаёт"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ 的响应格式 spyx 无法识别"
+            "value" : "%1$@ 的响应格式 pillr 无法识别"
           }
         }
       }
@@ -50445,36 +50445,36 @@
         }
       }
     },
-    "%@ doesn't share usage through its API, so spyx only checks that the key works. It gets no ring." : {
+    "%@ doesn't share usage through its API, so pillr only checks that the key works. It gets no ring." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ ne partage pas l'usage via son API : spyx vérifie seulement que la clé fonctionne. Elle n'a pas d'anneau."
+            "value" : "%1$@ ne partage pas l'usage via son API : pillr vérifie seulement que la clé fonctionne. Elle n'a pas d'anneau."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ は API で使用量を公開していないため、spyx はキーが有効かだけを確認します。リングは付きません。"
+            "value" : "%1$@ は API で使用量を公開していないため、pillr はキーが有効かだけを確認します。リングは付きません。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A %1$@ não informa o uso pela API, então o spyx só verifica se a chave funciona. Ela não ganha anel."
+            "value" : "A %1$@ não informa o uso pela API, então o pillr só verifica se a chave funciona. Ela não ganha anel."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ не отдаёт расход через API, поэтому spyx лишь проверяет, что ключ работает. Кольца у него нет."
+            "value" : "%1$@ не отдаёт расход через API, поэтому pillr лишь проверяет, что ключ работает. Кольца у него нет."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ 不通过 API 提供用量，所以 spyx 只验证密钥是否有效。它没有圆环。"
+            "value" : "%1$@ 不通过 API 提供用量，所以 pillr 只验证密钥是否有效。它没有圆环。"
           }
         }
       }
@@ -51873,70 +51873,70 @@
         }
       }
     },
-    "iTerm2 hasn't allowed spyx yet — allow it in Settings → General → Run Setup Again… → Terminals" : {
+    "iTerm2 hasn't allowed pillr yet — allow it in Settings → General → Run Setup Again… → Terminals" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "iTerm2 n’a pas encore autorisé spyx — autorisez-le dans Réglages → Général → Relancer la configuration… → Terminaux"
+            "value" : "iTerm2 n’a pas encore autorisé pillr — autorisez-le dans Réglages → Général → Relancer la configuration… → Terminaux"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "iTerm2 がまだ spyx を許可していません — 設定 → 一般 → セットアップをもう一度… → ターミナル で許可してください"
+            "value" : "iTerm2 がまだ pillr を許可していません — 設定 → 一般 → セットアップをもう一度… → ターミナル で許可してください"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O iTerm2 ainda não permitiu o spyx — permita em Ajustes → Geral → Executar Configuração de Novo… → Terminais"
+            "value" : "O iTerm2 ainda não permitiu o pillr — permita em Ajustes → Geral → Executar Configuração de Novo… → Terminais"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "iTerm2 ещё не разрешил spyx — разрешите в Настройках → Основные → Запустить настройку снова… → Терминалы"
+            "value" : "iTerm2 ещё не разрешил pillr — разрешите в Настройках → Основные → Запустить настройку снова… → Терминалы"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "iTerm2 尚未允许 spyx — 请在 设置 → 通用 → 再次运行设置… → 终端 中允许"
+            "value" : "iTerm2 尚未允许 pillr — 请在 设置 → 通用 → 再次运行设置… → 终端 中允许"
           }
         }
       }
     },
-    "%@ refused the message — check spyx is allowed under Automation" : {
+    "%@ refused the message — check pillr is allowed under Automation" : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ a refusé le message — vérifiez que spyx est autorisé dans Automatisation"
+            "value" : "%1$@ a refusé le message — vérifiez que pillr est autorisé dans Automatisation"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ がメッセージを拒否しました — 「オートメーション」で spyx が許可されているか確認してください"
+            "value" : "%1$@ がメッセージを拒否しました — 「オートメーション」で pillr が許可されているか確認してください"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ recusou a mensagem — verifique se o spyx está permitido em Automação"
+            "value" : "%1$@ recusou a mensagem — verifique se o pillr está permitido em Automação"
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ отклонил сообщение — проверьте, что spyx разрешён в разделе «Автоматизация»"
+            "value" : "%1$@ отклонил сообщение — проверьте, что pillr разрешён в разделе «Автоматизация»"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%1$@ 拒绝了这条消息 — 请检查“自动化”中是否已允许 spyx"
+            "value" : "%1$@ 拒绝了这条消息 — 请检查“自动化”中是否已允许 pillr"
           }
         }
       }
@@ -52621,36 +52621,36 @@
         }
       }
     },
-    "Hover a session and press Reply. spyx types it into that session's terminal or the Claude app — only when it's idle, never mid-task." : {
+    "Hover a session and press Reply. pillr types it into that session's terminal or the Claude app — only when it's idle, never mid-task." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Survolez une session et appuyez sur Répondre. spyx le tape dans le terminal de cette session ou dans l'app Claude — seulement quand elle est inactive, jamais en pleine tâche."
+            "value" : "Survolez une session et appuyez sur Répondre. pillr le tape dans le terminal de cette session ou dans l'app Claude — seulement quand elle est inactive, jamais en pleine tâche."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "セッションにホバーして「返信」を押します。spyx がそのセッションのターミナルか Claude アプリに入力します — アイドルのときだけで、作業中には入力しません。"
+            "value" : "セッションにホバーして「返信」を押します。pillr がそのセッションのターミナルか Claude アプリに入力します — アイドルのときだけで、作業中には入力しません。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Passe o cursor sobre uma sessão e clique em Responder. O spyx digita no terminal dessa sessão ou no app Claude — só quando ela está ociosa, nunca no meio de uma tarefa."
+            "value" : "Passe o cursor sobre uma sessão e clique em Responder. O pillr digita no terminal dessa sessão ou no app Claude — só quando ela está ociosa, nunca no meio de uma tarefa."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Наведите на сеанс и нажмите «Ответить». spyx введёт ответ в терминал этого сеанса или в приложение Claude — только когда он бездействует, никогда посреди задачи."
+            "value" : "Наведите на сеанс и нажмите «Ответить». pillr введёт ответ в терминал этого сеанса или в приложение Claude — только когда он бездействует, никогда посреди задачи."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "悬停在会话上，点「回复」。spyx 会把它输入到那个会话的终端或 Claude 应用 — 只在它空闲时，绝不在任务进行中。"
+            "value" : "悬停在会话上，点「回复」。pillr 会把它输入到那个会话的终端或 Claude 应用 — 只在它空闲时，绝不在任务进行中。"
           }
         }
       }
@@ -52957,6 +52957,788 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Claude 提问时，直接在卡片上回答。现在试试：在胶囊旁选一个选项再点“发送” — 这只是演示。"
+          }
+        }
+      }
+    },
+    "Reading it once to check…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une lecture pour vérifier…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一度読み取って確認しています…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lendo uma vez para verificar…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверяем одним чтением…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "读取一次以检查…"
+          }
+        }
+      }
+    },
+    "Sign in, then come back — pillr is watching for it" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connectez-vous, puis revenez — pillr surveille"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サインインしたら戻ってきてください — pillr が確認しています"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entre e volte — o pillr está de olho"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Войдите и возвращайтесь — pillr следит за этим"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "登录后回来即可 — pillr 正在等待"
+          }
+        }
+      }
+    },
+    "Found on this Mac" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trouvé sur ce Mac"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この Mac で見つかりました"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encontrado neste Mac"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Найден на этом Mac"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已在这台 Mac 上找到"
+          }
+        }
+      }
+    },
+    "Not set up on this Mac" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas installé sur ce Mac"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この Mac では未設定"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não configurado neste Mac"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не настроен на этом Mac"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未在这台 Mac 上设置"
+          }
+        }
+      }
+    },
+    "Install it from Terminal:" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installez-le depuis le Terminal :"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ターミナルからインストール："
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instale pelo Terminal:"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Установите из Терминала:"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在终端中安装："
+          }
+        }
+      }
+    },
+    "Copied" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copié"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コピーしました"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copiado"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скопировано"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已复制"
+          }
+        }
+      }
+    },
+    "Download %@ from its website and open it once." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Téléchargez %1$@ depuis son site et ouvrez-le une fois."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ を公式サイトからダウンロードして、一度開いてください。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baixe o %1$@ no site dele e abra-o uma vez."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скачайте %1$@ с его сайта и откройте один раз."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从官网下载 %1$@ 并打开一次。"
+          }
+        }
+      }
+    },
+    "Download %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Télécharger %1$@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ をダウンロード"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baixar %1$@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Скачать %1$@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下载 %1$@"
+          }
+        }
+      }
+    },
+    "Install guide" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guide d’installation"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インストールガイド"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guia de instalação"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Инструкция по установке"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安装指南"
+          }
+        }
+      }
+    },
+    "I've installed it" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "C’est installé"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インストールしました"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Já instalei"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Я установил"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "我已安装"
+          }
+        }
+      }
+    },
+    "%@ isn't on this Mac yet" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ n’est pas encore sur ce Mac"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ はまだこの Mac にありません"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O %1$@ ainda não está neste Mac"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ ещё нет на этом Mac"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这台 Mac 上还没有 %1$@"
+          }
+        }
+      }
+    },
+    "Install…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installer…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "インストール…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Instalar…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Установить…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "安装…"
+          }
+        }
+      }
+    },
+    "Not installed on this Mac — install it first" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas installé sur ce Mac — installez-le d’abord"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この Mac には未インストール — 先にインストールしてください"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não instalado neste Mac — instale primeiro"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Не установлен на этом Mac — сначала установите"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "这台 Mac 未安装 — 请先安装"
+          }
+        }
+      }
+    },
+    "Light" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clair"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ライト"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claro"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Светлая"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "浅色"
+          }
+        }
+      }
+    },
+    "Dark" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sombre"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダーク"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escuro"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тёмная"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "深色"
+          }
+        }
+      }
+    },
+    "System" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Système"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "システム"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sistema"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Как в системе"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跟随系统"
+          }
+        }
+      }
+    },
+    "Appearance: %@ — click for %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apparence : %1$@ — cliquez pour %2$@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外観：%1$@ — クリックで%2$@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aparência: %1$@ — clique para %2$@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Оформление: %1$@ — нажмите для «%2$@»"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "外观：%1$@ — 点按切换为%2$@"
+          }
+        }
+      }
+    },
+    "Switches to %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passe à %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@に切り替えます"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Muda para %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переключает на «%@»"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换为%@"
+          }
+        }
+      }
+    },
+    "Add key" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キーを追加"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加密钥"
+          }
+        }
+      }
+    },
+    "No keys yet — add one under API" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune clé — ajoutez-en une dans API"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キーなし — API で追加"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma chave — adicione em API"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ключей нет — добавьте в разделе API"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有密钥 — 在 API 中添加"
+          }
+        }
+      }
+    },
+    "Add API Key…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter une clé API…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API キーを追加…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar chave de API…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Добавить API-ключ…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "添加 API 密钥…"
+          }
+        }
+      }
+    },
+    "Track credit left and spend per key." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crédit restant et dépenses, clé par clé."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キーごとの残高と支出を表示。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crédito e gastos de cada chave."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Остаток и траты по каждому ключу."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按密钥查看余额和花费。"
+          }
+        }
+      }
+    },
+    "Right-click to add your first key." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clic droit pour ajouter une clé."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "右クリックで最初のキーを追加。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clique direito para adicionar uma."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Правый клик — добавить ключ."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "右键点按以添加第一个密钥。"
           }
         }
       }

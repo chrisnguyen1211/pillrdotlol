@@ -633,12 +633,12 @@ final class GeminiCLIActivityTests: XCTestCase {
     }
 
     func testAJustWrittenSessionReadsAsWorking() throws {
-        try session(project: "9d2c", projectRoot: "/Users/x/Projects/spyx", modified: now)
+        try session(project: "9d2c", projectRoot: "/Users/x/Projects/pillr", modified: now)
         let sessions = GeminiCLIActivity.read(root: root, staleAfter: 45, now: now)
         XCTAssertEqual(sessions.count, 1)
         XCTAssertEqual(sessions.first?.state, .busy)
         XCTAssertEqual(sessions.first?.name, "Gemini CLI")
-        XCTAssertEqual(sessions.first?.detail, "Working in spyx")
+        XCTAssertEqual(sessions.first?.detail, "Working in pillr")
         XCTAssertEqual(sessions.first?.id, "gemini-api.session-a")
     }
 
@@ -696,7 +696,7 @@ final class HermesGeminiActivityTests: XCTestCase {
         var startedAt: Date
         var endedAt: Date?
         var lastActivityAt: Date
-        var cwd = "/Users/x/Projects/spyx"
+        var cwd = "/Users/x/Projects/pillr"
         var title = "Untitled"
         /// When set, a `session_turn_leases` row for this session.
         var leaseExpiresAt: Date?
@@ -756,7 +756,7 @@ final class HermesGeminiActivityTests: XCTestCase {
         XCTAssertEqual(sessions.count, 1)
         XCTAssertEqual(sessions.first?.id, "gemini-api.hermes.s1")
         XCTAssertEqual(sessions.first?.name, "Hermes")
-        XCTAssertEqual(sessions.first?.detail, "Working in spyx")
+        XCTAssertEqual(sessions.first?.detail, "Working in pillr")
         XCTAssertEqual(sessions.first?.state, .busy)
         XCTAssertEqual(sessions.first?.since, now.addingTimeInterval(-300))
     }
@@ -911,7 +911,7 @@ final class OpenCodeGeminiActivityTests: XCTestCase {
 
     func testAnUnfinishedGoogleTurnReadsAsWorking() throws {
         let url = try makeDatabase(
-            sessions: [SessionRow(id: "s1", directory: "/Users/x/Projects/spyx",
+            sessions: [SessionRow(id: "s1", directory: "/Users/x/Projects/pillr",
                                   updated: now)],
             messages: [MessageRow(id: "m1", sessionID: "s1", created: now, updated: now,
                                   data: message(created: now))]
@@ -920,7 +920,7 @@ final class OpenCodeGeminiActivityTests: XCTestCase {
         XCTAssertEqual(sessions.count, 1)
         XCTAssertEqual(sessions.first?.id, "gemini-api.opencode.s1")
         XCTAssertEqual(sessions.first?.name, "OpenCode")
-        XCTAssertEqual(sessions.first?.detail, "Working in spyx")
+        XCTAssertEqual(sessions.first?.detail, "Working in pillr")
         XCTAssertEqual(sessions.first?.state, .busy)
         XCTAssertEqual(sessions.first?.since, now)
         XCTAssertNil(sessions.first?.processID)
@@ -930,7 +930,7 @@ final class OpenCodeGeminiActivityTests: XCTestCase {
     /// is over, however recently the row was touched.
     func testAFinishedTurnIsNotWorking() throws {
         let url = try makeDatabase(
-            sessions: [SessionRow(id: "s1", directory: "/Users/x/Projects/spyx",
+            sessions: [SessionRow(id: "s1", directory: "/Users/x/Projects/pillr",
                                   updated: now)],
             messages: [MessageRow(id: "m1", sessionID: "s1", created: now, updated: now,
                                   data: message(created: now, completed: now))]
@@ -942,7 +942,7 @@ final class OpenCodeGeminiActivityTests: XCTestCase {
     /// `google` is the Gemini API key this ring is about.
     func testAnotherProvidersTurnIsNotWorking() throws {
         let url = try makeDatabase(
-            sessions: [SessionRow(id: "s1", directory: "/Users/x/Projects/spyx",
+            sessions: [SessionRow(id: "s1", directory: "/Users/x/Projects/pillr",
                                   updated: now)],
             messages: [MessageRow(id: "m1", sessionID: "s1", created: now, updated: now,
                                   data: message(provider: "lmstudio", created: now))]
@@ -953,7 +953,7 @@ final class OpenCodeGeminiActivityTests: XCTestCase {
     func testAnOldUnfinishedTurnIsNotWorking() throws {
         let old = now.addingTimeInterval(-600)
         let url = try makeDatabase(
-            sessions: [SessionRow(id: "s1", directory: "/Users/x/Projects/spyx",
+            sessions: [SessionRow(id: "s1", directory: "/Users/x/Projects/pillr",
                                   updated: old)],
             messages: [MessageRow(id: "m1", sessionID: "s1", created: old, updated: old,
                                   data: message(created: old))]
@@ -967,7 +967,7 @@ final class OpenCodeGeminiActivityTests: XCTestCase {
     func testAFreshSessionWithAStaleMessageIsNotWorking() throws {
         let old = now.addingTimeInterval(-600)
         let url = try makeDatabase(
-            sessions: [SessionRow(id: "s1", directory: "/Users/x/Projects/spyx",
+            sessions: [SessionRow(id: "s1", directory: "/Users/x/Projects/pillr",
                                   updated: now)],
             messages: [MessageRow(id: "m1", sessionID: "s1", created: old, updated: old,
                                   data: message(created: old))]
@@ -980,7 +980,7 @@ final class OpenCodeGeminiActivityTests: XCTestCase {
         let earlier = now.addingTimeInterval(-5)
         let url = try makeDatabase(
             sessions: [
-                SessionRow(id: "p1", directory: "/Users/x/Projects/spyx", updated: now),
+                SessionRow(id: "p1", directory: "/Users/x/Projects/pillr", updated: now),
                 SessionRow(id: "c1", parentID: "p1", title: "subagent", updated: now)
             ],
             messages: [
@@ -993,7 +993,7 @@ final class OpenCodeGeminiActivityTests: XCTestCase {
         let sessions = OpenCodeGeminiActivity.read(database: url, staleAfter: 45, now: now)
         XCTAssertEqual(sessions.count, 1)
         XCTAssertEqual(sessions.first?.id, "gemini-api.opencode.p1")
-        XCTAssertEqual(sessions.first?.detail, "Working in spyx")
+        XCTAssertEqual(sessions.first?.detail, "Working in pillr")
     }
 
     /// A session started outside a project has no directory to name, and the
@@ -1047,7 +1047,7 @@ final class GeminiAPIActivityMonitorTests: XCTestCase {
         let root = temporary("gemini")
         let chats = root.appendingPathComponent("9d2c/chats")
         try FileManager.default.createDirectory(at: chats, withIntermediateDirectories: true)
-        try "/Users/x/Projects/spyx".write(
+        try "/Users/x/Projects/pillr".write(
             to: root.appendingPathComponent("9d2c/.project_root"),
             atomically: true, encoding: .utf8)
         let file = chats.appendingPathComponent("session-a.jsonl")
@@ -1068,7 +1068,7 @@ final class GeminiAPIActivityMonitorTests: XCTestCase {
                               time_updated INTEGER);
         CREATE TABLE message (id TEXT, session_id TEXT, time_created INTEGER,
                               time_updated INTEGER, data TEXT);
-        INSERT INTO session VALUES ('s1', NULL, 'scratch', '/Users/x/Projects/spyx',
+        INSERT INTO session VALUES ('s1', NULL, 'scratch', '/Users/x/Projects/pillr',
                                     \(millis));
         INSERT INTO message VALUES ('m1', 's1', \(millis), \(millis),
             '{"role":"assistant","providerID":"google","time":{"created":\(millis)}}');
@@ -1094,7 +1094,7 @@ final class GeminiAPIActivityMonitorTests: XCTestCase {
             conversation_id TEXT PRIMARY KEY, holder TEXT NOT NULL DEFAULT '',
             acquired_at REAL, expires_at REAL);
         INSERT INTO sessions VALUES ('h1', 'desktop', \(seconds - 300), NULL, \(seconds),
-                                     'gemini', '/Users/x/Projects/spyx', 'Untitled',
+                                     'gemini', '/Users/x/Projects/pillr', 'Untitled',
                                      'gemini-2.5-pro');
         """, nil, nil, nil)
         sqlite3_close(db)

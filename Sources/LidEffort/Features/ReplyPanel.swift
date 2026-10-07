@@ -11,7 +11,7 @@ enum SessionAction {
 /// A small field under the notch for writing to one session: Enter sends,
 /// Esc closes. A panel of its own rather than a field inside the notch,
 /// which takes the keyboard only while a prompt is up — this one takes it
-/// like Spotlight does, without making spyx the active app.
+/// like Spotlight does, without making pillr the active app.
 @MainActor
 final class ReplyPanelController {
     static let shared = ReplyPanelController()

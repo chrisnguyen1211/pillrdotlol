@@ -1,6 +1,6 @@
 import Foundation
 
-/// Every API key spyx was handed, drawn as one cell in the notch.
+/// Every API key pillr was handed, drawn as one cell in the notch.
 ///
 /// A ring per key stopped scaling the moment people added more than two: a
 /// pill of twelve key rings is a pill with no room for the agents. So the
@@ -61,9 +61,14 @@ enum APIKeyGroup {
     /// first of them stood. The keys go in the API tab's order: the base
     /// providers' own first, then the rest as `memberOrder` has them — the
     /// order they were added in — and anything it does not name after them.
-    /// Nothing to gather, nothing changes.
-    static func collapse(_ cells: [ProviderSnapshot], memberOrder: [String] = []) -> [ProviderSnapshot] {
-        guard let first = cells.firstIndex(where: { isMember($0.id) }) else { return cells }
+    /// Nothing to gather, nothing changes — unless `keepEmpty`, when an
+    /// empty group cell goes last: the notch keeps a place for keys before
+    /// there are any, and that place is where one is added.
+    static func collapse(_ cells: [ProviderSnapshot], memberOrder: [String] = [],
+                         keepEmpty: Bool = false) -> [ProviderSnapshot] {
+        guard let first = cells.firstIndex(where: { isMember($0.id) }) else {
+            return keepEmpty ? cells + [snapshot(members: [])] : cells
+        }
         let members = arrangeMembers(cells.filter { isMember($0.id) }, by: memberOrder)
         var result = cells.filter { !isMember($0.id) }
         // Where the first key stood, counted among what is left.
@@ -92,6 +97,10 @@ enum APIKeyGroup {
     /// keys when it has nothing to print. Nil when no key has been read yet,
     /// so the cell says so.
     static func headline(for members: [ProviderSnapshot]) -> LimitWindow? {
+        // No key yet: the ring says where one goes.
+        if members.isEmpty {
+            return LimitWindow(id: id, label: displayName, usedText: L10n.t("Add key"), prefersUsedText: true)
+        }
         guard members.contains(where: \.hasReading) else { return nil }
         let count = countText(members.count)
         guard let window = ringMember(of: members)?.headline else {
@@ -118,6 +127,7 @@ enum APIKeyGroup {
     /// the key the ring is drawing has gone stale. The others' ages are the
     /// tooltip's to say.
     static func status(for members: [ProviderSnapshot]) -> ProviderStatus {
+        if members.isEmpty { return .ok }
         if members.contains(where: isFailing) { return .stale(since: .distantPast) }
         guard members.contains(where: \.hasReading) else { return .stale(since: .distantPast) }
         let ringKey = ringMember(of: members)
@@ -149,6 +159,7 @@ enum APIKeyGroup {
     /// What the tooltip's header says beside the title: how many keys, and
     /// how old the oldest reading is when one has aged.
     static func note(for members: [ProviderSnapshot], now: Date) -> String {
+        guard !members.isEmpty else { return "" }
         let ages = members.compactMap { member -> Date? in
             guard member.hasReading, let since = member.status.staleSince, since != .distantPast else { return nil }
             return since
@@ -206,6 +217,11 @@ enum APIKeyGroup {
         return L10n.t("Not read yet")
     }
 
+    /// The card's words before any key is added, a body line each.
+    static var emptyLines: [String] {
+        [L10n.t("Track credit left and spend per key."), L10n.t("Right-click to add your first key.")]
+    }
+
     /// One key in a line, for the ring's menu: "OpenRouter · Work: $7.50 left".
     static func menuLine(for member: ProviderSnapshot, now: Date) -> String {
         let what = problem(for: member)
@@ -221,9 +237,13 @@ enum APIKeyGroup {
     /// switched under API. A base provider folds in once it is connected;
     /// switched off, its row stays, so its Connect is still there to press.
     static func collapse(summaries: [ProviderSummary],
-                         isConnected: (String) -> Bool = { _ in true }) -> [ProviderSummary] {
+                         isConnected: (String) -> Bool = { _ in true },
+                         keepEmpty: Bool = false) -> [ProviderSummary] {
         let folded = Set(summaries.map(\.id).filter { isAddedKey($0) || (isMember($0) && isConnected($0)) })
-        guard let first = summaries.firstIndex(where: { folded.contains($0.id) }) else { return summaries }
+        guard let first = summaries.firstIndex(where: { folded.contains($0.id) }) else {
+            let hasRow = summaries.contains { $0.id == id }
+            return keepEmpty && !hasRow ? summaries + [summary()] : summaries
+        }
         let members = summaries.filter { folded.contains($0.id) }
         var result = summaries.filter { !folded.contains($0.id) }
         let at = summaries[..<first].filter { !folded.contains($0.id) }.count

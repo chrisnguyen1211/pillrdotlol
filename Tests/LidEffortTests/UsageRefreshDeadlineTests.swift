@@ -92,7 +92,7 @@ final class UsageRefreshDeadlineTests: XCTestCase {
         store.refreshNow()
         await settle(0.3)
         XCTAssertFalse(store.isRefreshingForTesting)
-        XCTAssertEqual(store.snapshots.first?.status, .error("its server is having trouble (500); spyx will try again"))
+        XCTAssertEqual(store.snapshots.first?.status, .error("its server is having trouble (500); pillr will try again"))
     }
 
     // MARK: - Timeout
@@ -116,7 +116,7 @@ final class UsageRefreshDeadlineTests: XCTestCase {
         store.refreshNow()
         await settle()
         XCTAssertEqual(store.snapshots.first { $0.id == "blocked" }?.status,
-                       .error("no reply — check your connection; spyx will try again"))
+                       .error("no reply — check your connection; pillr will try again"))
         blocked.release()
     }
 

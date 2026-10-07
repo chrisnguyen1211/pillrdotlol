@@ -36,7 +36,7 @@ final class AmpProviderTests: XCTestCase {
     }
 
     func testLiveAmpUsageWhenExplicitlyEnabled() async throws {
-        guard ProcessInfo.processInfo.environment["SPYX_TEST_AMP_LIVE"] == "1" else {
+        guard ProcessInfo.processInfo.environment["PILLR_TEST_AMP_LIVE"] == "1" else {
             throw XCTSkip("Opt-in live check requires a signed-in Amp CLI")
         }
         let liveSession = URLSession(configuration: .ephemeral)

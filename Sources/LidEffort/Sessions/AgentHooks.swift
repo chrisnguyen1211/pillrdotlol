@@ -7,25 +7,25 @@ import Foundation
 ///
 /// * **Claude Code** — a `Stop` hook in `~/.claude/settings.json`
 ///   (`ClaudeHookInstaller`).
-/// * **Grok** — a `Stop` hook in a file of spyx's own, `~/.grok/hooks/spyx.json`;
+/// * **Grok** — a `Stop` hook in a file of pillr's own, `~/.grok/hooks/pillr.json`;
 ///   Grok runs it once per turn, on a genuine completion only.
 /// * **Cursor** — a `stop` hook in `~/.cursor/hooks.json`.
 /// * **Droid** — a Claude-style `Stop` hook under `hooks` in `~/.factory/settings.json`.
-/// * **Antigravity** — a `Stop` hook named `spyx` in `~/.gemini/config/hooks.json`.
-/// * **Copilot CLI** — an `agentStop` hook in a file of spyx's own, `~/.copilot/hooks/spyx.json`.
+/// * **Antigravity** — a `Stop` hook named `pillr` in `~/.gemini/config/hooks.json`.
+/// * **Copilot CLI** — an `agentStop` hook in a file of pillr's own, `~/.copilot/hooks/pillr.json`.
 /// * **Kimi Code** — a `[[hooks]]` block with `event = "Stop"` in `~/.kimi-code/config.toml`.
 /// * **Gemini CLI** — an `AfterAgent` hook under `hooks` in `~/.gemini/settings.json`.
-/// * **OpenCode** — a plugin of spyx's own, `~/.config/opencode/plugins/spyx.js`.
+/// * **OpenCode** — a plugin of pillr's own, `~/.config/opencode/plugins/pillr.js`.
 ///
 /// Only for an agent that is on this Mac, only once the person has seen
 /// what they are (`HookConsent`), and all of it undone by `removeEverything`.
 /// * **Codex** (CLI and app) — its `notify` program, called after every
 ///   turn. Codex takes one; if another is set (Codex Computer Use sets
-///   one), spyx goes first and hands every call on to it unchanged.
+///   one), pillr goes first and hands every call on to it unchanged.
 ///
-/// Each install adds only spyx's own entry and each removal takes only
+/// Each install adds only pillr's own entry and each removal takes only
 /// that out — other tools' hooks are never touched. Every hook runs
-/// `spyx --stop-hook --agent <name>` (or `--codex-notify`), which passes
+/// `pillr --stop-hook --agent <name>` (or `--codex-notify`), which passes
 /// the event to the app and exits at once.
 enum AgentHooks {
     static let codexMarker = "--codex-notify"
@@ -38,12 +38,13 @@ enum AgentHooks {
     }
 
     /// Every agent present on this Mac, in or out together.
-    /// Claude Code's own folder, made by Claude Code — spyx never makes it.
+    /// Claude Code's own folder, made by Claude Code — pillr never makes it.
     static var claudePresent: Bool {
         FileManager.default.fileExists(atPath: ClaudeHookInstaller.settingsURL.deletingLastPathComponent().path)
     }
 
     static func installAll(executable: String) {
+        removeLegacy()
         if claudePresent { try? ClaudeHookInstaller.installStop(executable: executable) }
         if FileManager.default.fileExists(atPath: home.appendingPathComponent(".grok").path) {
             try? installGrok(executable: executable)
@@ -76,7 +77,7 @@ enum AgentHooks {
     }
 
     /// One agent as the setup page lists it: on this Mac or not, whether
-    /// spyx's done hook is in, and whether it can ask for approvals at all.
+    /// pillr's done hook is in, and whether it can ask for approvals at all.
     struct Link: Identifiable, Equatable {
         let id: String
         let name: String
@@ -128,10 +129,10 @@ enum AgentHooks {
         return stop.contains { isOurs($0["command"]) }
     }
 
-    /// Everything spyx ever added to an agent, taken out — every done hook,
+    /// Everything pillr ever added to an agent, taken out — every done hook,
     /// Claude Code's approval hook, and Codex's notify put back as it was —
     /// and no more until the person turns them on again. Before the app goes
-    /// to the Trash; `spyx --uninstall` does the same from a terminal.
+    /// to the Trash; `pillr --uninstall` does the same from a terminal.
     /// Returns the agents it took something out of.
     @discardableResult
     static func removeEverything(defaults: UserDefaults = .standard) -> [String] {
@@ -145,6 +146,7 @@ enum AgentHooks {
     }
 
     static func removeAll() {
+        removeLegacy()
         if ClaudeHookInstaller.isStopInstalled() { try? ClaudeHookInstaller.removeStop() }
         try? removeGrok()
         try? removeCursor()
@@ -157,9 +159,31 @@ enum AgentHooks {
         try? removeOpenCode()
     }
 
+    // MARK: Before the rename
+
+    /// What spyx — this app's name before 1.1 — wrote under its own name:
+    /// files called spyx in Grok's, Copilot's and OpenCode's folders, and
+    /// Antigravity's hook keyed `spyx`. Each only when it carries the done
+    /// hook's marker, so a file that merely shares the name stays. The
+    /// hooks that sit in a shared file (Claude Code, Cursor, Codex…) are
+    /// found by that marker, not by name, and are replaced in place.
+    static func removeLegacy() {
+        let old = Rebrand.previousName
+        for url in [home.appendingPathComponent(".grok/hooks/\(old).json"),
+                    home.appendingPathComponent(".copilot/hooks/\(old).json"),
+                    home.appendingPathComponent(".config/opencode/plugins/\(old).js")] {
+            try? removeOpenCode(at: url)
+        }
+        if var json = read(antigravityHooksURL), let entry = json[old],
+           String(describing: entry).contains(ClaudeHookInstaller.stopMarker) {
+            json.removeValue(forKey: old)
+            try? write(json, to: antigravityHooksURL)
+        }
+    }
+
     // MARK: Grok
 
-    static var grokHookURL: URL { home.appendingPathComponent(".grok/hooks/spyx.json") }
+    static var grokHookURL: URL { home.appendingPathComponent(".grok/hooks/pillr.json") }
 
     static func installGrok(executable: String, at url: URL = grokHookURL) throws {
         let json: [String: Any] = ["hooks": ["Stop": [["hooks": [[
@@ -181,7 +205,7 @@ enum AgentHooks {
 
     static func installCursor(executable: String, at url: URL = cursorHooksURL) throws {
         guard var json = read(url) ?? (FileManager.default.fileExists(atPath: url.path) ? nil : ["version": 1]) else {
-            return   // there, but not JSON spyx can read: left alone rather than replaced
+            return   // there, but not JSON pillr can read: left alone rather than replaced
         }
         var hooks = json["hooks"] as? [String: Any] ?? [:]
         var stop = (hooks["stop"] as? [[String: Any]] ?? []).filter { !isOurs($0["command"]) }
@@ -220,7 +244,7 @@ enum AgentHooks {
         var entries = (hooks[event] as? [[String: Any]] ?? []).filter { !isOursEntry($0) }
         var entry: [String: Any] = ["hooks": [[
             "type": "command", "command": stopCommand(executable: executable, agent: agent),
-            "timeout": timeout, "name": "spyx",
+            "timeout": timeout, "name": "pillr",
         ]]]
         if let matcher { entry["matcher"] = matcher }
         entries.append(entry)
@@ -250,8 +274,8 @@ enum AgentHooks {
 
     // MARK: Antigravity
 
-    /// Antigravity's global hooks, keyed by a name of the hook's own — spyx's
-    /// is `spyx`. `Stop` carries `conversationId`, `workspacePaths` and
+    /// Antigravity's global hooks, keyed by a name of the hook's own — pillr's
+    /// is `pillr`. `Stop` carries `conversationId`, `workspacePaths` and
     /// `fullyIdle`; only a fully idle stop is the answer's end.
     static var antigravityHooksURL: URL { home.appendingPathComponent(".gemini/config/hooks.json") }
 
@@ -265,7 +289,7 @@ enum AgentHooks {
 
     static func installAntigravity(executable: String, at url: URL = antigravityHooksURL) throws {
         guard var json = read(url) ?? (FileManager.default.fileExists(atPath: url.path) ? nil : [:]) else { return }
-        json["spyx"] = ["enabled": true, "Stop": [[
+        json["pillr"] = ["enabled": true, "Stop": [[
             "type": "command", "command": stopCommand(executable: executable, agent: "antigravity"),
             "timeout": ClaudeHookInstaller.stopTimeoutSeconds,
         ]]]
@@ -273,20 +297,20 @@ enum AgentHooks {
     }
 
     static func removeAntigravity(at url: URL = antigravityHooksURL) throws {
-        guard var json = read(url), json["spyx"] != nil else { return }
-        json.removeValue(forKey: "spyx")
+        guard var json = read(url), json["pillr"] != nil else { return }
+        json.removeValue(forKey: "pillr")
         try write(json, to: url)
     }
 
     static func isAntigravityInstalled(at url: URL = antigravityHooksURL) -> Bool {
-        (read(url)?["spyx"] as? [String: Any])?["enabled"] as? Bool == true
+        (read(url)?["pillr"] as? [String: Any])?["enabled"] as? Bool == true
     }
 
     // MARK: Copilot CLI
 
-    /// A hooks file of spyx's own among Copilot CLI's: `agentStop` once the
+    /// A hooks file of pillr's own among Copilot CLI's: `agentStop` once the
     /// agent has finished its turn, with `sessionId` and `cwd` on stdin.
-    static var copilotHookURL: URL { home.appendingPathComponent(".copilot/hooks/spyx.json") }
+    static var copilotHookURL: URL { home.appendingPathComponent(".copilot/hooks/pillr.json") }
 
     static func installCopilot(executable: String, at url: URL = copilotHookURL) throws {
         let json: [String: Any] = ["version": 1, "hooks": ["agentStop": [[
@@ -319,11 +343,11 @@ enum AgentHooks {
 
     // MARK: OpenCode
 
-    /// OpenCode has no hook file, only plugins: spyx's is one small file of
+    /// OpenCode has no hook file, only plugins: pillr's is one small file of
     /// its own in `~/.config/opencode/plugins/`. When a session goes idle —
     /// not a subagent's child session — it hands the hook client the same
     /// JSON every other agent's stop sends.
-    static var openCodePluginURL: URL { home.appendingPathComponent(".config/opencode/plugins/spyx.js") }
+    static var openCodePluginURL: URL { home.appendingPathComponent(".config/opencode/plugins/pillr.js") }
 
     static var openCodePresent: Bool {
         ["/opt/homebrew/bin/opencode", "/usr/local/bin/opencode", "~/.opencode/bin/opencode", "~/.local/bin/opencode",
@@ -335,11 +359,11 @@ enum AgentHooks {
         let exe = String(data: (try? JSONSerialization.data(withJSONObject: [executable])) ?? Data(), encoding: .utf8)
             .map { String($0.dropFirst().dropLast()) } ?? "\"\""
         return """
-        // spyx: says in the notch when an OpenCode session is done. Written by
-        // spyx; removed when its done cards are switched off. \(ClaudeHookInstaller.stopMarker)
-        const spyx = \(exe)
+        // pillr: says in the notch when an OpenCode session is done. Written by
+        // pillr; removed when its done cards are switched off. \(ClaudeHookInstaller.stopMarker)
+        const pillr = \(exe)
 
-        export const Spyx = async ({ $, client, directory }) => ({
+        export const Pillr = async ({ $, client, directory }) => ({
           event: async ({ event }) => {
             if (event.type !== "session.status" || event.properties?.status?.type !== "idle") return
             const id = event.properties.sessionID
@@ -348,7 +372,7 @@ enum AgentHooks {
               if (session?.data?.parentID) return
             } catch {}
             const payload = JSON.stringify({ session_id: id, cwd: directory, hook_event_name: "Stop" })
-            await $`printf %s ${payload} | ${spyx} --stop-hook --agent opencode`.quiet().nothrow()
+            await $`printf %s ${payload} | ${pillr} --stop-hook --agent opencode`.quiet().nothrow()
           },
         })
 
@@ -360,7 +384,7 @@ enum AgentHooks {
         try EffortTargetWriter.replaceContents(of: url, with: openCodePlugin(executable: executable))
     }
 
-    /// Only a file spyx wrote: one that carries its marker.
+    /// Only a file pillr wrote: one that carries its marker.
     static func removeOpenCode(at url: URL = openCodePluginURL) throws {
         guard let text = try? String(contentsOf: url, encoding: .utf8),
               text.contains(ClaudeHookInstaller.stopMarker) else { return }
@@ -370,7 +394,7 @@ enum AgentHooks {
     // MARK: Kimi Code
 
     /// Kimi Code's hooks are `[[hooks]]` tables in `~/.kimi-code/config.toml`;
-    /// spyx's is one block — `event = "Stop"` — appended at the end, and the
+    /// pillr's is one block — `event = "Stop"` — appended at the end, and the
     /// only one ever taken out.
     static var kimiConfigURL: URL { home.appendingPathComponent(".kimi-code/config.toml") }
 
@@ -392,7 +416,7 @@ enum AgentHooks {
         return text != removingKimiBlock(from: text)
     }
 
-    /// The text without spyx's `[[hooks]]` block: from its header to the next
+    /// The text without pillr's `[[hooks]]` block: from its header to the next
     /// header, the blank line before it included.
     static func removingKimiBlock(from text: String) -> String {
         var lines = text.components(separatedBy: "\n")
@@ -426,7 +450,7 @@ enum AgentHooks {
         let current = notifyArray(in: text)
         if let current, current.first == executable, current.dropFirst().first == codexMarker { return }
         var value = [executable, codexMarker]
-        // Someone else's notify program goes on being called, after spyx.
+        // Someone else's notify program goes on being called, after pillr.
         if let current, !current.isEmpty, !(current.dropFirst().first == codexMarker) {
             value += [thenMarker] + current
         }
@@ -436,7 +460,7 @@ enum AgentHooks {
     static func removeCodex(at url: URL = codexConfigURL) throws {
         guard let text = try? String(contentsOf: url, encoding: .utf8),
               let current = notifyArray(in: text), current.dropFirst().first == codexMarker else { return }
-        // What was there before spyx, or nothing.
+        // What was there before pillr, or nothing.
         let original = current.firstIndex(of: thenMarker).map { Array(current[($0 + 1)...]) } ?? []
         try EffortTargetWriter.replaceContents(of: url, with: settingNotify(original.isEmpty ? nil : original, in: text))
     }

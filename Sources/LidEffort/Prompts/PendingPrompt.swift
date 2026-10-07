@@ -178,7 +178,7 @@ enum PromptResponse {
         case .allowAlways:
             decision = ["behavior": "allow", "updatedPermissions": prompt.suggestions]
         case .deny:
-            decision = ["behavior": "deny", "message": "Declined from the spyx notch."]
+            decision = ["behavior": "deny", "message": "Declined from the pillr notch."]
         case .answers(let chosen):
             var input: [String: Any] = prompt.toolInput
             // Multi-select answers are comma-joined, the form the

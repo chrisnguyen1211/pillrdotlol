@@ -58,13 +58,13 @@ enum GLMCredentials {
                          openCodeAuth: openCodeAuthURL)
     }
 
-    // MARK: A key pasted into spyx
+    // MARK: A key pasted into pillr
 
     /// For a Mac with no coding tool holding the plan's key: pasted in
     /// Settings, kept in the login keychain, and tried before the borrowed
-    /// ones — it is the one the person chose for spyx.
-    static let keychainService = "spyx-glm-coding-plan"
-    static let keychainAccount = "spyx"
+    /// ones — it is the one the person chose for pillr.
+    static let keychainService = "pillr-glm-coding-plan"
+    static let keychainAccount = "pillr"
     static let regionKey = "glm.pastedRegion"
 
     /// Which console a pasted key belongs to: Z.ai's global one, or
@@ -78,7 +78,7 @@ enum GLMCredentials {
         guard let token = KeychainItem.read(service: keychainService, account: keychainAccount),
               !token.isEmpty else { return nil }
         let base = URL(string: pastedIsChina ? "https://open.bigmodel.cn" : "https://api.z.ai")!
-        return Credential(token: token, baseURL: base, source: "spyx")
+        return Credential(token: token, baseURL: base, source: "pillr")
     }
 
     @discardableResult

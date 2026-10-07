@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Sends Claude Code-style prompts to the running spyx app, the way the
+# Sends Claude Code-style prompts to the running pillr app, the way the
 # PermissionRequest hook would, and prints what Claude would get back.
 # For testing the notch by hand — nothing here runs any command.
 #
@@ -23,7 +23,7 @@
 # --dry          print the JSON that would be sent, send nothing
 
 set -u
-APP="${0:A:h:h}/build/spyx.app/Contents/MacOS/spyx"
+APP="${0:A:h:h}/build/pillr.app/Contents/MacOS/pillr"
 SESSIONS="$HOME/.claude/sessions"
 
 list_sessions() {
@@ -96,7 +96,7 @@ expect() {
   ↗ opens the session, ✕ hands it back to Claude's own dialog (reply EMPTY).
   Allow  -> behavior allow
   Always -> allow + updatedPermissions (rule Bash npm run build:*)
-  Deny   -> deny + \"Declined from the spyx notch.\"
+  Deny   -> deny + \"Declined from the pillr notch.\"
   TC28: open the notch, move the pointer far away -> it stays open with the question.
   TC36: buttons are dim for ~0.7 s after the card appears; a click then does nothing." ;;
     edit)   echo "Card shows Sources/App/Notch.swift (relative to the session, not the full path).
@@ -216,7 +216,7 @@ if (( DRY )); then
   exit 0
 fi
 
-pgrep -x spyx >/dev/null || echo "Note: spyx is not running — the reply will be empty."
+pgrep -x pillr >/dev/null || echo "Note: pillr is not running — the reply will be empty."
 echo "── case $CASE · session $SESSION_NAME ──"
 echo "Expected:"; expect "$CASE" | sed 's/^/  /'
 if (( DELAY > 0 )); then

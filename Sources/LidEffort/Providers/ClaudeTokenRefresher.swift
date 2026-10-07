@@ -2,11 +2,11 @@ import Foundation
 
 /// Keeps the Claude OAuth token in the login keychain from ageing out.
 ///
-/// spyx reads that item; only the standalone Claude Code command ever
+/// pillr reads that item; only the standalone Claude Code command ever
 /// writes it. On a Mac where Claude Code is used through the desktop app the
 /// item is therefore written once and then rots — the desktop app renews its
 /// own copy elsewhere — and eight hours later every usage reading stops, with
-/// nothing the user can do from inside spyx. That is the hole this fills.
+/// nothing the user can do from inside pillr. That is the hole this fills.
 ///
 /// **How it renews, and why that is a compatibility mechanism rather than an
 /// interface.** Running `claude -p` with an empty stdin makes the command go

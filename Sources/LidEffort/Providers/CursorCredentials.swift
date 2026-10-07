@@ -6,7 +6,7 @@ import SQLite3
 /// The session Cursor keeps for itself — the editor's SQLite store first,
 /// then the `cursor-agent` login if that store is missing or signed out.
 ///
-/// spyx only ever reads it, the same bargain as Claude Code's keychain
+/// pillr only ever reads it, the same bargain as Claude Code's keychain
 /// token: the owning tool mints and refreshes it, we borrow the current value.
 /// The editor database is opened read-only and never `immutable`, so a running
 /// editor is not blocked and a rotated token is not served from a stale

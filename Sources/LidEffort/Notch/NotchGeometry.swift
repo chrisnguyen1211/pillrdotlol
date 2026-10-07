@@ -131,7 +131,7 @@ enum NotchGeometry {
     /// app's topmost ordinary window.
     ///
     /// Not `NSScreen.main`. That is the screen of *this* app's key window, and
-    /// spyx never has one — its panel does not take key — so it answered with
+    /// pillr never has one — its panel does not take key — so it answered with
     /// wherever the notch happened to be and the notch never followed you.
     /// Window bounds need no permission; titles, which would, are not read.
     static func activeWindowScreen(in screens: [NSScreen]) -> NSScreen? {

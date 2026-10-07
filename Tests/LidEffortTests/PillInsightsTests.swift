@@ -86,15 +86,15 @@ final class PillInsightsTests: XCTestCase {
     // MARK: Hand-off
 
     func testTheBriefSaysWhereAndWhat() {
-        let brief = Handoff.compose(from: "Claude Code", folder: "spyx", branch: "main",
+        let brief = Handoff.compose(from: "Claude Code", folder: "pillr", branch: "main",
                                     ask: "Add a forecast to the rings", lead: "Forecast is in; tests pass.")
-        XCTAssertTrue(brief.hasPrefix("I'm picking up work Claude Code was doing in spyx, on branch main."), brief)
+        XCTAssertTrue(brief.hasPrefix("I'm picking up work Claude Code was doing in pillr, on branch main."), brief)
         XCTAssertTrue(brief.contains("“Add a forecast to the rings”"))
         XCTAssertTrue(brief.hasSuffix("then carry on from there."))
     }
 
     func testTheBriefIsNeverRunAsShell() throws {
-        let nasty = #"it's done; $(touch /tmp/spyx-handoff-pwned) `id` "quoted" \ end"#
+        let nasty = #"it's done; $(touch /tmp/pillr-handoff-pwned) `id` "quoted" \ end"#
         let process = Process()
         process.executableURL = URL(fileURLWithPath: "/bin/zsh")
         process.arguments = ["-c", "printf %s " + Handoff.shellQuote(nasty)]
@@ -102,7 +102,7 @@ final class PillInsightsTests: XCTestCase {
         process.standardOutput = pipe
         try process.run(); process.waitUntilExit()
         XCTAssertEqual(String(decoding: pipe.fileHandleForReading.readDataToEndOfFile(), as: UTF8.self), nasty)
-        XCTAssertFalse(FileManager.default.fileExists(atPath: "/tmp/spyx-handoff-pwned"))
+        XCTAssertFalse(FileManager.default.fileExists(atPath: "/tmp/pillr-handoff-pwned"))
     }
 
     // MARK: Recap
@@ -134,9 +134,9 @@ final class PillInsightsTests: XCTestCase {
         XCTAssertFalse(DailyRecapScheduler.isDue(now: seven, enabled: false, lastShown: nil))
     }
 
-    /// This Mac's day, read-only: `SPYX_LIVE=1 swift test --filter PillInsightsTests`.
+    /// This Mac's day, read-only: `PILLR_LIVE=1 swift test --filter PillInsightsTests`.
     func testLiveRecap() throws {
-        try XCTSkipUnless(ProcessInfo.processInfo.environment["SPYX_LIVE"] == "1")
+        try XCTSkipUnless(ProcessInfo.processInfo.environment["PILLR_LIVE"] == "1")
         let started = Date()
         let recap = DailyRecap.read()
         print("RECAP \(recap.title) | \(recap.subtitle) | \(recap.status) | \(String(format: "%.1fs", Date().timeIntervalSince(started)))")

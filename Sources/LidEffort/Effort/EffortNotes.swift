@@ -4,7 +4,7 @@ import Foundation
 /// What the effort card says when the app in front is Claude's or Codex's
 /// own. Those sessions have no terminal to type into, so a change can wait,
 /// or not reach them at all — and a card that only said "applies next
-/// session" while the app was plainly open read as spyx being broken. Each
+/// session" while the app was plainly open read as pillr being broken. Each
 /// case gets its reason and what happens next, in one or two lines.
 enum EffortNotes {
     struct Note: Equatable {
@@ -28,7 +28,7 @@ enum EffortNotes {
         case .notFront:
             return Note(text: L10n.t("\(session) · sends when the Claude app is in front"), isLive: false, waits: true)
         case .notTrusted:
-            return Note(text: L10n.t("Allow spyx in Accessibility to change Claude app sessions live"), isLive: false)
+            return Note(text: L10n.t("Allow pillr in Accessibility to change Claude app sessions live"), isLive: false)
         case .noComposer, .otherSession:
             return Note(text: L10n.t("Claude app · no message box in view · sends when there is one"), isLive: false, waits: true)
         case .draft, .userTyping:
@@ -38,7 +38,7 @@ enum EffortNotes {
         }
     }
 
-    /// The Claude app in front, with nothing spyx will type into.
+    /// The Claude app in front, with nothing pillr will type into.
     static func claudeAppUnreached(typingOn: Bool) -> Note {
         typingOn
             ? Note(text: L10n.t("Claude app · no Claude Code session open · applies next session"), isLive: false)

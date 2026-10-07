@@ -23,7 +23,7 @@ private let plain = FakeScreen(
     hardwareNotch: nil
 )
 
-/// On a Mac that has a notch of its own, a top-edge spyx runs up to meet
+/// On a Mac that has a notch of its own, a top-edge pillr runs up to meet
 /// it so the two read as one shape rather than as a bar parked underneath.
 final class HardwareNotchGeometryTests: XCTestCase {
     private let size = CGSize(width: 700, height: 200)

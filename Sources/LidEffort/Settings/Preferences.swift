@@ -230,9 +230,35 @@ final class Preferences: ObservableObject {
         didSet { defaults.set(notchSurfaceStyle.rawValue, forKey: Keys.notchSurfaceStyle) }
     }
 
-    /// Light or dark glass for the notch, its cards and Settings.
+    /// Light, dark or System — what Settings' switch holds.
+    @Published var appearanceChoice: AppearanceChoice {
+        didSet {
+            defaults.set(appearanceChoice.rawValue, forKey: Keys.interfaceMode)
+            resolveAppearance()
+        }
+    }
+
+    /// Light or dark as it is now, for the notch, its cards and every window:
+    /// the choice, with System resolved against the Mac. Setting it directly
+    /// is choosing that look.
     @Published var interfaceMode: InterfaceMode {
-        didSet { defaults.set(interfaceMode.rawValue, forKey: Keys.interfaceMode) }
+        didSet {
+            guard !resolvingAppearance, appearanceChoice.resolved(systemIsDark: systemIsDark) != interfaceMode else { return }
+            appearanceChoice = interfaceMode == .dark ? .dark : .light
+        }
+    }
+
+    private var resolvingAppearance = false
+    private var systemIsDark = AppearanceChoice.systemIsDark
+    private var appearanceObserver: NSObjectProtocol?
+
+    private func resolveAppearance() {
+        systemIsDark = AppearanceChoice.systemIsDark
+        let mode = appearanceChoice.resolved(systemIsDark: systemIsDark)
+        guard mode != interfaceMode else { return }
+        resolvingAppearance = true
+        interfaceMode = mode
+        resolvingAppearance = false
     }
 
     /// Whether the Liquid Glass intro plays its sound.
@@ -639,19 +665,27 @@ final class Preferences: ObservableObject {
     /// at all.
     let isFirstLaunch: Bool
 
-    /// The bundle identifier builds used before launch. A bundle id is the
-    /// name of the defaults domain, so moving to `lol.spyx.app` left every
-    /// setting behind in the old one — the edge, the accounts switched off,
-    /// the size. Copied across once, before anything reads the new domain.
+    /// The bundle identifiers this app had before: spyx's, and the one
+    /// builds used before launch. A bundle id is the name of the defaults
+    /// domain, so each move left every setting behind in the old one — the
+    /// edge, the accounts switched off, the size. Copied across once, from
+    /// the newest that has any, before anything reads the new domain.
+    nonisolated static let previousDomains = [Rebrand.previousBundleID, "dev.lideffort"]
     nonisolated static let previousDomain = "dev.lideffort"
 
+    static func migrateFromPreviousDomain(into defaults: UserDefaults, from domain: String) {
+        migrateFromPreviousDomain(into: defaults, from: [domain])
+    }
+
     static func migrateFromPreviousDomain(into defaults: UserDefaults = .standard,
-                                          from domain: String = previousDomain) {
+                                          from domains: [String] = previousDomains) {
         // Only into a domain nothing has used yet: `hasLaunched` is set by
         // `init`, so its absence means this is the first launch under the
         // new name.
         guard defaults.object(forKey: Keys.hasLaunched) == nil,
-              let old = UserDefaults.standard.persistentDomain(forName: domain), !old.isEmpty
+              let (domain, old) = domains.lazy.compactMap({ name in
+                  UserDefaults.standard.persistentDomain(forName: name).flatMap { $0.isEmpty ? nil : (name, $0) }
+              }).first
         else { return }
         for (key, value) in old { defaults.set(value, forKey: key) }
         Log.usage.info("carried \(old.count) settings over from \(domain, privacy: .public)")
@@ -679,11 +713,11 @@ final class Preferences: ObservableObject {
             defaults.set(true, forKey: Keys.migratedOllamaID)
         }
         // A fresh install shows the three coding agents the lid drives and
-        // nothing else; everything spyx can read stays one switch away
+        // nothing else; everything pillr can read stays one switch away
         // behind the notch's "+" (Settings → Accounts).
         var disconnected = defaults.stringArray(forKey: Keys.disconnected).map(Set.init)
             ?? Preferences.freshDisconnected()
-        // Someone updating keeps the list they had — and a provider spyx
+        // Someone updating keeps the list they had — and a provider pillr
         // gained since joins it switched off, rather than appearing on its
         // own as "Not signed in". Each newcomer is introduced once.
         let introduced = Set(defaults.stringArray(forKey: Keys.introducedProviders) ?? [])
@@ -749,7 +783,7 @@ final class Preferences: ObservableObject {
             .flatMap(AntigravityHeadlineLimit.init(rawValue:)) ?? .automatic
         self.antigravityHeadlineModel = defaults.string(forKey: Keys.antigravityHeadlineModel)
             .flatMap(AntigravityHeadlineModel.init(rawValue:)) ?? .gemini
-        // Follow the Mac unless the user explicitly chooses a spyx colour.
+        // Follow the Mac unless the user explicitly chooses a pillr colour.
         // Off by default: an extra arc in a 44pt circle is a change to how
         // every reading looks, and nobody asked for it on their behalf.
         self.weeklyRing = defaults.string(forKey: Keys.weeklyRing)
@@ -761,9 +795,12 @@ final class Preferences: ObservableObject {
             .flatMap(AccentColorChoice.init(rawValue:)) ?? .system
         self.notchSurfaceStyle = defaults.string(forKey: Keys.notchSurfaceStyle)
             .flatMap(NotchSurfaceStyle.init(rawValue:)) ?? .glass
-        // Absent means never switched: start from whatever the Mac is set to.
-        self.interfaceMode = defaults.string(forKey: Keys.interfaceMode)
-            .flatMap(InterfaceMode.init(rawValue:)) ?? .system
+        // Absent means never chosen: follow the Mac. A stored light or dark
+        // from before System existed is kept as the choice it was.
+        let choice = defaults.string(forKey: Keys.interfaceMode)
+            .flatMap(AppearanceChoice.init(rawValue:)) ?? .system
+        self.appearanceChoice = choice
+        self.interfaceMode = choice.resolved(systemIsDark: AppearanceChoice.systemIsDark)
         // The doodle look is gone: the tour is glass only, and its old
         // choice is not kept about.
         defaults.removeObject(forKey: "tourStyle")
@@ -827,9 +864,16 @@ final class Preferences: ObservableObject {
         // this off in System Settings, and a remembered `true` would then be a lie.
         self.launchAtLogin = Self.isRegisteredForLogin
         // Registered by a copy with another name or place — the app was
-        // LidEffort.app before it was spyx.app — the login item still points
+        // LidEffort.app before it was pillr.app — the login item still points
         // there. Registering again points it at this copy.
         if launchAtLogin, !Runtime.isUnderTest { try? SMAppService.mainApp.register() }
+        // macOS says when it turns light or dark — by hand, or by itself at
+        // sunset — and on System the notch and every window follow.
+        appearanceObserver = DistributedNotificationCenter.default().addObserver(
+            forName: Notification.Name("AppleInterfaceThemeChangedNotification"), object: nil, queue: .main
+        ) { [weak self] _ in
+            MainActor.assumeIsolated { self?.resolveAppearance() }
+        }
     }
 
     // MARK: Custom endpoints
@@ -888,7 +932,7 @@ final class Preferences: ObservableObject {
     // MARK: Extra keys
 
     /// The saved list, read straight from disk. Entries that do not describe
-    /// a key spyx can read are dropped rather than trusted.
+    /// a key pillr can read are dropped rather than trusted.
     nonisolated static func storedExtraKeys(defaults: UserDefaults = .standard) -> [ExtraKey] {
         guard let data = defaults.data(forKey: Keys.extraKeys),
               let list = try? JSONDecoder().decode([ExtraKey].self, from: data)
@@ -973,7 +1017,7 @@ final class Preferences: ObservableObject {
     /// update, and wiping data on every Sparkle update would be catastrophic.
     /// It has to be something the user asks for.
     static func eraseAllData() {
-        let bundleID = Bundle.main.bundleIdentifier ?? "lol.spyx.app"
+        let bundleID = Bundle.main.bundleIdentifier ?? "lol.pillr.app"
         // The extra keys' items would be orphaned once the list naming them
         // is gone, so they go first, while it can still be read.
         for key in storedExtraKeys() { ExtraKeySecrets.delete(id: key.id) }
@@ -1010,7 +1054,7 @@ final class Preferences: ObservableObject {
             // Commonly refused for an app running from a build directory rather
             // than /Applications, which is worth saying plainly.
             Log.usage.error("launch at login failed: \(error.localizedDescription, privacy: .public)")
-            launchAtLoginProblem = L10n.t("macOS refused this — try moving spyx to /Applications.")
+            launchAtLoginProblem = L10n.t("macOS refused this — try moving pillr to /Applications.")
             launchAtLogin = Self.isRegisteredForLogin
         }
     }

@@ -27,10 +27,10 @@ final class LaunchPolishTests: XCTestCase {
     func testHooksNeverPointIntoADiskImage() {
         let d = defaults()
         XCTAssertTrue(HookConsent.locationAllows(.applications, environment: [:], defaults: d))
-        XCTAssertFalse(HookConsent.locationAllows(.diskImage, environment: ["SPYX_HOOKS_ANYWHERE": "1"], defaults: d))
+        XCTAssertFalse(HookConsent.locationAllows(.diskImage, environment: ["PILLR_HOOKS_ANYWHERE": "1"], defaults: d))
         XCTAssertFalse(HookConsent.locationAllows(.translocated, environment: [:], defaults: d))
         XCTAssertFalse(HookConsent.locationAllows(.elsewhere, environment: [:], defaults: d))
-        XCTAssertTrue(HookConsent.locationAllows(.elsewhere, environment: ["SPYX_HOOKS_ANYWHERE": "1"], defaults: d))
+        XCTAssertTrue(HookConsent.locationAllows(.elsewhere, environment: ["PILLR_HOOKS_ANYWHERE": "1"], defaults: d))
     }
 
     func testAFreshInstallShowsTheAgentsItFinds() {
@@ -62,7 +62,7 @@ final class LaunchPolishTests: XCTestCase {
 
     func testABugReportCarriesOnlyTheVersions() {
         let url = BugReport.url(version: "1.1.0", macOS: "Version 26.0").absoluteString
-        XCTAssertTrue(url.hasPrefix("https://github.com/chrisnguyen1211/spyxdotlol/issues/new"))
+        XCTAssertTrue(url.hasPrefix("https://github.com/chrisnguyen1211/pillrdotlol/issues/new"))
         XCTAssertTrue(url.contains("1.1.0"))
         XCTAssertFalse(url.contains(NSUserName()), "nothing about the person")
     }

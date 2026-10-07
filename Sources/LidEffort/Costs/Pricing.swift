@@ -16,17 +16,17 @@ struct ModelPrice: Codable, Identifiable, Equatable, Sendable {
 enum CostPaths {
     static var directory: URL {
         if Runtime.isUnderTest {
-            return FileManager.default.temporaryDirectory.appendingPathComponent("spyx-costs-tests", isDirectory: true)
+            return FileManager.default.temporaryDirectory.appendingPathComponent("pillr-costs-tests", isDirectory: true)
         }
         return FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
-            .appendingPathComponent("spyx/costs", isDirectory: true)
+            .appendingPathComponent("pillr/costs", isDirectory: true)
     }
 }
 
 /// Editable price list and exchange rate. Costs are estimates: the CLIs bill
 /// through a subscription, this is what the same tokens would cost on the API.
 ///
-/// spyx only talks to the agents' own servers and GitHub, so the daily
+/// pillr only talks to the agents' own servers and GitHub, so the daily
 /// market-data refresh (OpenRouter's price list, open.er-api.com's exchange
 /// rate) is opt-in: off, the bundled prices are used and amounts can only be
 /// converted when the Mac's currency is the US dollar.
@@ -216,7 +216,7 @@ enum MoneyFormat {
         f.locale = L10n.locale
         return f.string(from: NSNumber(value: amount)) ?? String(format: "%.2f %@", amount, currency)
     }
-    /// "1.2M", "84k" — spyx's own compact token count.
+    /// "1.2M", "84k" — pillr's own compact token count.
     static func tokens(_ n: Int) -> String { TokenCount.compact(n) }
 }
 
@@ -273,7 +273,7 @@ struct CostEstimator: Sendable {
 
 
 /// Subscription plans and their list prices, from a JSON catalog the user can
-/// edit (Application Support/spyx/costs/plans.json, seeded on first run).
+/// edit (Application Support/pillr/costs/plans.json, seeded on first run).
 /// Nothing about plans lives in the code that reads them.
 @MainActor
 final class PlanCatalog: ObservableObject {

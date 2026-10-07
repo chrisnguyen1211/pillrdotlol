@@ -1,4 +1,4 @@
-# How spyx works
+# How pillr works
 
 The technical companion to the [README](../README.md): how the lid gesture
 reads the hinge, where each agent's effort level is written, how sessions and
@@ -47,7 +47,7 @@ forgotten — opening it again is never a push), and sleep (suspended; the first
 **The sensor** ([LidAngleSensor.swift](../Sources/LidEffort/Effort/LidAngleSensor.swift))
 is Apple's undocumented lid-angle HID device, opened read-only and never
 seized. A Mac without a readable one — every desktop Mac, and MacBooks that
-lack it — gets everything else spyx does; only the gesture is missing. The
+lack it — gets everything else pillr does; only the gesture is missing. The
 effort bars in the cards still set the level by hand.
 
 ## Where the level goes
@@ -56,7 +56,7 @@ effort bars in the cards still set the level by hand.
 [EffortTarget.swift](../Sources/LidEffortCore/EffortTarget.swift) (`BuiltInTargets`).
 
 **One agent per gesture: the one you are working with.** When ⌘ goes down,
-spyx picks the agent of the session in view (the selected Terminal tab, the
+pillr picks the agent of the session in view (the selected Terminal tab, the
 Claude app's session), else Codex if it is in front, else the agent the lid
 changed last — and the gesture starts from that agent's own current level.
 Letting go writes that agent's default config, on its model's scale (the
@@ -129,7 +129,7 @@ keep their level until they next start
   `/effort <value>` typed in, the value its *running model* takes
   ([EffortInjector.swift](../Sources/LidEffort/Effort/EffortInjector.swift)),
   only when its prompt is empty. Mid-turn, it goes in when the turn ends.
-- **The Claude app's Claude Code sessions** — with Accessibility allowed, spyx
+- **The Claude app's Claude Code sessions** — with Accessibility allowed, pillr
   types `/effort <value>` and Return into the message box of the session on
   screen, and checks the box emptied
   ([ClaudeDesktopComposer.swift](../Sources/LidEffort/Effort/ClaudeDesktopComposer.swift)).
@@ -178,15 +178,15 @@ light window as well as a dark one.
 
 Each provider's ring is read from that provider's own API with the login its
 CLI or app already has on this Mac ([Providers/](../Sources/LidEffort/Providers)),
-or for DeepSeek a sign-in made in spyx's own web view. Switch providers on and
+or for DeepSeek a sign-in made in pillr's own web view. Switch providers on and
 off in Settings → Accounts.
 
 - **Claude Code** — usage is read by running Claude Code's own `/usage`
   (`claude --print --no-session-persistence --strict-mcp-config /usage`, at
-  most every 5 minutes, from `~/Library/Application Support/spyx/usage-scratch`;
+  most every 5 minutes, from `~/Library/Application Support/pillr/usage-scratch`;
   [ClaudeUsageCLI.swift](../Sources/LidEffort/Providers/ClaudeUsageCLI.swift)),
   falling back to the OAuth endpoint with the keychain login. Before that login
-  expires, spyx runs `claude -p` to let Claude Code renew it
+  expires, pillr runs `claude -p` to let Claude Code renew it
   ([ClaudeTokenRefresher.swift](../Sources/LidEffort/Providers/ClaudeTokenRefresher.swift));
   the session that briefly registers is never shown.
 - **Gemini API** — there is no endpoint for an API key's usage, so the ring
@@ -194,7 +194,7 @@ off in Settings → Accounts.
   ([GeminiAPIProvider.swift](../Sources/LidEffort/Providers/GeminiAPIProvider.swift)).
 - **Ollama** — local models through the Ollama server; Ollama cloud with an API
   key you give in Settings (or `OLLAMA_API_KEY`), stored in the login keychain
-  under spyx's own item. **LM Studio** — its SDK socket and server log, read
+  under pillr's own item. **LM Studio** — its SDK socket and server log, read
   only ([LMStudioMetrics.swift](../Sources/LidEffort/Sessions/LMStudioMetrics.swift)).
 
 **Sessions** come from the agents' own files, only ever read: Claude Code
@@ -220,31 +220,31 @@ your answer" and the question itself). Click it to jump to that session
 The moment comes from each agent's own turn-finished hook, not a guess from
 files ([AgentHooks.swift](../Sources/LidEffort/Sessions/AgentHooks.swift),
 [ClaudeHookInstaller.swift](../Sources/LidEffort/Prompts/ClaudeHookInstaller.swift)).
-Every hook runs `spyx --stop-hook --agent <name>` (Codex: `--codex-notify`),
+Every hook runs `pillr --stop-hook --agent <name>` (Codex: `--codex-notify`),
 which hands the event to the app and exits at once.
 
 | Agent | Where the hook goes | Hook |
 |---|---|---|
 | Claude Code | `~/.claude/settings.json` | `Stop` |
-| Codex (CLI and app) | `~/.codex/config.toml` | `notify` — an existing notify program is kept and called after spyx |
-| Grok | `~/.grok/hooks/spyx.json` (spyx's own file) | `Stop` |
+| Codex (CLI and app) | `~/.codex/config.toml` | `notify` — an existing notify program is kept and called after pillr |
+| Grok | `~/.grok/hooks/pillr.json` (pillr's own file) | `Stop` |
 | Cursor | `~/.cursor/hooks.json` | `stop` |
 | Droid | `~/.factory/settings.json` | `Stop` under `hooks` |
-| Antigravity | `~/.gemini/config/hooks.json` | entry named `spyx`, `Stop` |
-| Copilot CLI | `~/.copilot/hooks/spyx.json` (spyx's own file) | `agentStop` |
+| Antigravity | `~/.gemini/config/hooks.json` | entry named `pillr`, `Stop` |
+| Copilot CLI | `~/.copilot/hooks/pillr.json` (pillr's own file) | `agentStop` |
 | Kimi Code | `~/.kimi-code/config.toml` | one `[[hooks]]` block, `event = "Stop"` |
 | Gemini CLI | `~/.gemini/settings.json` | `AfterAgent` |
-| OpenCode | `~/.config/opencode/plugins/spyx.js` (spyx's own file) | plugin on `session.status` idle |
+| OpenCode | `~/.config/opencode/plugins/pillr.js` (pillr's own file) | plugin on `session.status` idle |
 
 Hooks are installed only for agents present on this Mac. Each install adds only
-spyx's own entry and each removal takes only that out; other tools' hooks are
+pillr's own entry and each removal takes only that out; other tools' hooks are
 never touched. A config file that is there but does not parse is left alone.
 
 ## Answering Claude from the notch
 
 Settings → Sessions & Approvals, on by default
 ([Prompts/](../Sources/LidEffort/Prompts)). It adds a `PermissionRequest` hook
-to `~/.claude/settings.json` that runs spyx's binary with `--prompt-hook`; the
+to `~/.claude/settings.json` that runs pillr's binary with `--prompt-hook`; the
 hook hands the prompt to the app over a Unix socket (`~/.lid-effort/prompt.sock`)
 and waits.
 
@@ -281,7 +281,7 @@ cases: [docs/test-cases](test-cases/approvals-and-questions.md).
 [Handoff.swift](../Sources/LidEffort/Sessions/Handoff.swift).
 
 - **Reply** opens a small field under the notch; Enter sends. Return is pressed
-  only where spyx can confirm the text went into the right session: a
+  only where pillr can confirm the text went into the right session: a
   Terminal.app or iTerm2 tab (found by its tty, prompt idle), the Claude app
   (the window must show that session and the box must read back the message
   exactly), or Superset. Anywhere else the session is brought to the front with
@@ -309,8 +309,8 @@ while the provider's weekly limit is still spent
 ## Setup assistant and tour
 
 The setup assistant ([Onboarding/](../Sources/LidEffort/Onboarding)) opens once
-per Mac, and again from the menu bar's **Set Up spyx…**;
-`open -a spyx --args --setup` forces it. Every status is read live from macOS
+per Mac, and again from the menu bar's **Set Up pillr…**;
+`open -a pillr --args --setup` forces it. Every status is read live from macOS
 and every optional step can be skipped.
 
 | Step | What it asks for | What it's for |
@@ -326,7 +326,7 @@ There is no notifications step: prompts and limits show in the notch, system
 banners are opt-in in Settings, and macOS asks the first time one is sent.
 
 When setup finishes, the **intro tour** takes over (again from the menu bar's
-**Take the Tour**; `open -a spyx --args --tour` forces it,
+**Take the Tour**; `open -a pillr --args --tour` forces it,
 `--tour-at done` opens one step). **Liquid Glass**, the default look, opens
 with a short film and steps through glass cards whose pictures are the app's
 real UI, each with its own soft sound synthesised in code
@@ -340,7 +340,7 @@ moving the pill, and ⌘ + lid.
 Xcode 16+ (for the SDK; the build itself is SwiftPM), Apple silicon, macOS 15+.
 
 ```bash
-script/bundle.sh --run           # swift build → build/spyx.app → launch
+script/bundle.sh --run           # swift build → build/pillr.app → launch
 script/bundle.sh --release       # Release build
 swift test
 ```
@@ -351,9 +351,9 @@ consent. `bundle.sh` signs with an Apple Development identity when one is in the
 keychain (stable across rebuilds), ad-hoc otherwise. A copy you build on your
 own Mac is never quarantined, so Gatekeeper doesn't stop it.
 
-**Name and icon.** The app is **spyx** (always lowercase): `build/spyx.app`,
-process `spyx`. The Swift target and source folders are still `LidEffort`, and
-the bundle ID is `lol.spyx.app` — macOS keeps granted permissions, the
+**Name and icon.** The app is **pillr** (always lowercase): `build/pillr.app`,
+process `pillr`. The Swift target and source folders are still `LidEffort`, and
+the bundle ID is `lol.pillr.app` — macOS keeps granted permissions, the
 keychain's Always Allow and the login item against it. The logo is the
 **halftone iris**, an eye drawn in dots; its sources are in
 [docs/brand/halftone-iris](brand/halftone-iris). The icon set is rendered from
@@ -364,11 +364,11 @@ swift script/icon/render-icon.swift docs/brand/halftone-iris Sources/LidEffort/R
 ```
 
 The menu-bar glyph is the same eye as a template SVG
-(`MenuBarIcon.imageset/menubar-spyx.svg`, from `MenuBarIcon.svg`).
+(`MenuBarIcon.imageset/menubar-pillr.svg`, from `MenuBarIcon.svg`).
 
-Diagnostics: `log stream --predicate 'subsystem == "lol.spyx.app"' --level debug`.
+Diagnostics: `log stream --predicate 'subsystem == "lol.pillr.app"' --level debug`.
 MetricKit crash and hang reports are kept in
-`~/Library/Application Support/spyx/Diagnostics` and never uploaded.
+`~/Library/Application Support/pillr/Diagnostics` and never uploaded.
 
 ## Making the disk image
 
@@ -376,7 +376,7 @@ MetricKit crash and hang reports are kept in
 script/package.sh
 ```
 
-That gives `build/spyx-<version>.dmg`, signed with the identity `bundle.sh`
+That gives `build/pillr-<version>.dmg`, signed with the identity `bundle.sh`
 finds. To sign with a Developer ID and notarize, see
 [RELEASING.md](../RELEASING.md#notarization). Publishing a release, with the
 Sparkle appcast that updates installed copies, is `script/release.sh`.
@@ -391,4 +391,4 @@ Sparkle appcast that updates installed copies, is `script/release.sh`.
   readers, the session monitors, approvals, setup and settings. XCTest.
 - `Sources/CZstd` — vendored Zstandard decoder for the Claude app's cache.
 - `script/` — bundling, signing, packaging and release.
-- `site/` — the static page at spyx.lol.
+- `site/` — the static page at pillr.lol.

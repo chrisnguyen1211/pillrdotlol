@@ -1,4 +1,4 @@
-# spyx — Halftone Iris logo
+# pillr — Halftone Iris logo
 
 Files
 - AppIcon.svg — 1024×1024 macOS app icon (squircle, shadow, glass sheen). Build the AppIcon.appiconset / .icns from this file.
@@ -6,7 +6,7 @@ Files
 - mark.svg — the halftone iris dots alone, no tile (for web, splash or loaders).
 - MenuBarIcon.svg — the 18 px template glyph (black). In Swift: `image.isTemplate = true`.
 - MenuBarIcon-white.svg — white glyph for dark backgrounds.
-- lockup-black.svg / lockup-white.svg — glyph + "spyx" wordmark (SF Pro Display Semibold; convert the text to outlines before shipping).
+- lockup-black.svg / lockup-white.svg — glyph + "pillr" wordmark (SF Pro Display Semibold; convert the text to outlines before shipping).
 
 Colours: ink #0A0A0A, paper #FFFFFF → #E2E2DF.
 Dots: a 32 px grid inside 176–848 (1024 space); radius = 14.5 × max(ring falloff at r=176, pupil falloff); dots with radius < 1.6 are dropped.

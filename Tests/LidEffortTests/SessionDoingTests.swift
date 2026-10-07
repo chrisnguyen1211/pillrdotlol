@@ -112,10 +112,10 @@ final class SessionDoingTests: XCTestCase {
         XCTAssertEqual(parses, 1, "an unchanged file is not read again")
     }
 
-    /// Against this Mac's real sessions, read-only: `SPYX_LIVE=1 swift test --filter SessionDoingTests`.
+    /// Against this Mac's real sessions, read-only: `PILLR_LIVE=1 swift test --filter SessionDoingTests`.
     @MainActor
     func testLiveSessionsSayWhatTheyAreDoing() throws {
-        try XCTSkipUnless(ProcessInfo.processInfo.environment["SPYX_LIVE"] == "1")
+        try XCTSkipUnless(ProcessInfo.processInfo.environment["PILLR_LIVE"] == "1")
         let home = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".claude")
         let reader = ClaudeTranscriptReader(projects: home.appendingPathComponent("projects"))
         let sessions = ClaudeSessionMonitor.read(directory: home.appendingPathComponent("sessions"), transcripts: reader)

@@ -16,7 +16,7 @@ actor GLMProvider: UsageProvider {
     /// coding tool (or the one pasted in Settings); an extra key's ring is
     /// handed its own — see `ExtraKey`.
     nonisolated private let loadCredential: @Sendable () -> GLMCredentials.Credential?
-    /// True for an extra key's ring, whose key is spyx's and whose account
+    /// True for an extra key's ring, whose key is pillr's and whose account
     /// is only ever that key.
     nonisolated private let isExtraKey: Bool
 

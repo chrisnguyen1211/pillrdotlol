@@ -35,6 +35,9 @@ actor OpenCodeProvider: UsageProvider {
     /// Where the sign-in lives: a new one written there is read at once.
     nonisolated var credentialFiles: [URL] { [OpenCodeCredentials.authURL] }
 
+    /// The vendor's own sign-in, run in Terminal from Connect.
+    nonisolated var signInCommand: String? { "opencode auth login" }
+
     nonisolated var signInRoute: SignInRoute {
         .guidance(L10n.t("Usage rides on the opencode-go key OpenCode stores on sign-in — connect Go inside OpenCode (`opencode auth login`) and the notch reads it."))
     }

@@ -1,10 +1,10 @@
 import XCTest
 @testable import LidEffort
 
-/// Every agent's turn-finished hook: spyx's own entry in, only spyx's own
+/// Every agent's turn-finished hook: pillr's own entry in, only pillr's own
 /// entry out, and nobody else's hook disturbed.
 final class AgentHooksTests: XCTestCase {
-    private let exe = "/Applications/spyx.app/Contents/MacOS/spyx"
+    private let exe = "/Applications/pillr.app/Contents/MacOS/pillr"
     private func temp(_ name: String, _ text: String? = nil) throws -> URL {
         let dir = FileManager.default.temporaryDirectory.appendingPathComponent("hooks-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
@@ -14,7 +14,7 @@ final class AgentHooksTests: XCTestCase {
     }
 
     func testGrokGetsAFileOfItsOwn() throws {
-        let url = try temp("spyx.json")
+        let url = try temp("pillr.json")
         try AgentHooks.installGrok(executable: exe, at: url)
         let text = try String(contentsOf: url, encoding: .utf8)
         XCTAssertTrue(text.contains("--stop-hook --agent grok"))

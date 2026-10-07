@@ -11,8 +11,8 @@ final class StopHookTests: XCTestCase {
 
     func testInstallingTouchesOnlyOurOwnEntry() throws {
         let url = try settings(#"{"model":"opus","hooks":{"Stop":[{"hooks":[{"type":"command","command":"say done"}]}]}}"#)
-        try ClaudeHookInstaller.installStop(executable: "/Applications/spyx.app/Contents/MacOS/spyx", at: url)
-        try ClaudeHookInstaller.installStop(executable: "/Applications/spyx.app/Contents/MacOS/spyx", at: url)
+        try ClaudeHookInstaller.installStop(executable: "/Applications/pillr.app/Contents/MacOS/pillr", at: url)
+        try ClaudeHookInstaller.installStop(executable: "/Applications/pillr.app/Contents/MacOS/pillr", at: url)
         XCTAssertTrue(ClaudeHookInstaller.isStopInstalled(at: url))
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
         let stop = try XCTUnwrap((json["hooks"] as? [String: Any])?["Stop"] as? [[String: Any]])
@@ -32,7 +32,7 @@ final class StopHookTests: XCTestCase {
     }
 
     func testAStopReachesTheAppWithoutWaitingForAnAnswer() throws {
-        let path = "/tmp/spyx-stop-\(UUID().uuidString.prefix(8)).sock"
+        let path = "/tmp/pillr-stop-\(UUID().uuidString.prefix(8)).sock"
         let broker = PromptBroker(path: path)
         let got = expectation(description: "stop delivered")
         broker.onStop = { stop in
@@ -43,7 +43,7 @@ final class StopHookTests: XCTestCase {
         defer { broker.stop() }
         let started = Date()
         PromptHookClient.notify(Data(#"{"hook_event_name":"Stop","session_id":"session-42","stop_hook_active":false}"#.utf8), path: path)
-        XCTAssertLessThan(Date().timeIntervalSince(started), 0.5, "the hook never waits on spyx")
+        XCTAssertLessThan(Date().timeIntervalSince(started), 0.5, "the hook never waits on pillr")
         wait(for: [got], timeout: 2)
     }
 }

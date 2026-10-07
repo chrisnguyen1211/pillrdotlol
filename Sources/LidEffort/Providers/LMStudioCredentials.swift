@@ -13,7 +13,7 @@ import Foundation
 /// own documentation uses in its examples.
 enum LMStudioCredentials {
     static let keychainService = "lmstudio-api-token"
-    static let keychainAccount = "spyx"
+    static let keychainAccount = "pillr"
     static let environmentKey = "LM_API_TOKEN"
 
     /// Posted after the stored token changes, so a live connection can

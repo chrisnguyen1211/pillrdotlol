@@ -40,7 +40,7 @@ struct CostSettingsPane: View {
             Section(L10n.t("Market data")) {
                 Toggle(isOn: $prices.marketDataEnabled) {
                     SettingLabel(title: L10n.t("Download exchange rate and token prices"),
-                                 subtitle: L10n.t("Once a day from open.er-api.com and OpenRouter — the only servers spyx reaches that are not an agent's own or GitHub."))
+                                 subtitle: L10n.t("Once a day from open.er-api.com and OpenRouter — the only servers pillr reaches that are not an agent's own or GitHub."))
                 }
                 LabeledContent(L10n.t("Exchange rate")) {
                     Text(prices.rateKnown ? L10n.t("1 USD = \(MoneyFormat.string(prices.rate, currency: prices.currency))")

@@ -2,7 +2,7 @@ import Foundation
 
 /// Whose readings these are.
 ///
-/// Worth showing plainly, because spyx never signs in — it borrows a
+/// Worth showing plainly, because pillr never signs in — it borrows a
 /// credential the owning tool already holds, and there is nothing stopping that
 /// credential belonging to a different account than the one you are sitting in
 /// front of. It happened during development: a browser sign-in created a second,
@@ -28,12 +28,12 @@ struct ProviderAccount: Equatable {
 
 /// Where to go when a provider has no usable credential.
 ///
-/// spyx cannot sign anyone in — it reads a credential the owning tool
+/// pillr cannot sign anyone in — it reads a credential the owning tool
 /// holds — so the most it can honestly do is open that tool, or say what to do
 /// when there is nothing to open.
 enum SignInRoute: Equatable {
     /// The provider owns the session and can present its own sign-in window.
-    /// The only case where spyx genuinely signs anyone in or out.
+    /// The only case where pillr genuinely signs anyone in or out.
     case modal(name: String)
     /// Launch the app that owns the credential.
     case openApp(bundleID: String, name: String)
@@ -78,7 +78,7 @@ enum SignInRoute: Equatable {
     var signOutCaveat: String {
         switch self {
         case .modal(let name):
-            return L10n.t("Signs out of \(name) — the session belongs to spyx.")
+            return L10n.t("Signs out of \(name) — the session belongs to pillr.")
         case .openApp(_, let name):
             return L10n.t("You stay signed in to \(name) — end that session in \(name) itself.")
         case .guidance:
@@ -151,7 +151,7 @@ struct ProviderSummary: Identifiable, Equatable {
     /// cure for an illness the provider does not have, and a button that does
     /// nothing is indistinguishable from a broken one.
     var wasRefusedAccess: Bool = false
-    /// Whether this provider's saved login has aged out and spyx could not
+    /// Whether this provider's saved login has aged out and pillr could not
     /// renew it, so someone has to run the tool that owns it.
     ///
     /// Deliberately *not* read off the snapshot's status, for the same reason

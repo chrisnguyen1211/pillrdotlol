@@ -98,7 +98,7 @@ enum APIMeasure: Sendable, Equatable {
         case .left:       return L10n.t("Shows what is left to use.")
         case .usageCount: return L10n.t("Shows usage this billing period.")
         case .plan:       return L10n.t("Shows your plan's usage limits.")
-        case .keyCheck:   return L10n.t("\(name) doesn't share usage through its API, so spyx only checks that the key works. It gets no ring.")
+        case .keyCheck:   return L10n.t("\(name) doesn't share usage through its API, so pillr only checks that the key works. It gets no ring.")
         }
     }
 }
@@ -206,7 +206,7 @@ struct APIExtra: Sendable {
 }
 
 enum APIRoute: Sendable {
-    /// One of the providers spyx had before the catalog — GLM, MiniMax's
+    /// One of the providers pillr had before the catalog — GLM, MiniMax's
     /// Coding Plan, Ollama Cloud, Apify — read by its own adapter.
     case existing
     case catalog(APIRecipe)
@@ -253,7 +253,7 @@ struct APICatalogEntry: Identifiable, Sendable {
     var shownNote: String {
         var parts = [measure.note(providerName: name)]
         if billedCheck {
-            parts.append(L10n.t("Each check sends one tiny request that \(name) bills, so spyx checks only when you ask."))
+            parts.append(L10n.t("Each check sends one tiny request that \(name) bills, so pillr checks only when you ask."))
         }
         return parts.joined(separator: " ")
     }
@@ -261,7 +261,7 @@ struct APICatalogEntry: Identifiable, Sendable {
     var note: String {
         var parts = [keyKind.note, measure.note(providerName: name)]
         if billedCheck {
-            parts.append(L10n.t("Each check sends one tiny request that \(name) bills, so spyx checks only when you ask."))
+            parts.append(L10n.t("Each check sends one tiny request that \(name) bills, so pillr checks only when you ask."))
         }
         return parts.joined(separator: " ")
     }
@@ -1120,14 +1120,14 @@ enum APICatalog {
             id: "pruna", name: "Pruna AI", category: .media, aliases: ["p-api", "p-image"],
             readability: .keyCheck, glyph: .pruna, consoleURL: url("https://dashboard.pruna.ai"), measure: .keyCheck,
             route: .catalog(APIRecipe(auth: .header("apikey"),
-                                      request: r("https://api.pruna.ai/v1/predictions/status/spyx-check-{uuid}"),
+                                      request: r("https://api.pruna.ai/v1/predictions/status/pillr-check-{uuid}"),
                                       parse: .keyWorks, acceptedStatuses: [404]))),
         APICatalogEntry(
             id: "bria", name: "Bria AI", category: .media, aliases: ["bria"],
             readability: .keyCheck, glyph: .bria, consoleURL: url("https://platform.bria.ai/organization-management/api-keys"),
             measure: .keyCheck,
             route: .catalog(APIRecipe(auth: .header("api_token"),
-                                      request: r("https://engine.prod.bria-api.com/v2/status/spyx-check-{uuid}"),
+                                      request: r("https://engine.prod.bria-api.com/v2/status/pillr-check-{uuid}"),
                                       parse: .keyWorks, acceptedStatuses: [404]))),
         APICatalogEntry(
             id: "stability", name: "Stability AI", category: .media, aliases: ["stable diffusion"],

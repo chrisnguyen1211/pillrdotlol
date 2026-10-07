@@ -262,7 +262,7 @@ enum Sites {
         parse: { try QianwenUsage.windows(fromJSON: $0) }
     )
 
-    /// MiniMax is signed into from spyx's own WKWebView, the same way
+    /// MiniMax is signed into from pillr's own WKWebView, the same way
     /// DeepSeek is. Login lives on the regional platform origin; coding-plan
     /// remains is a www host, so the fetch is absolute and sign-out has to
     /// clear that host as well as the platform one.

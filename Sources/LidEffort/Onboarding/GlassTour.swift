@@ -218,7 +218,7 @@ struct IntroFrame: View {
                 .opacity(glass * (1 - gone))
 
             VStack(alignment: .trailing, spacing: 12) {
-                Text("spyx")
+                Text("pillr")
                     .font(.system(size: 108, weight: .bold, design: .rounded))
                     .tracking(G.lerp(26, -2, word))
                     .foregroundStyle(LinearGradient(colors: [.white, .white.opacity(0.72)], startPoint: .top, endPoint: .bottom))
@@ -279,7 +279,7 @@ struct DropsBlob: View {
     }
 }
 
-/// Every agent spyx reads, as the pill draws them — its own ring and badge —
+/// Every agent pillr reads, as the pill draws them — its own ring and badge —
 /// running up through the pill, faster and faster, then easing to a stop on
 /// the reader's own agents.
 struct AgentScroll: View {

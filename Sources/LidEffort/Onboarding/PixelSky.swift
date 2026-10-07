@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 
-/// The sky from spyx's landing page, behind the tour's intro: a clear day,
+/// The sky from pillr's landing page, behind the tour's intro: a clear day,
 /// deep blue overhead, with square pixel clouds drifting through — cream on
 /// top, grey underneath, where the light does not reach.
 ///

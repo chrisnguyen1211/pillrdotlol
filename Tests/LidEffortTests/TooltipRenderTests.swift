@@ -35,9 +35,9 @@ final class TooltipRenderTests: XCTestCase {
             windows: [LimitWindow(id: "session", label: "Session", usedFraction: 0.47)]
         )
         let activity = ActivitySummary(sessions: [
-            session("spyx-6f", .idle, minutes: 0),
+            session("pillr-6f", .idle, minutes: 0),
             session("web-2f", .busy, minutes: 1),
-            session("spyx-18", .waiting, minutes: 3)
+            session("pillr-18", .waiting, minutes: 3)
         ])
 
         let view = TooltipCard(snapshot: snapshot, activity: activity, now: Date())

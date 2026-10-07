@@ -31,7 +31,7 @@ final class KiloUsageTests: XCTestCase {
 
     func testFiveHourWindowIsRecognisedAsTheSessionRing() throws {
         let w = try KiloUsage.windows(fromJSON: usagePayload)
-        // spyx has no `LimitWindow.isFiveHour`; the duration is what it reads.
+        // pillr has no `LimitWindow.isFiveHour`; the duration is what it reads.
         XCTAssertEqual(w[0].duration, 5 * 3600, "the five-hour window is the one a session runs into first")
         XCTAssertNotEqual(w[1].duration, 5 * 3600)
         XCTAssertEqual(KiloUsage.headlineID(in: w), "five_hour")
@@ -116,7 +116,7 @@ final class KiloUsageTests: XCTestCase {
         XCTAssertEqual(window.id, "balance")
         XCTAssertEqual(window.usedText, "$14.28")
         XCTAssertNil(window.usedFraction, "a balance has no denominator to draw a ring with")
-        // spyx has no `prefersUsedText`: with no fraction, the cell already
+        // pillr has no `prefersUsedText`: with no fraction, the cell already
         // prints the money rather than the zero count.
         let snapshot = ProviderSnapshot(id: "kilo", displayName: "Kilo", glyph: .kilo,
                                         fidelity: .official, status: .ok, windows: [window],

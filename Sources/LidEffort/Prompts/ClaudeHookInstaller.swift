@@ -19,7 +19,7 @@ enum ClaudeHookInstaller {
     /// rather than slipping back into a terminal nobody is looking at. The
     /// broker still lets go first (`PromptBroker.patience`), and much sooner
     /// whenever the person is there and goes to the session — see
-    /// `AppDelegate.startPromptBroker`. If spyx quits, the hook's
+    /// `AppDelegate.startPromptBroker`. If pillr quits, the hook's
     /// connection closes and Claude asks for itself at once.
     static let timeoutSeconds = 86_400
 

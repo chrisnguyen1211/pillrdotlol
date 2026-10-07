@@ -3,7 +3,7 @@ import Foundation
 /// Holds a borrowed credential so the keychain is read as rarely as possible.
 ///
 /// Every read of the *data* is a chance for macOS to interrupt someone. The ACL
-/// on another app's item does not list spyx, so the first read prompts —
+/// on another app's item does not list pillr, so the first read prompts —
 /// and if the answer was **Allow** rather than **Always Allow**, so does every
 /// one after it.
 ///

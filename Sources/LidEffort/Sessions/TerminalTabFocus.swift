@@ -10,7 +10,7 @@ import Foundation
 /// * **cmux** matches a terminal panel by its *working directory* — the
 ///   session process's own cwd. Its socket CLI would be nicer (it names tabs
 ///   by tty), but the server refuses any client that is not itself inside a
-///   cmux terminal session (manaflow-ai/cmux#3089) — and spyx never is.
+///   cmux terminal session (manaflow-ai/cmux#3089) — and pillr never is.
 /// * **Terminal.app** and **iTerm2** match a tab by tty.
 /// * Everything else publishes nothing (Warp, Ghostty), and the caller falls
 ///   back to raising the app — the honest answer rather than a silent no-op.

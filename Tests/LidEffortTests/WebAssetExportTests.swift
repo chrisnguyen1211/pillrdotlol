@@ -5,14 +5,14 @@ import LidEffortCore
 
 /// The landing page's pictures, drawn by the app itself: each agent's mark
 /// as an SVG, and the real pill and cards as PNGs. Runs only when asked —
-/// `SPYX_WEB_ASSETS_DIR=<dir> swift test --filter WebAssetExportTests`.
+/// `PILLR_WEB_ASSETS_DIR=<dir> swift test --filter WebAssetExportTests`.
 @MainActor
 final class WebAssetExportTests: XCTestCase {
     private var dir: URL!
 
     override func setUpWithError() throws {
-        guard let path = ProcessInfo.processInfo.environment["SPYX_WEB_ASSETS_DIR"] else {
-            throw XCTSkip("set SPYX_WEB_ASSETS_DIR to export the landing page's assets")
+        guard let path = ProcessInfo.processInfo.environment["PILLR_WEB_ASSETS_DIR"] else {
+            throw XCTSkip("set PILLR_WEB_ASSETS_DIR to export the landing page's assets")
         }
         dir = URL(fileURLWithPath: path)
         try FileManager.default.createDirectory(at: dir.appendingPathComponent("glyphs"), withIntermediateDirectories: true)
@@ -223,9 +223,9 @@ final class WebAssetExportTests: XCTestCase {
         }
         try renderDark(field("", caret: false), to: folder.appendingPathComponent("field-00.png"))
         var typed = ""
-        for (i, ch) in message.enumerated() {
+        // Every character, so the typing can be shown a key at a time.
+        for ch in message {
             typed.append(ch)
-            guard i % 2 == 1 || i == message.count - 1 else { continue }
             try renderDark(field(typed, caret: true), to: folder.appendingPathComponent(String(format: "field-%02d.png", typed.count)))
         }
         try renderDark(field(message, caret: false), to: folder.appendingPathComponent("field-done.png"))

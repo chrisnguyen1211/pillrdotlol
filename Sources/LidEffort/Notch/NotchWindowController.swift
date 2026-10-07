@@ -1725,7 +1725,7 @@ final class NotchWindowController {
         }
         items.append(.separator())
         items.append(ActionMenuItem(L10n.t("Settings…"), key: ",") { [weak self] in self?.onOpenSettings?() })
-        let quit = NSMenuItem(title: L10n.t("Quit spyx"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        let quit = NSMenuItem(title: L10n.t("Quit pillr"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
         quit.isEnabled = true
         items.append(quit)
         return items

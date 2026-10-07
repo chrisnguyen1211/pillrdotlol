@@ -13,7 +13,7 @@ final class LMStudioWireTests: XCTestCase {
 
     func testWithoutATokenAFreshPairNamesTheConnection() {
         let frame = LMStudioWire.authFrame(token: nil, random: { "abcdefghijklmnopqrst" })
-        XCTAssertEqual(frame["clientIdentifier"] as? String, "spyx-abcdefgh")
+        XCTAssertEqual(frame["clientIdentifier"] as? String, "pillr-abcdefgh")
         XCTAssertEqual(frame["clientPasskey"] as? String, "abcdefghijklmnopqrst")
         let real = LMStudioWire.authFrame(token: nil)
         XCTAssertEqual((real["clientPasskey"] as? String)?.count, 20)
@@ -23,7 +23,7 @@ final class LMStudioWireTests: XCTestCase {
 
     func testAMalformedTokenIsStillSentSoTheServerCanRefuseIt() {
         let frame = LMStudioWire.authFrame(token: "not-a-token")
-        XCTAssertEqual(frame["clientIdentifier"] as? String, "spyx")
+        XCTAssertEqual(frame["clientIdentifier"] as? String, "pillr")
         XCTAssertEqual(frame["clientPasskey"] as? String, "not-a-token")
     }
 

@@ -27,11 +27,18 @@ extension View {
 /// whatever is stacked under the panel show through it, and the sidebar and
 /// the pane can take different materials so they read as two surfaces rather
 /// than one flat fill.
+/// The panel's glass. It covers the top bar too, and a view that may move
+/// the window there takes the bar's clicks for the window server — so it
+/// may not (see `SettingsHostingView`).
+final class StillEffectView: NSVisualEffectView {
+    override var mouseDownCanMoveWindow: Bool { false }
+}
+
 private struct VisualEffect: NSViewRepresentable {
     let material: NSVisualEffectView.Material
 
     func makeNSView(context: Context) -> NSVisualEffectView {
-        let view = NSVisualEffectView()
+        let view = StillEffectView()
         apply(to: view, context: context)
         // `.followsWindowActiveState` would drain the colour out of the panel
         // whenever focus went elsewhere, which for a settings window that is
@@ -57,7 +64,7 @@ private struct VisualEffect: NSViewRepresentable {
 
 /// The settings sheet, reached from the orb below the notch.
 ///
-/// spyx's settings: the notch at the head of the window, drawn live, then a
+/// pillr's settings: the notch at the head of the window, drawn live, then a
 /// row of tabs and the chosen pane under them — dark glass throughout, the
 /// same material the notch is made of. What you change below, you see above.
 struct SettingsView: View {
@@ -213,6 +220,12 @@ struct SettingsView: View {
             selection = startSection
             refreshVisibleState()
         }
+        // Sent from outside the sheet — the API keys cell's menu.
+        .onReceive(NotificationCenter.default.publisher(for: SettingsView.openSection)) { note in
+            guard let raw = note.object as? String, let section = SettingsSection(rawValue: raw) else { return }
+            query = ""
+            selection = section
+        }
         .onReceive(NotificationCenter.default.publisher(
             for: NSWindow.didBecomeKeyNotification
         )) { _ in refreshVisibleState() }
@@ -224,7 +237,7 @@ struct SettingsView: View {
         .onReceive((usageStore?.$providerListRevision.dropFirst().eraseToAnyPublisher()
                     ?? Empty<Int, Never>().eraseToAnyPublisher())
             .receive(on: RunLoop.main)) { _ in refreshVisibleState() }
-        .onReceive((usageStore?.$notchSnapshots.eraseToAnyPublisher()
+        .onReceive((usageStore?.$connectedCells.eraseToAnyPublisher()
                     ?? Empty<[ProviderSnapshot], Never>().eraseToAnyPublisher())
             .receive(on: RunLoop.main)) { _ in
                 // The sheet stays open while models load and unload. Update
@@ -245,10 +258,11 @@ struct SettingsView: View {
     private var topBar: some View {
         HStack(spacing: 12) {
             Color.clear.frame(width: SettingsView.trafficLightWidth, height: 1)
-            Text(verbatim: "spyx")
+            Text(verbatim: "pillr")
                 .font(.system(size: 13, weight: .semibold))
-            Spacer(minLength: 0)
-            ThemeToggle(mode: $preferences.interfaceMode)
+            WindowDragHandle()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            ThemeChooser(choice: $preferences.appearanceChoice)
             SettingsSearchField(text: $query)
                 .frame(width: 190)
             Button(action: quit) {
@@ -259,8 +273,8 @@ struct SettingsView: View {
                     .contentShape(Circle())
             }
             .buttonStyle(.plain)
-            .help(L10n.t("Quit spyx"))
-            .accessibilityLabel(L10n.t("Quit spyx"))
+            .help(L10n.t("Quit pillr"))
+            .accessibilityLabel(L10n.t("Quit pillr"))
         }
         .padding(.horizontal, 14)
         .frame(height: SettingsView.headerHeight)
@@ -405,7 +419,7 @@ struct SettingsView: View {
                 }
                 // Beside the buttons it explains, not stranded at the end of
                 // the page.
-                Text(L10n.t("Most readings are borrowed from a tool that already holds the account. DeepSeek, MiniMax and QianwenAI are the exceptions: Connect opens a spyx window for that account, and Disconnect clears only that session and its saved reading."))
+                Text(L10n.t("Most readings are borrowed from a tool that already holds the account. DeepSeek, MiniMax and QianwenAI are the exceptions: Connect opens a pillr window for that account, and Disconnect clears only that session and its saved reading."))
                     .font(.caption)
                     .foregroundStyle(.tertiary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -466,14 +480,14 @@ struct SettingsView: View {
 
     private func readNeeds(from store: UsageStore) {
         liveNeeds = store.connectNeeds()
-        onNotch = Set(store.notchSnapshots.map(\.id))
+        onNotch = Set(store.connectedCells.map(\.id))
     }
 
     /// The Accounts list: every key folded into one API keys row, which
     /// takes its place in the order like any other.
     static func accountRows(_ summaries: [ProviderSummary], order: [String],
                             isConnected: (String) -> Bool = { _ in true }) -> [ProviderSummary] {
-        ProviderOrder.arrange(APIKeyGroup.collapse(summaries: summaries, isConnected: isConnected),
+        ProviderOrder.arrange(APIKeyGroup.collapse(summaries: summaries, isConnected: isConnected, keepEmpty: true),
                               by: APIKeyGroup.groupedOrder(order), id: \.id)
     }
 
@@ -527,6 +541,8 @@ struct SettingsView: View {
     /// row rather than as three things that happen to be near the top.
     /// `SettingsWindowController` positions the lights against this too.
     static let headerHeight: CGFloat = 52
+    /// Asks an open sheet to show a tab; the object is its raw value.
+    static let openSection = Notification.Name("lol.pillr.settings.openSection")
 
     /// How much room the three lights take across, for the one layout that
     /// has to start to the right of them: the collapsed pane's header.
@@ -581,7 +597,7 @@ struct SettingsView: View {
     /// this, sees four blank rings and concludes it is broken — and the
     /// distinction that catches them out is Claude *Code*, not the Claude app.
     static var setupCopy: String {
-        L10n.t("spyx reads usage from tools already signed in on this Mac — it never asks for your password. Install and sign in to any of Claude Code (the terminal tool, not the Claude app), Cursor (the editor or cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, Command Code, GitHub Copilot, Kimi Code or a Gemini API key (via Gemini CLI, OpenCode or Hermes), and its ring appears in the notch.")
+        L10n.t("pillr reads usage from tools already signed in on this Mac — it never asks for your password. Install and sign in to any of Claude Code (the terminal tool, not the Claude app), Cursor (the editor or cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, Command Code, GitHub Copilot, Kimi Code or a Gemini API key (via Gemini CLI, OpenCode or Hermes), and its ring appears in the notch.")
     }
 
     /// Said before it happens rather than after. A system dialogue asking to
@@ -758,7 +774,7 @@ struct AccentColorSwatch: View {
     }
 }
 
-/// One provider: whether spyx reads it, whose account that is, and where
+/// One provider: whether pillr reads it, whose account that is, and where
 /// to go if there is nothing to read.
 /// One sound choice, with a preview button.
 struct SoundRow: View {
@@ -808,7 +824,7 @@ private struct AccountRow: View {
     let signOut: (String) -> Void
     let signIn: (String) -> Bool
     /// Starts this provider's sign-in from a click: a Terminal command, its
-    /// app, or spyx's own sign-in window. False when there was nothing to
+    /// app, or pillr's own sign-in window. False when there was nothing to
     /// start, and the row's guidance or key field is the way in.
     let connect: (String) -> Bool
     let switchAccount: (String) -> Bool
@@ -852,7 +868,7 @@ private struct AccountRow: View {
     /// The handle only appears under the pointer, so a row at rest stays as
     /// quiet as it was before there was anything to drag.
     @State private var isHovering = false
-    /// Disconnecting a provider whose session spyx owns signs it out for real,
+    /// Disconnecting a provider whose session pillr owns signs it out for real,
     /// so that one is asked first.
     @State private var confirmingDisconnect = false
     /// Where a Connect click has got to: checking the account for real, or
@@ -1134,7 +1150,7 @@ private struct AccountRow: View {
     }
 
     /// Stops reading and forgets the readings — what switching off used to
-    /// do. Asked first only where it also ends a session spyx owns; anywhere
+    /// do. Asked first only where it also ends a session pillr owns; anywhere
     /// else the account is untouched and Connect brings it straight back.
     private var disconnectButton: some View {
         Button(L10n.t("Disconnect")) {
@@ -1248,13 +1264,13 @@ private struct AccountRow: View {
                 .foregroundStyle(.secondary)
                 .help(L10n.t("Fills the ring against a ceiling you choose; Google publishes none for an API key."))
             }
-            // MiniMax is signed into in spyx. The region is which console
+            // MiniMax is signed into in pillr. The region is which console
             // its session and keys belong to; a cookie header is optional.
             if provider.id == "minimax" {
                 minimaxEntry
             }
 
-            // A key pasted into spyx lives under API, with every other key.
+            // A key pasted into pillr lives under API, with every other key.
             if takesAPIKey || extraKey != nil {
                 apiKeyPointer
             }
@@ -1270,6 +1286,7 @@ private struct AccountRow: View {
         return HStack(spacing: 6) {
             Text(!isConnected
                  ? L10n.t("Hidden from the notch · \(count)")
+                 : keys.isEmpty ? L10n.t("No keys yet — add one under API")
                  : off == 0 ? L10n.t("\(count), shown together in one cell")
                  : L10n.t("\(count), \(off) switched off"))
                 .foregroundStyle(.secondary)
@@ -1328,7 +1345,7 @@ private struct AccountRow: View {
 
             minimaxCookieEntry
 
-            Text(L10n.t("Sign in to MiniMax in spyx, or add a Coding Plan key under API. A Cookie header is optional. spyx never reads a browser's cookies."))
+            Text(L10n.t("Sign in to MiniMax in pillr, or add a Coding Plan key under API. A Cookie header is optional. pillr never reads a browser's cookies."))
                 .foregroundStyle(.tertiary)
                 .fixedSize(horizontal: false, vertical: true)
         }
@@ -1394,7 +1411,7 @@ private struct AccountRow: View {
             // Not a sign-in problem, so do not send them off to sign in. The
             // credential is right there and macOS is the one saying no — the
             // remedy is the Allow access… button on this same row.
-            Text(L10n.t("macOS is not letting spyx read \(provider.name)'s saved login. Choose Allow access… above, then Always Allow."))
+            Text(L10n.t("macOS is not letting pillr read \(provider.name)'s saved login. Choose Allow access… above, then Always Allow."))
                 .foregroundStyle(.orange)
                 .fixedSize(horizontal: false, vertical: true)
         } else {
@@ -1560,7 +1577,7 @@ private struct AccountRow: View {
     }
 
     /// A real sign-out for the readings: it forgets them as well as stopping
-    /// the next one. For a session spyx owns it ends that session too.
+    /// the next one. For a session pillr owns it ends that session too.
     private func disconnect() {
         if provider.localModel == nil { signOut(provider.id) }
         preferences.setConnected(false, for: provider.id)

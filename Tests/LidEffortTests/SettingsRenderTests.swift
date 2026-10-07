@@ -116,6 +116,11 @@ final class SettingsRenderTests: XCTestCase {
                                              basePresent: { $0 == "glm" }, snapshotsForRender: snapshots)), pane),
             ("api-form", AnyView(APIKeysPane(preferences: withKeys, addRequest: .constant(nil), initialForm: "moonshot",
                                              basePresent: { $0 == "glm" }, snapshotsForRender: snapshots)), pane),
+            ("theme-chooser", AnyView(VStack(spacing: 12) {
+                ThemeChooser(choice: .constant(.light))
+                ThemeChooser(choice: .constant(.dark))
+                ThemeChooser(choice: .constant(.system))
+            }.padding(16)), CGSize(width: 200, height: 150)),
             ("api-form-xai", AnyView(APIKeyForm(preferences: withKeys, preset: "xai", done: { _ in })
                 .padding(20)), CGSize(width: SettingsView.width, height: 460)),
             ("api-form-fields", AnyView(APIKeyForm(preferences: withKeys, preset: "fireworks", done: { _ in })
@@ -145,10 +150,10 @@ final class SettingsRenderTests: XCTestCase {
             ProviderSummary(id: "glm", name: "GLM", glyph: .glm, account: nil,
                             signIn: .guidance("Set up a GLM key")),
             ProviderSummary(id: "apikey_openrouter-k00001", name: "OpenRouter · Work", glyph: .apiKey,
-                            account: ProviderAccount(label: nil, plan: nil, source: "spyx", manageURL: nil),
+                            account: ProviderAccount(label: nil, plan: nil, source: "pillr", manageURL: nil),
                             signIn: .guidance(ExtraKey.signInGuidance)),
             ProviderSummary(id: "apikey_groq-k00004", name: "Groq · Key 1", glyph: .apiKey,
-                            account: ProviderAccount(label: nil, plan: nil, source: "spyx", manageURL: nil),
+                            account: ProviderAccount(label: nil, plan: nil, source: "pillr", manageURL: nil),
                             signIn: .guidance(ExtraKey.signInGuidance)),
         ]
         withKeys.setConnected(true, for: "glm")

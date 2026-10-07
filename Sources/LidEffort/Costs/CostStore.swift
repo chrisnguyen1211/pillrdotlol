@@ -99,7 +99,7 @@ final class CostStore {
     static let unexplainedKey = "__unexplained__"
 
     private var db: OpaquePointer?
-    let queue = DispatchQueue(label: "lol.spyx.app.costs.store")
+    let queue = DispatchQueue(label: "lol.pillr.app.costs.store")
     private static let transient = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
 
     // Weights that split a limit delta across turns within one interval. They are
@@ -404,7 +404,7 @@ final class CostStore {
         if t0 > 0 { return t0 }
 
         // Nothing attributed and no reset seen: the period starts at the first
-        // reading we took. Consumption from before spyx was running is not ours
+        // reading we took. Consumption from before pillr was running is not ours
         // to explain.
         if let st = prepare("SELECT MIN(ts) FROM quota_sample WHERE window=?1") {
             bind(st, 1, window.rawValue)
@@ -450,8 +450,8 @@ final class CostStore {
 
     /// Attribution for the current period of a window, largest first.
     ///
-    /// Observed deltas only cover the stretches spyx was running for. Anything
-    /// else — the app closed, the Mac asleep, a period that began before spyx
+    /// Observed deltas only cover the stretches pillr was running for. Anything
+    /// else — the app closed, the Mac asleep, a period that began before pillr
     /// was ever launched — would otherwise leave the list adding up to less than
     /// the percentage on the card. The remainder is therefore spread across the
     /// turns recorded in this period, so the rows always account for the whole of
@@ -471,7 +471,7 @@ final class CostStore {
 
             let latest = lastSample(window)
             // A reset time is the firmer boundary: it tells us where this period
-            // began even if spyx never saw the reset happen.
+            // began even if pillr never saw the reset happen.
             if let resets = latest?.resetsAt {
                 periodStart = max(periodStart, resets - Int(window.duration))
             }

@@ -1,6 +1,6 @@
 #!/bin/bash
 # Build, sign and publish: a DMG and the appcast that points every installed
-# spyx at it, as one GitHub release of the public repository.
+# pillr at it, as one GitHub release of the public repository.
 #
 #   script/release.sh
 #       → signed with the Apple Development identity bundle.sh finds, not
@@ -9,7 +9,7 @@
 #         the permissions and keychain access it granted across updates.
 #
 #   DEVELOPER_ID="Developer ID Application: Name (TEAMID)" \
-#   NOTARY_PROFILE=spyx script/release.sh
+#   NOTARY_PROFILE=pillr script/release.sh
 #       → with an Apple Developer Program membership: hardened runtime,
 #         notarized and stapled, opens with a double-click anywhere.
 #
@@ -22,29 +22,31 @@
 # Sparkle only ever needs the newest.
 #
 # The update is signed with the EdDSA key generate_keys stored in the login
-# keychain under the account "spyx.lol"; its public half is in Info.plist.
+# keychain under the account "spyx.lol" — the name it was made under, before
+# the app was pillr; renaming it would lose it. Its public half is in Info.plist.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-REPO=chrisnguyen1211/spyxdotlol
+REPO=chrisnguyen1211/pillrdotlol
 
 if [ -z "${DEVELOPER_ID:-}" ]; then
   echo "note: no DEVELOPER_ID — signing for development, not notarizing." >&2
 fi
 
-script/package.sh
-VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" build/spyx.app/Contents/Info.plist)
+# STYLED=1 dresses the disk image — see `script/package.sh --styled`.
+if [ "${STYLED:-0}" = 1 ]; then script/package.sh --styled; else script/package.sh; fi
+VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" build/pillr.app/Contents/Info.plist)
 OUT="release/$VERSION"
 rm -rf "$OUT"
 mkdir -p "$OUT"
-cp "build/spyx-$VERSION.dmg" "$OUT/"
+cp "build/pillr-$VERSION.dmg" "$OUT/"
 
 # What's new, written by hand in release-notes/<version>.md: shown in
-# Sparkle's update window (as spyx-<version>.html beside the DMG, which
+# Sparkle's update window (as pillr-<version>.html beside the DMG, which
 # generate_appcast embeds) and on the GitHub release.
 NOTES_MD="release-notes/$VERSION.md"
 if [ -f "$NOTES_MD" ]; then
-  python3 - "$NOTES_MD" "$OUT/spyx-$VERSION.html" <<'PY'
+  python3 - "$NOTES_MD" "$OUT/pillr-$VERSION.html" <<'PY'
 import html, re, sys
 src, dst = sys.argv[1], sys.argv[2]
 out, in_list = [], False
@@ -69,13 +71,31 @@ else
   echo "note: no $NOTES_MD — the update window will show no notes." >&2
 fi
 
+# The update itself is a zip, not the DMG, holding the app as spyx.app.
+# Sparkle takes from an archive the app named like the one installed or with
+# its bundle id: a copy still called spyx.app (lol.spyx.app) finds it by the
+# name, a pillr.app (lol.pillr.app) by the id, and either installs it where
+# it already is — pillr then gives the bundle its own name
+# (`Rebrand.renameBundleIfNeeded`). The DMG people download says pillr.app.
+SPARKLE="$OUT/sparkle"
+mkdir -p "$SPARKLE"
+# Notarized with the DMG: the app carries its own ticket into the zip too.
+[ -n "${DEVELOPER_ID:-}" ] && xcrun stapler staple build/pillr.app
+STAGE=$(mktemp -d)
+ditto build/pillr.app "$STAGE/spyx.app"
+ditto -c -k --sequesterRsrc --keepParent "$STAGE/spyx.app" "$SPARKLE/pillr-$VERSION.zip"
+rm -rf "$STAGE"
+[ -f "$OUT/pillr-$VERSION.html" ] && mv "$OUT/pillr-$VERSION.html" "$SPARKLE/"
+
 TOOLS=.build/artifacts/sparkle/Sparkle/bin
 "$TOOLS/generate_appcast" --account spyx.lol \
   --download-url-prefix "https://github.com/$REPO/releases/download/v$VERSION/" \
   --link "https://github.com/$REPO" \
   --maximum-versions 1 --maximum-deltas 0 \
-  "$OUT/"
-echo "release: $OUT/spyx-$VERSION.dmg + $OUT/appcast.xml"
+  "$SPARKLE/"
+mv "$SPARKLE/appcast.xml" "$OUT/appcast.xml"
+mv "$SPARKLE/pillr-$VERSION.zip" "$OUT/"
+echo "release: $OUT/pillr-$VERSION.dmg + $OUT/pillr-$VERSION.zip + $OUT/appcast.xml"
 
 if [ "${PUBLISH:-0}" = 1 ]; then
   if [ -n "${DEVELOPER_ID:-}" ]; then
@@ -86,9 +106,9 @@ if [ "${PUBLISH:-0}" = 1 ]; then
   {
     [ -f "$NOTES_MD" ] && cat "$NOTES_MD" && echo
     echo "---"
-    echo "**Install:** download **spyx-$VERSION.dmg**, open it and drag spyx onto Applications. $OPEN_NOTE"
-    echo "Already installed? spyx updates itself — your settings and permissions are kept."
-  } | gh release create "v$VERSION" "$OUT/spyx-$VERSION.dmg" "$OUT/appcast.xml" \
-    --repo "$REPO" --title "spyx $VERSION" --notes-file -
+    echo "**Install:** download **pillr-$VERSION.dmg**, open it and drag pillr onto Applications. $OPEN_NOTE"
+    echo "Already installed? pillr updates itself — your settings and permissions are kept."
+  } | gh release create "v$VERSION" "$OUT/pillr-$VERSION.dmg" "$OUT/pillr-$VERSION.zip" "$OUT/appcast.xml" \
+    --repo "$REPO" --title "pillr $VERSION" --notes-file -
   echo "published: https://github.com/$REPO/releases/tag/v$VERSION"
 fi

@@ -47,7 +47,7 @@ final class ThresholdNotifier {
 
         defer { crossed[snapshot.id] = level }
         // The first reading is where things stand, not a crossing: someone
-        // already at 85% when spyx starts is not told so — nor asked, in
+        // already at 85% when pillr starts is not told so — nor asked, in
         // the middle of setup, to allow notifications.
         guard let previous = crossed[snapshot.id] else { return }
         guard level > previous, !isMuted(snapshot.id) else { return }

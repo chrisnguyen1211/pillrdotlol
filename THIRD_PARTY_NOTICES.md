@@ -1,11 +1,11 @@
 # Third-party notices
 
-spyx includes software from the projects below. Their licenses require the
-notices that follow to accompany copies of spyx.
+pillr includes software from the projects below. Their licenses require the
+notices that follow to accompany copies of pillr.
 
 ## Notch interface and usage readers
 
-Parts of spyx's notch interface and its usage readers are derived from
+Parts of pillr's notch interface and its usage readers are derived from
 codenotch (https://github.com/vinzdg/codenotch), used under the MIT License.
 
 ```
@@ -423,7 +423,7 @@ Apache License
 
 ## Sparkle
 
-spyx updates itself with Sparkle 2.10.0
+pillr updates itself with Sparkle 2.10.0
 (https://github.com/sparkle-project/Sparkle), embedded as
 `Sparkle.framework` and used under the MIT License. Sparkle's license file
 carries the notices for the third-party code it bundles: bsdiff/bspatch

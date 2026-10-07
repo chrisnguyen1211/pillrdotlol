@@ -9,6 +9,8 @@ import SwiftUI
 @MainActor
 final class SettingsWindowController: NSObject, NSWindowDelegate {
     private var window: NSWindow?
+    /// The tab a sheet not yet built should open on.
+    private var pendingSection: SettingsSection?
     private let preferences: Preferences
     /// A closure, not a snapshot. Read once at launch, the account shown here
     /// went stale the moment someone switched account in Cursor — and stayed
@@ -149,6 +151,14 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     /// Put it away — for the tour, which needs the screen it points at.
     func close() { window?.close() }
 
+    /// Opens the sheet on one tab.
+    func show(section: SettingsSection) {
+        let existed = window != nil
+        pendingSection = section
+        show()
+        if existed { NotificationCenter.default.post(name: SettingsView.openSection, object: section.rawValue) }
+    }
+
     func show() {
         if let window {
             // Re-centered every time, not only at creation: a window is
@@ -177,7 +187,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         )
         // Kept for the Window menu and Mission Control; hidden from the bar
         // itself, where the sidebar already names what you are looking at.
-        window.title = L10n.t("spyx Settings")
+        window.title = L10n.t("pillr Settings")
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
         // A floating rounded panel rather than a square window. The rounded
@@ -192,7 +202,7 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         window.appearance = preferences.interfaceMode.appearance
         window.hasShadow = true
         window.delegate = self
-        window.contentView = NSHostingView(
+        window.contentView = SettingsHostingView(
             rootView: SettingsView(preferences: preferences,
                                    providers: providers,
                                    signOut: signOut,
@@ -209,12 +219,35 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
                                    previewWeeklyLimitAlert: previewWeeklyLimitAlert,
                                    effort: effort,
                                    openSetup: { [weak self] in self?.openSetup() },
-                                   openTour: { [weak self] in self?.openTour() })
+                                   openTour: { [weak self] in self?.openTour() },
+                                   startSection: pendingSection ?? .lid)
         )
         window.center()
         window.isReleasedWhenClosed = false
         self.window = window
         layoutTrafficLights(in: window)
         surface(window)
+    }
+}
+
+/// The settings sheet's host. Its top bar sits where a title bar would, and
+/// macOS hands a press in a title bar to the window server to move the
+/// window — before the app sees it — wherever the view under it says it can
+/// move the window. A hosting view says yes by default, so the appearance
+/// icon, search and quit never got their clicks. No: the bar's empty
+/// stretch moves the window itself (`WindowDragHandle`).
+final class SettingsHostingView<Content: View>: NSHostingView<Content> {
+    override var mouseDownCanMoveWindow: Bool { false }
+}
+
+/// Empty space that moves the window when dragged — the settings bar's
+/// stretch between its name and its controls.
+struct WindowDragHandle: NSViewRepresentable {
+    func makeNSView(context: Context) -> NSView { Handle() }
+    func updateNSView(_ view: NSView, context: Context) {}
+
+    final class Handle: NSView {
+        override var mouseDownCanMoveWindow: Bool { false }
+        override func mouseDown(with event: NSEvent) { window?.performDrag(with: event) }
     }
 }

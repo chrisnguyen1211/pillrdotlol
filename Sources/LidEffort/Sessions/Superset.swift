@@ -16,7 +16,7 @@ import SQLite3
 /// internals, not an API, and a failed read only means less is shown.
 enum Superset {
     static let bundleID = "com.superset.desktop"
-    private static let log = Logger(subsystem: "lol.spyx.app", category: "superset")
+    private static let log = Logger(subsystem: "lol.pillr.app", category: "superset")
 
     static var home: URL {
         if let path = ProcessInfo.processInfo.environment["SUPERSET_HOME_DIR"], !path.isEmpty {

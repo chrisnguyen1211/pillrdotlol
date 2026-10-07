@@ -34,7 +34,7 @@ enum NotchVisibility: String, CaseIterable, Identifiable {
             // Names the menu bar route: with the notch off screen the readings
             // live in the menu bar menu instead, so Hide plus App icon "Menu
             // bar" is a working setup rather than a one-way door.
-            return L10n.t("Nothing on screen. The readings stay in the menu bar menu when App icon is Menu bar. Otherwise, open spyx again from Applications to bring these settings back.")
+            return L10n.t("Nothing on screen. The readings stay in the menu bar menu when App icon is Menu bar. Otherwise, open pillr again from Applications to bring these settings back.")
         }
     }
 }

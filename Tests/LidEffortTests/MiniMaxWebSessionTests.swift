@@ -1,7 +1,7 @@
 import XCTest
 @testable import LidEffort
 
-/// MiniMax is signed into from spyx's own WKWebView, the same way
+/// MiniMax is signed into from pillr's own WKWebView, the same way
 /// DeepSeek is. These pin the regional platform origin, the absolute www
 /// remains fetch, and the extra host that sign-out has to clear.
 @MainActor

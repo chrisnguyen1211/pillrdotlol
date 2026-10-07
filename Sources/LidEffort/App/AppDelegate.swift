@@ -58,7 +58,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// that rate-limits, actively harmful.
     private var isRunningTests: Bool { Runtime.isUnderTest }
 
-    /// Quit any copy of spyx that was already running.
+    /// Quit any copy of pillr that was already running.
     ///
     /// Every notch is a window on the screen edge, so a second copy is not a
     /// harmless duplicate the way a second text editor is: it draws a second
@@ -107,9 +107,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.regular)
         guard !isRunningTests else { return }
         Self.retireOlderInstances()
+        // Updated over a copy still named spyx.app: renamed, and relaunched
+        // from there — nothing below is worth starting twice.
+        if Rebrand.renameBundleIfNeeded() { return }
 
-        // Before Preferences reads anything: the settings from before the
-        // bundle id changed.
+        // Before Preferences reads anything: the settings and the files from
+        // before the bundle id changed.
+        Rebrand.carryOver()
         Preferences.migrateFromPreviousDomain()
         let preferences = Preferences()
         self.preferences = preferences
@@ -122,13 +126,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let fleet = NotchFleet(scope: preferences.notchScope, edge: preferences.notchEdge)
         self.notchFleet = fleet
 
-        // `SPYX_DEMO=1` puts the design frame's three providers on screen
+        // `PILLR_DEMO=1` puts the design frame's three providers on screen
         // with its numbers, for screenshots and for eyeballing the layout.
-        if ProcessInfo.processInfo.environment["SPYX_DEMO"] == "1" {
+        if ProcessInfo.processInfo.environment["PILLR_DEMO"] == "1" {
             fleet.setSnapshots(Fixtures.snapshots())
         } else {
             // DeepSeek's Platform usage page is a browser-session provider:
-            // login is explicit, stays in spyx's own WKWebView store, and
+            // login is explicit, stays in pillr's own WKWebView store, and
             // the page-local requests are refreshed only after that login.
             let deepSeek = WebSessionProvider(site: Sites.deepSeek)
             // QianwenAI's Token Plan is the same kind of provider: no usage API
@@ -414,7 +418,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 effort: { [weak self] in self?.effort },
                 openSettings: { [weak settings] in settings?.show() }
             )
-            // Shown round first, then set up: the intro says what spyx is,
+            // Shown round first, then set up: the intro says what pillr is,
             // so the setup that follows — permissions, hooks — has a reason
             // behind every question. A tour skipped or finished leads into
             // setup; setup's Finish only tours someone who has not seen it.
@@ -451,7 +455,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         whatsNew?.showIfNeeded()
                     }
                 }
-                // Intro first, unless spyx must first be moved into
+                // Intro first, unless pillr must first be moved into
                 // Applications: that page comes before anything, and the
                 // copy that reopens from there plays the intro.
                 if !IntroGate.seen, !AppLocation.current.needsMove {
@@ -710,7 +714,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
             // Which agents are not signed in, and what the Connect button in
             // their tooltip does — in place of an effort bar they cannot use.
-            Publishers.CombineLatest(store.$notchSnapshots, store.$needsRenewal)
+            Publishers.CombineLatest(store.$connectedCells, store.$needsRenewal)
                 .receive(on: RunLoop.main)
                 .sink { [weak fleet, weak store] _, _ in
                     guard let store else { return }
@@ -748,17 +752,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     if store?.openAccountSource(providerID: id, switching: switching) == true {
                         store?.followUp(providerID: id)
                     }
-                }
+                },
+                openAPIKeys: { [weak self] in self?.settings?.show(section: .api) }
             )
             store.$refreshing
                 .receive(on: RunLoop.main)
                 .sink { [weak fleet] ids in fleet?.setRefreshing(ids) }
                 .store(in: &cancellables)
 
-            // SPYX_DISCOVER=<url> loads that page in the signed-in WebView
+            // PILLR_DISCOVER=<url> loads that page in the signed-in WebView
             // and logs the API calls it makes — for finding an undocumented
             // endpoint by watching the site rather than guessing at path names.
-            if let target = ProcessInfo.processInfo.environment["SPYX_DISCOVER"],
+            if let target = ProcessInfo.processInfo.environment["PILLR_DISCOVER"],
                let url = URL(string: target),
                let provider = webProviders.first(where: { url.host?.contains($0.id) == true })
                    ?? webProviders.first {
@@ -1004,7 +1009,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                     } else if Date().timeIntervalSince(prompt.receivedAt) > Self.presentPatience,
                               let host = SessionFocus.owningApp(of: pid)?.processIdentifier, host == front {
                         // Here, in the app the session runs in, and the card
-                        // left a long while: a terminal spyx cannot see into
+                        // left a long while: a terminal pillr cannot see into
                         // (iTerm2, Ghostty, an IDE) may be the very tab they
                         // are in. Its own dialog, there, is the safer place.
                         broker.answer(prompt.id, with: .passThrough)
