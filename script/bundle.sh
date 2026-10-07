@@ -78,7 +78,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>NSAppleEventsUsageDescription</key>
   <string>pillr talks to your terminal to open the session you click, send your reply or the lid&apos;s effort level to a running agent session, and run an agent&apos;s sign-in command when you ask. It never reads your keystrokes.</string>
   <key>SUFeedURL</key><string>https://github.com/Catleader1407/pillr/releases/latest/download/appcast.xml</string>
-  <key>SUPublicEDKey</key><string>9+PPkW+iIsKvN+uBa6Ab15KmY/D2GYiWCXuAYUC2pGQ=</string>
+  <key>SUPublicEDKey</key><string>h+92Fqo2lrXsHeqRF5jkQUTe06UOpqpSq/ZxEVnNS3g=</string>
   <key>NSHumanReadableCopyright</key><string>© 2026 Cuong Nguyen &amp; Duc Tri Vu Nguyen. Open-source notices: Settings → General → Acknowledgements.</string>
 </dict></plist>
 PLIST
