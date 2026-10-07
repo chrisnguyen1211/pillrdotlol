@@ -80,6 +80,18 @@ final class Preferences: ObservableObject {
         didSet { defaults.set(thresholdAlertsEnabled, forKey: Keys.thresholdAlerts) }
     }
 
+    /// Whether a refused background read of Claude Code's or Antigravity's
+    /// keychain item may be retried through `/usr/bin/security`. Off by
+    /// default: macOS then asks before pillr reads another app's item.
+    @Published var allowSilentKeychainRead: Bool {
+        didSet { defaults.set(allowSilentKeychainRead, forKey: Keys.silentKeychainRead) }
+    }
+
+    /// Whether pillr may run `claude` briefly to renew a token about to expire.
+    @Published var autoRefreshClaudeToken: Bool {
+        didSet { defaults.set(autoRefreshClaudeToken, forKey: Keys.autoRefreshClaudeToken) }
+    }
+
     /// The order the user has dragged the rings into, as provider ids.
     ///
     /// Stored as the ids actually placed rather than as every id known at the
@@ -504,6 +516,8 @@ final class Preferences: ObservableObject {
         static let ollamaMetricsEnabled = "ollamaMetricsEnabled"
         static let mutedAlerts = "mutedAlertProviders"
         static let thresholdAlerts = "thresholdAlertsEnabled"
+        static let silentKeychainRead = KeychainSecret.silentReadKey
+        static let autoRefreshClaudeToken = "autoRefreshClaudeToken"
         static let hasLaunched = "hasLaunchedBefore"
         static let visibility = "notchVisibility"
         static let presence = "appPresence"
@@ -744,6 +758,8 @@ final class Preferences: ObservableObject {
         ).absoluteString) ?? LMStudioEndpoint.defaultAddress
         self.mutedAlertProviders = Set(defaults.stringArray(forKey: Keys.mutedAlerts) ?? [])
         self.thresholdAlertsEnabled = defaults.object(forKey: Keys.thresholdAlerts) as? Bool ?? true
+        self.allowSilentKeychainRead = defaults.object(forKey: Keys.silentKeychainRead) as? Bool ?? false
+        self.autoRefreshClaudeToken = defaults.object(forKey: Keys.autoRefreshClaudeToken) as? Bool ?? true
         // Absent means never chosen, which is the hover behaviour the app was
         // designed around — not hidden, which would make a fresh install look
         // like it failed to start.

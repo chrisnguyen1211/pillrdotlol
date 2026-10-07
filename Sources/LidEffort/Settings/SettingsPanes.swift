@@ -635,6 +635,19 @@ struct GeneralPane: View {
             }
 
             Section {
+                Toggle(isOn: $preferences.allowSilentKeychainRead) {
+                    SettingLabel(title: L10n.t("Read Claude Code and Antigravity sign-ins without asking"),
+                                 subtitle: L10n.t("Uses Apple's security tool to read their keychain items in the background. Off: macOS asks before pillr reads them."))
+                }
+                Toggle(isOn: $preferences.autoRefreshClaudeToken) {
+                    SettingLabel(title: L10n.t("Renew Claude's sign-in in the background"),
+                                 subtitle: L10n.t("Runs `claude` briefly when its token is about to expire, so usage keeps updating."))
+                }
+            } header: {
+                Text(L10n.t("Sign-ins"))
+            }
+
+            Section {
                 Toggle(isOn: Binding(get: { updater.automatic }, set: { updater.automatic = $0 })) {
                     SettingLabel(title: L10n.t("Install updates automatically"),
                                  subtitle: L10n.t("Downloaded in the background. pillr asks before it restarts to finish."))

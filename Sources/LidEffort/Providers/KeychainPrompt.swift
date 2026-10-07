@@ -50,6 +50,16 @@ enum KeychainSecret {
     /// dialogue again.
     private static let interactionLock = NSLock()
 
+    /// The preference that lets a refused read fall back to the security tool.
+    /// Read by key because this type has no handle on `Preferences`.
+    static let silentReadKey = "allowSilentKeychainRead"
+
+    /// Reaching around a refusal is only done with the person's say-so.
+    static func shouldRescue(interactive: Bool, status: OSStatus, hasRescue: Bool,
+                             allowed: Bool) -> Bool {
+        !interactive && hasRescue && allowed && ClaudeCredentials.wasRefused(status)
+    }
+
     /// Runs `query` and returns its status and data.
     ///
     /// When not `interactive`, interaction is switched off for the read —
@@ -82,7 +92,9 @@ enum KeychainSecret {
 
         // Not on an interactive read: someone who just answered the dialogue
         // gets exactly the answer they gave.
-        if !interactive, ClaudeCredentials.wasRefused(status), let rescue,
+        let allowed = UserDefaults.standard.bool(forKey: silentReadKey)
+        if shouldRescue(interactive: interactive, status: status, hasRescue: rescue != nil, allowed: allowed),
+           let rescue,
            let rescued = viaSecurityTool(service: rescue.service, account: rescue.account) {
             Log.usage.notice("\(rescue.service, privacy: .public) read via the security tool after a refusal")
             return (errSecSuccess, rescued)
