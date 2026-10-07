@@ -6,3 +6,12 @@ build/
 *sparkle-key*
 release/
 .gstack/
+
+# Local agent tooling (ClaudeKit) — not part of the app
+/.claude/
+/.agents/
+/ClaudeKit/
+/plans/
+/release-manifest.json
+/.repomixignore
+/.gitignore.local-backup
