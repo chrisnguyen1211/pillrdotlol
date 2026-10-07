@@ -382,14 +382,17 @@ final class TooltipSessionsTests: XCTestCase {
 
     func testTheTooltipRendersWithSectionsAndACappedList() throws {
         let now = Date()
-        let sessions = (0..<9).map { i in
-            session("session-\(i)", i == 4 ? .waiting : (i == 7 ? .busy : .idle), ago: Double(i) * 700)
+        let sessions: [AgentSession] = (0..<9).map { (i: Int) -> AgentSession in
+            let state: AgentSession.State = i == 4 ? .waiting : (i == 7 ? .busy : .idle)
+            return session("session-\(i)", state, ago: Double(i) * 700)
         }
-        let card = TooltipCard(
-            snapshot: ProviderSnapshot(id: "claude", displayName: "Claude", glyph: .claude, fidelity: .official,
-                                       status: .ok, windows: [LimitWindow(id: "s", label: "Current session", usedFraction: 0.29)]),
+        let snapshot = ProviderSnapshot(id: "claude", displayName: "Claude", glyph: .claude, fidelity: .official,
+                                        status: .ok, windows: [LimitWindow(id: "s", label: "Current session", usedFraction: 0.29)])
+        let tooltip = TooltipCard(
+            snapshot: snapshot,
             activity: ActivitySummary(sessions: sessions), now: now, sessionCap: 6,
             effortValue: "high", effortDots: EffortDotState(count: 4, filled: 3))
+        let card = tooltip
             .padding(20).background(Color(white: 0.2))
             .environment(\.notchSurfaceStyle, .solid)
             .environment(\.colorScheme, .dark)

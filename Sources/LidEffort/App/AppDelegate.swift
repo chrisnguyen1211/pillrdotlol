@@ -148,7 +148,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             let miniMaxWeb = WebSessionProvider(site: Sites.minimax(region: preferences.minimaxRegion))
             self.miniMaxWeb = miniMaxWeb
             let webProviders: [WebSessionProvider] = [deepSeek, qianwen]
-            fleet.signInItems = [deepSeek, miniMaxWeb, qianwen].map { provider in
+            fleet.signInItems = ([deepSeek, miniMaxWeb, qianwen] as [WebSessionProvider]).map { provider in
                 (title: L10n.t("Sign in to \(provider.displayName)…"),
                  action: { [weak provider] in provider?.presentSignIn() })
             }

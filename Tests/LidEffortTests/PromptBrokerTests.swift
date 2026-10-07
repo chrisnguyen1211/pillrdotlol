@@ -212,18 +212,21 @@ final class PromptRenderTests: XCTestCase {
         var question = try XCTUnwrap(PendingPrompt(hookInput: Data(PendingPromptTests.question.utf8)))
         question.sessionName = "my-app-0a"
         let now = Date()
-        let sessions = (0..<5).map { i in
-            AgentSession(id: "s\(i)", name: i == 0 ? "effort-lid-3c" : "session-\(i)", detail: "Terminal · project",
-                         state: i == 0 ? .waiting : .idle, waitingFor: nil, since: now.addingTimeInterval(-Double(i) * 900))
+        let sessions: [AgentSession] = (0..<5).map { (i: Int) -> AgentSession in
+            let name: String = i == 0 ? "effort-lid-3c" : "session-\(i)"
+            let state: AgentSession.State = i == 0 ? .waiting : .idle
+            return AgentSession(id: "s\(i)", name: name, detail: "Terminal · project",
+                                state: state, waitingFor: nil, since: now.addingTimeInterval(-Double(i) * 900))
         }
+        let snapshot = ProviderSnapshot(id: "claude", displayName: "Claude", glyph: .claude, fidelity: .official,
+                                        status: .ok, windows: [LimitWindow(id: "s", label: "Current session", usedFraction: 0.29)])
         let view = HStack(alignment: .top, spacing: 24) {
             VStack(spacing: 16) {
                 PromptCard(prompt: bash, draft: .constant(PromptDraft(questions: bash.questions)), direction: .trailing, onAnswer: { _ in }, onOpen: {})
                 PromptCard(prompt: question, draft: .constant(PromptDraft(questions: question.questions)), direction: .trailing, onAnswer: { _ in }, onOpen: {})
             }
             TooltipCard(
-                snapshot: ProviderSnapshot(id: "claude", displayName: "Claude", glyph: .claude, fidelity: .official,
-                                           status: .ok, windows: [LimitWindow(id: "s", label: "Current session", usedFraction: 0.29)]),
+                snapshot: snapshot,
                 activity: ActivitySummary(sessions: sessions), now: now, sessionCap: 3,
                 effortValue: "high", effortDots: EffortDotState(count: 4, filled: 3),
                 prompt: bash)

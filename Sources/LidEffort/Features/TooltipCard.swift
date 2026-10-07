@@ -1255,8 +1255,8 @@ private struct SessionList: View {
                     .font(Typography.cardLabel)
                     .foregroundStyle(Palette.textPrimary)
                 Spacer(minLength: 0)
-                Text(plan.active > 0
-                     ? L10n.t("\(plan.active) active · \(summary.sessions.count)")
+                Text(self.plan.active > 0
+                     ? L10n.t("\(self.plan.active) active · \(summary.sessions.count)")
                      : "\(summary.sessions.count)")
                     .font(Typography.cardBody.monospacedDigit())
                     .foregroundStyle(Palette.textSecondary)
