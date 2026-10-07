@@ -1,16 +1,17 @@
 # Media
 
-Images and recordings used by the README and the site.
+Images used by the README.
 
-- `hero.png` — the still at the top of the README: the pill on a MacBook
-  screen with a few agents' rings and a done card. 2400 × 1350, under 1 MB.
-  Rendered from the film project's `Hero` composition
+- `lockup-black.png`, `lockup-white.png` — the mark and the word pillr, 600 × 240
+  (shown at 280 wide), for light and dark GitHub themes. Rendered at 2× from the
+  film project's `public/brand/lockup-*.svg`.
+- `hero.gif` — the top of the README: 6.4 s of the intro film (the pill fills
+  and turns to glass), 760 wide, 10 fps, under 3 MB. Cut from
+  `~/pillr-video/out/pillr-intro-final.mp4` with ffmpeg's palettegen /
+  paletteuse.
+- `hero.png` — the pill on a MacBook screen with a done card. 2400 × 1350,
+  under 1 MB. Rendered from the film project's `Hero` composition
   (`npx remotion still Hero out/hero.png --frame=300 --scale=1.25`).
-
-To be added:
-
-- `hero.gif` — optional short loop of the same scene (the ⌘ + lid gesture
-  raising effort), under 5 MB so GitHub renders it inline.
-
-The site uses its own copies under `site/media/` (`hero.png` as the poster,
-`hero.mp4` as the video); see [site/README.md](../../site/README.md).
+- `ui/` — the app's own cards as the film shows them (exported by the render
+  tests): usage, sessions, a done card, an approval, the API keys card and the
+  lid's effort card.
