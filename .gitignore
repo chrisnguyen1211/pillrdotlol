@@ -21,3 +21,6 @@ release/
 *.p12
 *.cer
 *.certSigningRequest
+
+# Local signing kit (keys, backups) — never in the repository
+/.signing/
