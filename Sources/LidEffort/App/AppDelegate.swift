@@ -832,7 +832,16 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
                 .store(in: &cancellables)
 
-            refresher.start()
+            // Off means `claude` is never launched; the switch applies live.
+            preferences.$autoRefreshClaudeToken
+                .removeDuplicates()
+                .receive(on: RunLoop.main)
+                .sink { [weak refresher] enabled in
+                    MainActor.assumeIsolated {
+                        if enabled { refresher?.start() } else { refresher?.stop() }
+                    }
+                }
+                .store(in: &cancellables)
             tokenRefresher = refresher
         }
         for (id, monitor) in monitors {

@@ -99,6 +99,8 @@ final class ClaudeTokenRefresher: ObservableObject {
     }
 
     func start() {
+        // Starting twice must not leave a second timer ticking.
+        stop()
         let timer = Timer(timeInterval: interval, repeats: true) { [weak self] _ in
             MainActor.assumeIsolated { self?.tick() }
         }
