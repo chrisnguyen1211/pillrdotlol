@@ -53709,108 +53709,6 @@
         }
       }
     },
-    "spyx is now pillr — and every API key has a place." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "spyx devient pillr — et chaque clé API a sa place."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "spyx は pillr になりました。すべての API キーに居場所を。"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "spyx agora é pillr — e cada chave de API tem seu lugar."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "spyx теперь pillr — и у каждого API-ключа есть своё место."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "spyx 现名 pillr——每个 API 密钥都有了位置。"
-          }
-        }
-      }
-    },
-    "A new name, nothing lost" : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Un nouveau nom, rien de perdu"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "新しい名前、失うものはなし"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nome novo, nada perdido"
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Новое имя, ничего не потеряно"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "换了名字，什么都没丢"
-          }
-        }
-      }
-    },
-    "Your settings, keys, history, sign-ins and agent hooks came with it. macOS may ask once more for keychain access." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vos réglages, clés, historique, connexions et hooks d’agents ont suivi. macOS peut redemander une fois l’accès au trousseau."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "設定、キー、履歴、サインイン、エージェントのフックはそのまま引き継がれます。macOS がもう一度キーチェーンへのアクセスを尋ねることがあります。"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Suas configurações, chaves, histórico, logins e hooks dos agentes vieram junto. O macOS pode pedir acesso ao Porta-chaves mais uma vez."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Настройки, ключи, история, входы и хуки агентов перенесены. macOS может ещё раз спросить доступ к связке ключей."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "你的设置、密钥、历史、登录和代理钩子都已带过来。macOS 可能会再询问一次钥匙串访问。"
-          }
-        }
-      }
-    },
     "Every API key in one cell" : {
       "localizations" : {
         "fr" : {
@@ -54147,6 +54045,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "设置里一个图标搞定——或让 pillr 跟随你的 Mac。"
+          }
+        }
+      }
+    },
+    "Every API key has a place — and every agent says when it is done." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chaque clé API a sa place — et chaque agent dit quand il a fini."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべての API キーに居場所を。どのエージェントも完了を知らせます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada chave de API tem seu lugar — e cada agente avisa quando termina."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "У каждого API-ключа своё место — и каждый агент сообщает, что закончил."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每个 API 密钥都有了位置——每个代理都会在完成时告诉你。"
           }
         }
       }

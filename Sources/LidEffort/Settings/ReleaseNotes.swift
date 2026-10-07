@@ -33,12 +33,8 @@ enum ReleaseNotes {
         [
             ReleaseNote(
                 version: "1.1.0",
-                headline: L10n.t("spyx is now pillr — and every API key has a place."),
+                headline: L10n.t("Every API key has a place — and every agent says when it is done."),
                 changes: [
-                    ReleaseNote.Change(
-                        title: L10n.t("A new name, nothing lost"),
-                        detail: L10n.t("Your settings, keys, history, sign-ins and agent hooks came with it. macOS may ask once more for keychain access.")
-                    ),
                     ReleaseNote.Change(
                         title: L10n.t("Every API key in one cell"),
                         detail: L10n.t("Credit left, spent this month and spent in total, for about 70 providers. The ring follows the key closest to running out.")

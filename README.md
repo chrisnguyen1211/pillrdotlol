@@ -27,9 +27,6 @@
   <img src="docs/media/meme.gif" alt="When you have 6 coding agents running and no idea who's done — a storm, terminals shaking, alerts piling up. Me with pillr: noon and a rainbow over the meadow, one pill on the screen's edge, a done card, and pixel sunglasses landing on it. One pill. Zero panic." width="800">
 </p>
 
-> [!NOTE]
-> **spyx is now pillr.** Same app, new name. Installed copies update themselves and keep their settings, API keys, history, sign-ins and agent hooks.
-
 <table>
   <tr>
     <td align="center" width="25%"><b>🧭 Limits</b><br><sub>A ring per agent, with a forecast before it runs out</sub></td>
@@ -202,12 +199,6 @@ To remove pillr's own data as well, delete `~/.lid-effort/` and `~/Library/Appli
 <summary><b>How does the lid gesture work?</b></summary>
 <br>
 MacBooks have a hinge sensor that reports the lid's angle. pillr reads it, and only while you hold ⌘: one level per 7° of travel, applied when you let go. Without ⌘, moving the lid changes nothing. Desktop Macs, and MacBooks without a readable sensor, get every other feature, and effort can still be set by dragging the bar in the notch. Details in <a href="docs/HOW-IT-WORKS.md#the-lid">How it works</a>.
-</details>
-
-<details>
-<summary><b>What happened to spyx?</b></summary>
-<br>
-It's the same app with a new name. Installed copies update to pillr on their own, rename themselves in Applications, and keep their settings, API keys, history, sign-ins and agent hooks. macOS may ask once more for keychain access, and <b>Open at login</b> may need switching on again in Settings → General.
 </details>
 
 <details>
