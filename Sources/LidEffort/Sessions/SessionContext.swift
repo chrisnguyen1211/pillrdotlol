@@ -130,15 +130,22 @@ enum SessionContext {
     private static func codex(profileID: String, rest: String) -> PromptContext? {
         guard let profile = CodexProfile.discover().first(where: { $0.id == profileID }) else { return nil }
         let rollout: URL?
-        if rest.hasPrefix("rollout-"), rest.hasSuffix(".jsonl") {
+        var desktopTitle: String?
+        if rest == "desktop" {
+            // The app's row is its newest thread, the one the monitor showed.
+            // Its catalog names the thread; the state store, its rollout.
+            guard let thread = codexDesktopThread(store: profile.desktopStoreURL) else { return nil }
+            desktopTitle = thread.title
+            rollout = codexRolloutFromState(thread: thread.id, state: profile.stateURL)
+        } else if rest.hasPrefix("rollout-"), rest.hasSuffix(".jsonl") {
             rollout = codexRollout(named: rest, under: profile.configDirectory.appendingPathComponent("sessions"))
                 ?? codexRolloutFromState(named: rest, state: profile.stateURL)
         } else {
             // The notify hook names the thread, not its file.
             rollout = codexRolloutFromState(thread: rest, state: profile.stateURL)
         }
-        guard let rollout else { return nil }
-        let title = codexTitle(rollout: rollout, state: profile.stateURL)
+        guard let rollout else { return desktopTitle.map { PromptContext(title: $0) } }
+        let title = codexTitle(rollout: rollout, state: profile.stateURL) ?? desktopTitle
         return codex(lines: tailLines(of: rollout), title: title)
     }
 
@@ -156,6 +163,17 @@ enum SessionContext {
         let path = SQLiteStore.rows(in: db, sql: "SELECT rollout_path FROM threads WHERE rollout_path LIKE ? LIMIT 1",
                                     bind: "%/" + name).first
         return path.map(URL.init(fileURLWithPath:))
+    }
+
+    /// The Codex app's newest thread: its id and the title it shows.
+    static func codexDesktopThread(store: URL) -> (id: String, title: String?)? {
+        guard let db = SQLiteStore.open(store) else { return nil }
+        defer { sqlite3Close(db) }
+        guard let row = SQLiteStore.rows(in: db, sql: """
+            SELECT thread_id, coalesce(display_title, '') FROM local_thread_catalog
+            ORDER BY source_updated_at DESC LIMIT 1
+            """, columns: 2).first, !row[0].isEmpty else { return nil }
+        return (row[0], row[1].isEmpty ? nil : row[1])
     }
 
     private static func codexRolloutFromState(thread: String, state: URL) -> URL? {

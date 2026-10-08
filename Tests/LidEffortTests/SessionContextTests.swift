@@ -30,6 +30,25 @@ final class SessionContextTests: XCTestCase {
         XCTAssertEqual(SessionContext.codexRollout(named: name, under: sessions)?.lastPathComponent, name)
     }
 
+    /// The Codex app keeps a catalog of its threads; the newest one is the
+    /// row pillr shows, and its id leads to the rollout like any other.
+    func testTheCodexAppsNewestThreadIsFoundInItsCatalog() throws {
+        let store = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString + ".db")
+        defer { try? FileManager.default.removeItem(at: store) }
+        let sqlite = Process()
+        sqlite.executableURL = URL(fileURLWithPath: "/usr/bin/sqlite3")
+        sqlite.arguments = [store.path, """
+            CREATE TABLE local_thread_catalog (host_id TEXT, thread_id TEXT, display_title TEXT, source_updated_at REAL);
+            INSERT INTO local_thread_catalog VALUES ('h', 'older-thread', 'Old work', 1);
+            INSERT INTO local_thread_catalog VALUES ('h', 'newest-thread', 'Pricing page', 2);
+            """]
+        try sqlite.run()
+        sqlite.waitUntilExit()
+        let thread = try XCTUnwrap(SessionContext.codexDesktopThread(store: store))
+        XCTAssertEqual(thread.id, "newest-thread")
+        XCTAssertEqual(thread.title, "Pricing page")
+    }
+
     func testGrokLeavesOutTheMessagesItWritesItself() {
         let context = SessionContext.grok(lines: lines([
             #"{"type":"user","content":[{"type":"text","text":"context Grok adds"}],"synthetic_reason":"prompt_context"}"#,
