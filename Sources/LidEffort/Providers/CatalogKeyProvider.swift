@@ -489,9 +489,15 @@ actor CatalogKeyProvider: UsageProvider {
         self.displayName = extra.displayName
         self.glyph = entry.glyph
         self.entry = entry
-        self.recipe = recipe
+        let fields = extra.fields ?? [:]
+        // A key picked under a management key is read its own way.
+        if let sub = entry.subKeys, !(fields[sub.field] ?? "").isEmpty {
+            self.recipe = sub.perKey
+        } else {
+            self.recipe = recipe
+        }
         self.region = entry.region(extra.region)
-        self.fields = extra.fields ?? [:]
+        self.fields = fields
         self.session = session
         self.secret = secret
         self.now = now
@@ -547,8 +553,17 @@ actor CatalogKeyProvider: UsageProvider {
             throw UsageProviderError.rateLimited(retryAfter: retryNoEarlierThan.timeIntervalSince(date))
         }
 
+        let variables = try await resolve(recipe.prefetch, key: key, date: date)
+        let context = APIContext(entry: entry, region: region, variables: variables, now: date)
+        let answer = try await send(recipe.request, key: key, context: context)
+        return try await finish(answer, key: key, context: context, date: date)
+    }
+
+    /// The fields, and whatever the prefetches add: xAI's team, read from
+    /// its management key.
+    private func resolve(_ prefetch: [APIPrefetch], key: String, date: Date) async throws -> [String: String] {
         var variables = fields
-        for step in recipe.prefetch {
+        for step in prefetch {
             if let given = variables[step.variable], !given.isEmpty { continue }
             let context = APIContext(entry: entry, region: region, variables: variables, now: date)
             let answer: APIResponse
@@ -566,9 +581,10 @@ actor CatalogKeyProvider: UsageProvider {
             }
             variables[step.variable] = found
         }
+        return variables
+    }
 
-        let context = APIContext(entry: entry, region: region, variables: variables, now: date)
-        let answer = try await send(recipe.request, key: key, context: context)
+    private func finish(_ answer: APIResponse, key: String, context: APIContext, date: Date) async throws -> ProviderSnapshot {
         let reading: APIReading
         if answer.status == 402 {
             // Payment required is the key being accepted by an account with
@@ -608,6 +624,50 @@ actor CatalogKeyProvider: UsageProvider {
         return fresh
     }
 
+    /// The keys this management or admin key can see, for the form to
+    /// offer: switched-off ones left out, each named as the console names
+    /// it, under its project where the provider files keys that way. Asks
+    /// only the provider itself, with the key in hand.
+    func listSubKeys() async throws -> [APISubKey] {
+        guard let sub = entry.subKeys else { return [] }
+        guard let key = secret()?.trimmingCharacters(in: .whitespacesAndNewlines), !key.isEmpty else {
+            throw UsageProviderError.needsAuth
+        }
+        if let prefix = entry.requiredKeyPrefix, !key.hasPrefix(prefix) {
+            throw UsageProviderError.apiError(entry.refused?() ??
+                L10n.t("\(entry.name) needs an admin key here, one that starts with \(prefix)"))
+        }
+        let date = now()
+        var variables = try await resolve(sub.perKey.prefetch, key: key, date: date)
+        func items(_ listing: APIListing, _ variables: [String: String]) async throws -> [[String: Any]] {
+            let context = APIContext(entry: entry, region: region, variables: variables, now: date)
+            let answer = try await send(listing.request, key: key, context: context, recipe: sub.perKey)
+            guard let list = JSONPath.value(answer.json, listing.items) as? [Any] else {
+                throw UsageProviderError.apiError(L10n.t("\(entry.name) answered in a way pillr doesn't recognise"))
+            }
+            return list.compactMap { $0 as? [String: Any] }.filter(listing.offered)
+        }
+        func subKey(_ item: [String: Any], _ listing: APIListing, under parent: String? = nil) -> APISubKey? {
+            guard let id = JSONPath.string(item, listing.id) else { return nil }
+            let name = JSONPath.string(item, listing.name) ?? ""
+            let hint = listing.hint.flatMap { JSONPath.string(item, $0) }
+            let shown = [parent, name.isEmpty ? nil : name].compactMap { $0 }.joined(separator: " · ")
+            return APISubKey(id: id, name: shown, hint: hint)
+        }
+        var found: [APISubKey] = []
+        if let parents = sub.parents {
+            for parent in try await items(parents, variables) {
+                guard let parentID = JSONPath.string(parent, parents.id) else { continue }
+                variables["parent"] = parentID
+                let parentName = JSONPath.string(parent, parents.name)
+                found += try await items(sub.listing, variables).compactMap { subKey($0, sub.listing, under: parentName) }
+            }
+        } else {
+            found = try await items(sub.listing, variables).compactMap { subKey($0, sub.listing) }
+        }
+        return found.sorted { $0.label.localizedStandardCompare($1.label) == .orderedAscending }
+    }
+
     private func snapshot(for reading: APIReading) -> ProviderSnapshot {
         let windows = reading.windows(providerName: entry.name, currency: region?.currency)
         return ProviderSnapshot(id: id, displayName: displayName, glyph: glyph,
@@ -631,7 +691,9 @@ actor CatalogKeyProvider: UsageProvider {
 
     /// One request, signed for this provider, with every failure turned into
     /// a status the store already knows how to show.
-    private func send(_ spec: APIRequest, key: String, context: APIContext) async throws -> APIResponse {
+    private func send(_ spec: APIRequest, key: String, context: APIContext,
+                      recipe signing: APIRecipe? = nil) async throws -> APIResponse {
+        let recipe = signing ?? self.recipe
         let request: URLRequest
         do {
             request = try recipe.makeRequest(spec, key: key, context: context)

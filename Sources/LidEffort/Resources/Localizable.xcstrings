@@ -55114,6 +55114,448 @@
           }
         }
       }
+    },
+    "Key to track" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clé à suivre"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追跡するキー"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chave a acompanhar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ключ для отслеживания"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要追踪的密钥"
+          }
+        }
+      }
+    },
+    "Looking for keys…" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recherche des clés…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "キーを探しています…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Procurando chaves…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Поиск ключей…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在查找密钥…"
+          }
+        }
+      }
+    },
+    "Whole account" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout le compte"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アカウント全体"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conta inteira"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Весь аккаунт"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "整个账号"
+          }
+        }
+      }
+    },
+    "Try again" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réessayer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再試行"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tentar de novo"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Повторить"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "重试"
+          }
+        }
+      }
+    },
+    "Paste the key above, and pillr lists the keys under it." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collez la clé ci-dessus, et pillr liste les clés qui en dépendent."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上にキーを貼り付けると、pillr がその配下のキーを一覧にします。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cole a chave acima, e o pillr lista as chaves que ficam sob ela."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вставьте ключ выше, и pillr покажет ключи под ним."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在上方粘贴密钥，pillr 会列出它下面的密钥。"
+          }
+        }
+      }
+    },
+    "%@ shows no keys under this one." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ n'affiche aucune clé sous celle-ci."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ はこのキーの配下にキーを表示していません。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ não mostra nenhuma chave sob esta."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ не показывает ключей под этим."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 在这个密钥下没有显示任何密钥。"
+          }
+        }
+      }
+    },
+    "Create the key at %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Créer la clé sur %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ でキーを作成"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Criar a chave em %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Создать ключ на %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 %@ 创建密钥"
+          }
+        }
+      }
+    },
+    "When you create it, set its permissions to Read only. pillr only reads costs." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À la création, réglez ses autorisations sur Read only. pillr ne fait que lire les coûts."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "作成するときに権限を Read only にしてください。pillr はコストを読むだけです。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ao criá-la, defina as permissões como Read only. O pillr só lê os custos."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "При создании выберите права Read only. pillr только читает расходы."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "创建时把权限设为 Read only。pillr 只读取费用。"
+          }
+        }
+      }
+    },
+    "Anthropic's Admin keys can't be limited to reading, so make one just for pillr. You can revoke it in the Console at any time." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les clés Admin d'Anthropic ne peuvent pas être limitées à la lecture : créez-en une rien que pour pillr. Vous pouvez la révoquer dans la Console à tout moment."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anthropic の Admin キーは読み取り専用にできないので、pillr 専用のキーを作ってください。Console でいつでも取り消せます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As chaves Admin da Anthropic não podem ser limitadas à leitura, então crie uma só para o pillr. Você pode revogá-la no Console a qualquer momento."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Admin-ключи Anthropic нельзя ограничить чтением, поэтому создайте отдельный ключ только для pillr. Его можно отозвать в Console в любой момент."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anthropic 的 Admin 密钥无法限制为只读，所以请单独为 pillr 创建一个。你可以随时在 Console 中撤销它。"
+          }
+        }
+      }
+    },
+    "OpenRouter's management keys can't be limited to reading, so make one just for pillr, with an expiry date." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les clés de gestion d'OpenRouter ne peuvent pas être limitées à la lecture : créez-en une rien que pour pillr, avec une date d'expiration."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OpenRouter の管理キーは読み取り専用にできないので、有効期限付きで pillr 専用のキーを作ってください。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As chaves de gerenciamento do OpenRouter não podem ser limitadas à leitura, então crie uma só para o pillr, com data de validade."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ключи управления OpenRouter нельзя ограничить чтением, поэтому создайте отдельный ключ для pillr со сроком действия."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OpenRouter 的管理密钥无法限制为只读，所以请单独为 pillr 创建一个，并设置到期日期。"
+          }
+        }
+      }
+    },
+    "Give it only the billing read permissions. pillr only reads." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne lui donnez que les autorisations de lecture de la facturation. pillr ne fait que lire."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請求の読み取り権限だけを付けてください。pillr は読むだけです。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dê a ela só as permissões de leitura de faturamento. O pillr só lê."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Дайте ему только права на чтение биллинга. pillr только читает."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只给它账单读取权限。pillr 只读取。"
+          }
+        }
+      }
+    },
+    "If %@ offers it, give the key read-only access. pillr only reads usage." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Si %@ le propose, donnez à la clé un accès en lecture seule. pillr ne fait que lire la consommation."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ で選べる場合は、キーを読み取り専用にしてください。pillr は使用量を読むだけです。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se o %@ oferecer, dê à chave acesso somente leitura. O pillr só lê o uso."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Если %@ это позволяет, дайте ключу доступ только на чтение. pillr только читает использование."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "如果 %@ 提供此选项，请给密钥只读权限。pillr 只读取用量。"
+          }
+        }
+      }
+    },
+    "Kept only in this Mac's Keychain. pillr has no server of its own: the key is sent to %@ and nowhere else, only to read." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conservée uniquement dans le trousseau de ce Mac. pillr n'a pas de serveur : la clé n'est envoyée qu'à %@, et seulement pour lire."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この Mac のキーチェーンにだけ保存されます。pillr には独自のサーバーがなく、キーは読み取りのために %@ にだけ送られます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardada só nas Chaves deste Mac. O pillr não tem servidor próprio: a chave vai só para o %@, e apenas para ler."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Хранится только в связке ключей этого Mac. У pillr нет своего сервера: ключ отправляется только в %@ и только для чтения."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "只保存在这台 Mac 的钥匙串中。pillr 没有自己的服务器：密钥只发送给 %@，且只用于读取。"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

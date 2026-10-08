@@ -920,3 +920,136 @@ final class AnthropicCostKeyTests: XCTestCase {
         XCTAssertTrue(CatalogEndpoint.requests.isEmpty)
     }
 }
+
+/// A management or admin key lists the keys under it, and one of them can
+/// be read on its own.
+final class SubKeyTests: XCTestCase {
+    private var session: URLSession!
+
+    override func setUpWithError() throws {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [CatalogEndpoint.self]
+        session = URLSession(configuration: config)
+    }
+
+    override func tearDownWithError() throws {
+        session.invalidateAndCancel()
+        CatalogEndpoint.reset { _ in (500, [:], Data()) }
+    }
+
+    private func provider(_ base: String, key: String, fields: [String: String]? = nil) throws -> CatalogKeyProvider {
+        let extra = ExtraKey(id: ExtraKey.makeID(base: base), base: base, name: "Work", region: nil, fields: fields)
+        return try XCTUnwrap(CatalogKeyProvider(extra: extra, session: session, secret: { key }))
+    }
+
+    private func json(_ text: String) -> (Int, [String: String], Data) { (200, [:], Data(text.utf8)) }
+
+    func testOpenRouterListsItsKeysAndLeavesTheDisabledOut() async throws {
+        CatalogEndpoint.reset { _ in self.json(#"{"data":[{"hash":"h2","name":"Prod","label":"sk-or-v1-abc…xyz","disabled":false},{"hash":"h1","name":"Old","label":"sk-or-v1-old","disabled":true},{"hash":"h3","name":"Agents","label":"sk-or-v1-def…uvw","disabled":false}]}"#) }
+        let keys = try await provider("openroutercredits", key: "sk-or-v1-mgmt").listSubKeys()
+        XCTAssertEqual(keys.map(\.id), ["h3", "h2"])
+        XCTAssertEqual(keys.first?.label, "Agents · sk-or-v1-def…uvw")
+        XCTAssertEqual(CatalogEndpoint.requests.first?.url?.absoluteString, "https://openrouter.ai/api/v1/keys")
+    }
+
+    func testAnOpenRouterKeyShowsItsMonthAndWhatItsLimitLeaves() async throws {
+        CatalogEndpoint.reset { _ in self.json(#"{"data":{"hash":"h2","usage":40,"usage_monthly":12.5,"limit":50,"limit_remaining":10}}"#) }
+        let snapshot = try await provider("openroutercredits", key: "sk-or-v1-mgmt", fields: ["keyid": "h2"])
+            .fetchSnapshot(freshness: .fromSource)
+        XCTAssertEqual(CatalogEndpoint.requests.first?.url?.absoluteString, "https://openrouter.ai/api/v1/keys/h2")
+        XCTAssertFalse(snapshot.windows.isEmpty)
+    }
+
+    func testOpenAIFindsKeysUnderEachLiveProject() async throws {
+        CatalogEndpoint.reset { request in
+            switch request.url?.path {
+            case "/v1/organization/projects":
+                return self.json(#"{"data":[{"id":"proj_a","name":"Shop","status":"active"},{"id":"proj_z","name":"Gone","status":"archived"}]}"#)
+            case "/v1/organization/projects/proj_a/api_keys":
+                return self.json(#"{"data":[{"id":"key_1","name":"Backend","redacted_value":"sk-abc...def"}]}"#)
+            default:
+                return (404, [:], Data())
+            }
+        }
+        let keys = try await provider("openai", key: "sk-admin-x").listSubKeys()
+        XCTAssertEqual(keys, [APISubKey(id: "key_1", name: "Shop · Backend", hint: "sk-abc...def")])
+        XCTAssertFalse(CatalogEndpoint.requests.contains { $0.url?.path.contains("proj_z") ?? false }, "an archived project is not asked")
+    }
+
+    func testOneOpenAIKeyIsAskedForByItsID() async throws {
+        CatalogEndpoint.reset { _ in self.json(#"{"data":[{"results":[{"amount":{"value":1.25,"currency":"usd"}}]}]}"#) }
+        _ = try await provider("openai", key: "sk-admin-x", fields: ["keyid": "key_1"]).fetchSnapshot(freshness: .fromSource)
+        let query = try XCTUnwrap(CatalogEndpoint.requests.first?.url?.query)
+        XCTAssertTrue(query.contains("api_key_ids=key_1"), query)
+    }
+
+    func testTheWholeAccountIsStillReadWhenNoKeyIsPicked() async throws {
+        CatalogEndpoint.reset { _ in self.json(#"{"data":[]}"#) }
+        _ = try await provider("openai", key: "sk-admin-x").fetchSnapshot(freshness: .fromSource)
+        XCTAssertFalse(CatalogEndpoint.requests.first?.url?.query?.contains("api_key_ids") ?? true)
+    }
+
+    func testOneAnthropicKeyAddsUpItsTokens() async throws {
+        CatalogEndpoint.reset { request in
+            request.url?.path == "/v1/organizations/api_keys"
+                ? self.json(#"{"data":[{"id":"apikey_1","name":"Dev","partial_key_hint":"sk-ant-api03-R2D...igAA","status":"active"}],"has_more":false}"#)
+                : self.json(#"{"data":[{"results":[{"uncached_input_tokens":1500,"cache_read_input_tokens":200,"cache_creation":{"ephemeral_5m_input_tokens":100,"ephemeral_1h_input_tokens":0},"output_tokens":500}]},{"results":[]}]}"#)
+        }
+        let keys = try await provider("anthropic", key: "sk-ant-admin01-x").listSubKeys()
+        XCTAssertEqual(keys.map(\.id), ["apikey_1"])
+        _ = try await provider("anthropic", key: "sk-ant-admin01-x", fields: ["keyid": "apikey_1"]).fetchSnapshot(freshness: .fromSource)
+        let usage = try XCTUnwrap(CatalogEndpoint.requests.last?.url)
+        XCTAssertEqual(usage.path, "/v1/organizations/usage_report/messages")
+        XCTAssertTrue(usage.absoluteString.contains("api_key_ids%5B%5D=apikey_1"), usage.absoluteString)
+        let entry = try XCTUnwrap(APICatalog.entry(id: "anthropic"))
+        let reading = try entry.subKeys!.perKey.parse.read(APIResponse(
+            json: try JSONSerialization.jsonObject(with: Data(#"{"data":[{"results":[{"uncached_input_tokens":1500,"cache_read_input_tokens":200,"cache_creation":{"ephemeral_5m_input_tokens":100,"ephemeral_1h_input_tokens":0},"output_tokens":500}]}]}"#.utf8)),
+            headers: [:], status: 200, context: APIContext(entry: entry, region: nil, variables: [:], now: Date())))
+        XCTAssertEqual(reading, .count(2300, .tokens, .month))
+    }
+
+    func testXAIListsTheTeamsKeysAndFiltersTheAnalyticsByOne() async throws {
+        CatalogEndpoint.reset { request in
+            switch request.url?.path {
+            case "/auth/management-keys/validation": return self.json(#"{"teamId":"team-1"}"#)
+            case "/auth/teams/team-1/api-keys":
+                return self.json(#"{"apiKeys":[{"apiKeyId":"k1","name":"Bot","redactedApiKey":"xai-…abcd","disabled":"false"},{"apiKeyId":"k2","name":"Off","disabled":true}]}"#)
+            default:
+                return self.json(#"{"timeSeries":[{"group":[],"dataPoints":[{"values":[1.5]},{"values":[2.0]}]}],"limitReached":false}"#)
+            }
+        }
+        let keys = try await provider("xai", key: "xai-mgmt").listSubKeys()
+        XCTAssertEqual(keys.map(\.id), ["k1"])
+        _ = try await provider("xai", key: "xai-mgmt", fields: ["keyid": "k1"]).fetchSnapshot(freshness: .fromSource)
+        let usage = try XCTUnwrap(CatalogEndpoint.requests.last)
+        XCTAssertEqual(usage.httpMethod, "POST")
+        XCTAssertEqual(usage.url?.path, "/v1/billing/teams/team-1/usage")
+        let body = String(decoding: try XCTUnwrap(CatalogEndpoint.bodies.last), as: UTF8.self)
+        XCTAssertTrue(body.contains(#""filters":["api_key_id:k1"]"#), body)
+    }
+
+    func testExaListsItsKeysInsteadOfAskingForAnID() async throws {
+        CatalogEndpoint.reset { _ in self.json(#"{"apiKeys":[{"id":"uuid-1","name":"Search","rateLimit":null,"budgetCents":null,"isOverBudget":false}]}"#) }
+        let keys = try await provider("exa", key: "service").listSubKeys()
+        XCTAssertEqual(keys, [APISubKey(id: "uuid-1", name: "Search")])
+        XCTAssertEqual(APICatalog.entry(id: "exa")?.subKeys?.wholeAccount, false)
+    }
+
+    func testAnAdminKeyIsTheWrongKindBeforeAnyListIsAsked() async throws {
+        do {
+            _ = try await provider("openai", key: "sk-proj-ordinary").listSubKeys()
+            XCTFail("a project key is not an admin key")
+        } catch {}
+        XCTAssertTrue(CatalogEndpoint.requests.isEmpty)
+    }
+
+    func testKeysThatCanChangeThingsSayHowToMakeThemReadOnlyAndWhereTheyLive() throws {
+        for id in ["openai", "anthropic", "xai", "openroutercredits", "exa", "mistral", "requesty", "featherless", "cartesia"] {
+            let entry = try XCTUnwrap(APICatalog.entry(id: id), id)
+            XCTAssertNotNil(APICatalog.readOnlyAdvice(for: entry), id)
+            XCTAssertTrue(APICatalog.keptLocally(entry).contains("Keychain"), id)
+        }
+        XCTAssertNil(APICatalog.readOnlyAdvice(for: try XCTUnwrap(APICatalog.entry(id: "openrouter"))), "an ordinary key needs no warning")
+        XCTAssertEqual(APICatalog.entry(id: "openroutercredits")?.consoleURL.path, "/settings/management-keys")
+    }
+}

@@ -123,6 +123,15 @@ final class SettingsRenderTests: XCTestCase {
             }.padding(16)), CGSize(width: 200, height: 150)),
             ("api-form-xai", AnyView(APIKeyForm(preferences: withKeys, preset: "xai", done: { _ in })
                 .padding(20)), CGSize(width: SettingsView.width, height: 460)),
+            // A key that can change things: how to make it read-only, where
+            // it is kept, and the keys found under it.
+            ("api-form-anthropic", AnyView(APIKeyForm(preferences: withKeys, preset: "anthropic", done: { _ in })
+                .padding(20)), CGSize(width: SettingsView.width, height: 520)),
+            ("api-form-openai-keys", AnyView(APIKeyForm(preferences: withKeys, preset: "openai",
+                                                        subKeysForRender: [APISubKey(id: "key_1", name: "Shop · Backend", hint: "sk-abc...def"),
+                                                                           APISubKey(id: "key_2", name: "Shop · Agents", hint: "sk-ghi...jkl")],
+                                                        done: { _ in })
+                .padding(20)), CGSize(width: SettingsView.width, height: 560)),
             ("api-form-fields", AnyView(APIKeyForm(preferences: withKeys, preset: "fireworks", done: { _ in })
                 .padding(20)), CGSize(width: SettingsView.width, height: 360)),
             // Every provider's mark, as the suggestion list draws it.

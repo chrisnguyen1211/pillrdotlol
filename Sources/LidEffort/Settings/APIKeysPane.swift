@@ -407,6 +407,17 @@ struct APIKeyRow: View {
 
 // MARK: - Adding one
 
+/// Where the look for keys under a management key has got to.
+enum SubKeyPhase: Equatable {
+    case idle, finding, found
+    case failed(String)
+
+    var isFailed: Bool {
+        if case .failed = self { return true }
+        return false
+    }
+}
+
 /// Where Add has got to.
 enum APIKeyFormPhase: Equatable {
     case idle
@@ -428,6 +439,8 @@ struct APIKeyForm: View {
     var canCancel = true
     /// For renders: what has been typed into the provider field.
     var queryForRender: String? = nil
+    /// For renders: the keys found under a pasted management key.
+    var subKeysForRender: [APISubKey]? = nil
     /// The id of the key added, or nil when the form was cancelled.
     let done: (String?) -> Void
 
@@ -437,6 +450,10 @@ struct APIKeyForm: View {
     @State private var region = ""
     @State private var fields: [String: String] = [:]
     @State private var phase: APIKeyFormPhase = .idle
+    /// The keys under a management or admin key, found once it is pasted.
+    @State private var subKeys: [APISubKey] = []
+    @State private var subKeyPhase: SubKeyPhase = .idle
+    @State private var findTask: Task<Void, Never>?
     /// What is typed into the provider field.
     @State private var query = ""
     /// The suggestions are showing: while typing, or when the arrow asked.
@@ -469,7 +486,9 @@ struct APIKeyForm: View {
             // A provider whose ordinary key is refused says so before
             // anything is pasted: which key, and where it is made.
             if let entry, !searching, let guide = APICatalog.keyGuide(for: entry.id) {
-                KeyGuideCallout(text: guide, keyURL: entry.consoleURL)
+                KeyGuideCallout(text: guide, keyURL: entry.consoleURL,
+                                advice: APICatalog.readOnlyAdvice(for: entry),
+                                privacy: APICatalog.readOnlyAdvice(for: entry) == nil ? nil : APICatalog.keptLocally(entry))
                     .padding(.leading, Self.labelWidth + 10)
                     .transition(.opacity)
             }
@@ -487,9 +506,19 @@ struct APIKeyForm: View {
                     .frame(maxWidth: 360)
                     .focused($keyFocused)
                     .onSubmit(add)
+                    .onChange(of: key) { _, _ in findSubKeys() }
+            }
+            if let entry, let sub = entry.subKeys {
+                row(L10n.t("Key to track")) { subKeyPicker(entry, sub) }
+                if let measure = sub.perKeyMeasure, !(fields[sub.field] ?? "").isEmpty {
+                    Text(measure.note(providerName: entry.name))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .padding(.leading, Self.labelWidth + 10)
+                }
             }
             row(L10n.t("Name")) {
-                TextField(entry.map(defaultName(for:)) ?? L10n.t("Key \(1)"), text: $name)
+                TextField(pickedSubKey?.name ?? entry.map(defaultName(for:)) ?? L10n.t("Key \(1)"), text: $name)
                     .textFieldStyle(.roundedBorder)
                     .labelsHidden()
                     .accessibilityLabel(L10n.t("Name"))
@@ -508,7 +537,7 @@ struct APIKeyForm: View {
                             .fixedSize()
                     }
                 }
-                ForEach(entry.fields, id: \.id) { field in
+                ForEach(entry.fields.filter { $0.id != entry.subKeys?.field || subKeyPhase.isFailed }, id: \.id) { field in
                     row(field.title()) {
                         TextField(field.placeholder.isEmpty ? (field.required ? "" : L10n.t("Optional")) : field.placeholder,
                                   text: binding(for: field.id))
@@ -580,6 +609,13 @@ struct APIKeyForm: View {
             if let queryForRender {
                 query = queryForRender
                 searching = true
+            }
+            if let subKeysForRender {
+                key = "sk-admin-…"
+                findTask?.cancel()
+                subKeys = subKeysForRender
+                subKeyPhase = .found
+                if let field = entry?.subKeys?.field { fields[field] = subKeysForRender.first?.id ?? "" }
             }
         }
     }
@@ -693,7 +729,93 @@ struct APIKeyForm: View {
             : (entry.regions.first?.id ?? "")
         fields = [:]
         phase = .idle
+        subKeys = []
+        subKeyPhase = .idle
+        findSubKeys()
         DispatchQueue.main.async { keyFocused = true }
+    }
+
+    /// The key picked from the list, if one is.
+    private var pickedSubKey: APISubKey? {
+        guard let field = entry?.subKeys?.field, let id = fields[field], !id.isEmpty else { return nil }
+        return subKeys.first { $0.id == id }
+    }
+
+    @ViewBuilder
+    private func subKeyPicker(_ entry: APICatalogEntry, _ sub: APISubKeys) -> some View {
+        switch subKeyPhase {
+        case .idle:
+            Text(L10n.t("Paste the key above, and pillr lists the keys under it."))
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        case .finding:
+            HStack(spacing: 6) {
+                ProgressView().controlSize(.small)
+                Text(L10n.t("Looking for keys…"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        case .found where subKeys.isEmpty && !sub.wholeAccount:
+            Text(L10n.t("\(entry.name) shows no keys under this one."))
+                .font(.caption)
+                .foregroundStyle(.orange)
+        case .found:
+            Picker(selection: binding(for: sub.field)) {
+                if sub.wholeAccount {
+                    Text(L10n.t("Whole account")).tag("")
+                }
+                ForEach(subKeys) { Text($0.label).tag($0.id) }
+            } label: { EmptyView() }
+                .labelsHidden()
+                .pickerStyle(.menu)
+                .fixedSize()
+                .accessibilityLabel(L10n.t("Key to track"))
+        case .failed(let reason):
+            VStack(alignment: .leading, spacing: 4) {
+                Text(reason)
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+                Button(L10n.t("Try again")) { findSubKeys(now: true) }
+                    .controlSize(.small)
+            }
+        }
+    }
+
+    /// Asks the provider, with the pasted key, which keys sit under it. A
+    /// moment after typing stops, so a key pasted in pieces is asked once.
+    private func findSubKeys(now: Bool = false) {
+        findTask?.cancel()
+        guard let entry, let sub = entry.subKeys else { return }
+        let secret = key.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !secret.isEmpty, entry.requiredKeyPrefix.map(secret.hasPrefix) ?? true else {
+            subKeys = []
+            subKeyPhase = .idle
+            return
+        }
+        var probeFields = fields
+        probeFields[sub.field] = nil
+        let probe = ExtraKey(id: ExtraKey.makeID(base: entry.id), base: entry.id, name: "",
+                             region: region.isEmpty ? nil : region, fields: probeFields)
+        findTask = Task { @MainActor in
+            if !now { try? await Task.sleep(nanoseconds: 700_000_000) }
+            guard !Task.isCancelled, let provider = CatalogKeyProvider(extra: probe, secret: { secret }) else { return }
+            subKeyPhase = .finding
+            do {
+                let list = try await provider.listSubKeys()
+                guard !Task.isCancelled else { return }
+                subKeys = list
+                subKeyPhase = .found
+                let chosen = fields[sub.field] ?? ""
+                if !list.contains(where: { $0.id == chosen }) {
+                    fields[sub.field] = sub.wholeAccount ? "" : (list.first?.id ?? "")
+                }
+            } catch {
+                guard !Task.isCancelled else { return }
+                subKeys = []
+                subKeyPhase = .failed(ExtraKeyVerifier.reason(for: UsageStore.providerStatus(for: error)))
+            }
+        }
     }
 
     private func binding(for field: String) -> Binding<String> {
@@ -714,7 +836,7 @@ struct APIKeyForm: View {
         guard canAdd, phase != .checking, let entry else { return }
         let base = entry.id
         let secret = key
-        let typedName = name
+        let typedName = name.trimmingCharacters(in: .whitespaces).isEmpty ? (pickedSubKey?.name ?? "") : name
         let chosenRegion = entry.regions.isEmpty ? nil : region
         let extraFields = fields
         phase = .checking
@@ -759,6 +881,10 @@ struct APIKeyForm: View {
 struct KeyGuideCallout: View {
     let text: String
     let keyURL: URL
+    /// How to make the key a read-only one, for a key that can do more.
+    var advice: String? = nil
+    /// Where the key is kept, said beside a key that can change things.
+    var privacy: String? = nil
 
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
@@ -771,7 +897,20 @@ struct KeyGuideCallout: View {
                     .font(.system(size: 11.5))
                     .foregroundStyle(.primary)
                     .fixedSize(horizontal: false, vertical: true)
-                Link(L10n.t("Open \(keyURL.host ?? keyURL.absoluteString)"), destination: keyURL)
+                ForEach([(advice, "lock"), (privacy, "internaldrive")], id: \.1) { line, symbol in
+                    if let line {
+                        Label {
+                            Text(line).fixedSize(horizontal: false, vertical: true)
+                        } icon: {
+                            Image(systemName: symbol).foregroundStyle(.secondary).frame(width: 14)
+                        }
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                    }
+                }
+                Link(advice == nil ? L10n.t("Open \(keyURL.host ?? keyURL.absoluteString)")
+                                   : L10n.t("Create the key at \(keyURL.host ?? keyURL.absoluteString)"),
+                     destination: keyURL)
                     .font(.system(size: 11.5, weight: .medium))
             }
             Spacer(minLength: 0)

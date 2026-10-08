@@ -205,6 +205,51 @@ struct APIExtra: Sendable {
     let parse: APIParse
 }
 
+/// One key a management or admin key can see, offered to be picked.
+struct APISubKey: Identifiable, Hashable, Sendable {
+    let id: String
+    let name: String
+    /// The provider's own redacted form, `sk-abc…def`, to tell twins apart.
+    var hint: String? = nil
+
+    var label: String {
+        guard let hint, !hint.isEmpty else { return name }
+        return name.isEmpty ? hint : "\(name) · \(hint)"
+    }
+}
+
+/// One list in a provider's answer: where the items are and what to call
+/// each.
+struct APIListing: Sendable {
+    let request: APIRequest
+    /// Path to the array.
+    let items: String
+    let id: String
+    let name: String
+    var hint: String? = nil
+    /// A key switched off, archived or expired is not offered.
+    var offered: @Sendable ([String: Any]) -> Bool = { _ in true }
+}
+
+/// What a management or admin key can be pointed at: the keys under it,
+/// found by asking, and how one of them is read. The pick is kept in a
+/// field, so it is saved with the key like a typed account id.
+struct APISubKeys: Sendable {
+    /// The field the picked key's id lives in, `{keyid}` in `perKey`.
+    var field = "keyid"
+    /// A list asked first, each of whose items fills `{parent}` in
+    /// `listing`: OpenAI files its keys under projects.
+    var parents: APIListing? = nil
+    let listing: APIListing
+    /// Whether the whole account can be read too. Exa reads one key only.
+    var wholeAccount = true
+    /// The ask for one key, with the same signing as the account's.
+    let perKey: APIRecipe
+    /// What one key shows, where that differs from the account: Anthropic
+    /// has tokens per key and money only for the whole organization.
+    var perKeyMeasure: APIMeasure? = nil
+}
+
 enum APIRoute: Sendable {
     /// One of the providers pillr had before the catalog — GLM, MiniMax's
     /// Coding Plan, Ollama Cloud, Apify — read by its own adapter.
@@ -245,6 +290,8 @@ struct APICatalogEntry: Identifiable, Sendable {
     /// kind: one that does not look right, and a 401 or 403 for it. For a
     /// provider where which key works depends on the account, not the key.
     var refused: (@Sendable () -> String)? = nil
+    /// The keys under a management or admin key, to read one of them.
+    var subKeys: APISubKeys? = nil
     let route: APIRoute
 
     func region(_ id: String?) -> APIRegion? {
@@ -292,6 +339,15 @@ enum APITemplate {
         return formatter.string(from: date)
     }
 
+    /// `2026-10-01 00:00:00`, in UTC: xAI's analytics take times this way.
+    private static func spaced(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(identifier: "UTC")
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+        return formatter.string(from: date)
+    }
+
     static func fill(_ template: String, context: APIContext, json: Bool = false) -> String {
         let start = monthStart(context.now)
         let parts = utc.dateComponents([.year, .month], from: context.now)
@@ -301,6 +357,8 @@ enum APITemplate {
             "monthStartISO": iso(start),
             "nowUnix": String(Int(context.now.timeIntervalSince1970)),
             "nowISO": iso(context.now),
+            "monthStartSpaced": spaced(start),
+            "nowSpaced": spaced(context.now),
             "year": String(parts.year ?? 1970),
             "month": String(parts.month ?? 1),
             // A fresh id per request, for Runware's tasks and the made-up
@@ -599,6 +657,49 @@ enum APICatalog {
         return recent > 0 ? .several([left, .spend(recent, .money("USD"), .billingPeriod)]) : left
     }
 
+    /// The team a management key belongs to, asked of the key itself.
+    private static let xaiTeam = [APIPrefetch(
+        variable: "team", request: r("https://management-api.x.ai/auth/management-keys/validation"), path: "teamId",
+        missing: { L10n.t("xAI didn't say which team this key is for. Add your Team ID") })]
+
+    /// One OpenRouter key, read with the management key: this month's spend,
+    /// and what its own limit leaves when it has one.
+    private static let openRouterSubKey = APIParse { response in
+        let root = (response.json as? [String: Any])?["data"] ?? response.json
+        guard let month = JSONPath.number(root, "usage_monthly"), month >= 0 else { throw APIParseError.unrecognised }
+        var readings: [APIReading] = [.spend(month, .money("USD"), .month)]
+        if let left = JSONPath.number(root, "limit_remaining") {
+            readings.append(.left(max(0, left), of: JSONPath.number(root, "limit"), .money("USD"), resetsAt: nil))
+        }
+        return APIReading.combine(readings) ?? readings[0]
+    }
+
+    /// Every token one Anthropic key used this month: input read fresh, from
+    /// the cache and written to it, and output. The usage report has no money.
+    private static let anthropicTokens = APIParse { response in
+        guard JSONPath.value(response.json, "data") is [Any] else { throw APIParseError.unrecognised }
+        var total = 0.0
+        for path in ["uncached_input_tokens", "cache_read_input_tokens", "cache_creation.ephemeral_5m_input_tokens",
+                     "cache_creation.ephemeral_1h_input_tokens", "output_tokens"] {
+            for value in JSONPath.values(response.json, "data[*].results[*].\(path)") {
+                guard let tokens = JSONPath.number(value), tokens >= 0 else { throw APIParseError.unrecognised }
+                total += tokens
+            }
+        }
+        return .count(total, .tokens, .month)
+    }
+
+    /// xAI's analytics for one key: a series of daily dollar sums.
+    private static let xaiKeyUsage = APIParse { response in
+        guard JSONPath.value(response.json, "timeSeries") is [Any] else { throw APIParseError.unrecognised }
+        var total = 0.0
+        for value in JSONPath.values(response.json, "timeSeries[*].dataPoints[*].values[*]") {
+            guard let dollars = JSONPath.number(value), dollars >= 0 else { throw APIParseError.unrecognised }
+            total += dollars
+        }
+        return .spend(total, .money("USD"), .month)
+    }
+
     /// xAI's prepaid ledger: `total.val` is cents with the sign inverted, so
     /// money in the account is negative. From CodexBar's notes, not xAI's docs.
     /// xAI's invoice preview, every amount in US cents and most as strings.
@@ -804,8 +905,14 @@ enum APICatalog {
         APICatalogEntry(
             id: "openroutercredits", name: "OpenRouter credits", category: .routers,
             aliases: ["openrouter", "management"], readability: .adminKey, glyph: .openrouter,
-            consoleURL: url("https://openrouter.ai/settings/keys"), keyPrefix: "sk-or-v1-",
+            consoleURL: url("https://openrouter.ai/settings/management-keys"), keyPrefix: "sk-or-v1-",
             keyKind: .management, measure: .balance,
+            subKeys: APISubKeys(
+                listing: APIListing(request: r("https://openrouter.ai/api/v1/keys"), items: "data",
+                                    id: "hash", name: "name", hint: "label",
+                                    offered: { ($0["disabled"] as? Bool) != true }),
+                perKey: APIRecipe(request: r("https://openrouter.ai/api/v1/keys/{keyid}"), parse: openRouterSubKey),
+                perKeyMeasure: .balanceAndSpend),
             route: .catalog(APIRecipe(request: r("https://openrouter.ai/api/v1/credits"),
                                       parse: .balanceSpent(left: "data.total_credits", spent: "data.total_usage", .money("USD"))
                                           .creditsLessUsage()))),
@@ -869,19 +976,36 @@ enum APICatalog {
             glyph: .openai, consoleURL: url("https://platform.openai.com/settings/organization/admin-keys"),
             keyPrefix: "sk-admin-", requiredKeyPrefix: "sk-admin-", keyKind: .admin(prefix: "sk-admin-"),
             measure: .spend,
+            subKeys: APISubKeys(
+                parents: APIListing(request: r("https://api.openai.com/v1/organization/projects?limit=100"),
+                                    items: "data", id: "id", name: "name",
+                                    offered: { ($0["status"] as? String) != "archived" }),
+                listing: APIListing(request: r("https://api.openai.com/v1/organization/projects/{parent}/api_keys?limit=100"),
+                                    items: "data", id: "id", name: "name", hint: "redacted_value"),
+                perKey: APIRecipe(
+                    request: r("https://api.openai.com/v1/organization/costs?start_time={monthStartUnix}&bucket_width=1d&limit=31&api_key_ids={keyid}"),
+                    parse: .spendSum("data[*].results[*].amount.value", list: "data", .money("USD")))),
             route: .catalog(APIRecipe(
                 request: r("https://api.openai.com/v1/organization/costs?start_time={monthStartUnix}&bucket_width=1d&limit=31"),
                 parse: .spendSum("data[*].results[*].amount.value", list: "data", .money("USD"))))),
         // Amounts are decimal strings in cents.
         APICatalogEntry(
             id: "anthropic", name: "Anthropic", category: .llm, aliases: ["claude api"], readability: .adminKey,
-            glyph: .anthropic, consoleURL: url("https://console.anthropic.com/settings/admin-keys"),
+            glyph: .anthropic, consoleURL: url("https://platform.claude.com/settings/admin-keys"),
             // Costs come from the Admin API, which takes an Admin key or a
             // personal or service account key not held to one workspace,
             // and which individual accounts do not have at all.
             keyPrefix: "sk-ant-admin01-", requiredKeyPrefix: "sk-ant-", keyKind: .admin(prefix: nil),
             measure: .spend,
             refused: { L10n.t("Anthropic won't share costs with this key. It needs an organization's Admin key, or a personal key not limited to one workspace. On an individual account, set up an organization first in Console → Settings → Organization.") },
+            subKeys: APISubKeys(
+                listing: APIListing(request: r("https://api.anthropic.com/v1/organizations/api_keys?limit=1000&status=active"),
+                                    items: "data", id: "id", name: "name", hint: "partial_key_hint"),
+                perKey: APIRecipe(
+                    auth: .header("x-api-key"), headers: ["anthropic-version": "2023-06-01"],
+                    request: r("https://api.anthropic.com/v1/organizations/usage_report/messages?starting_at={monthStartISO}&bucket_width=1d&limit=31&api_key_ids%5B%5D={keyid}"),
+                    parse: anthropicTokens),
+                perKeyMeasure: .usageCount),
             route: .catalog(APIRecipe(
                 auth: .header("x-api-key"), headers: ["anthropic-version": "2023-06-01"],
                 request: r("https://api.anthropic.com/v1/organizations/cost_report?starting_at={monthStartISO}&bucket_width=1d&limit=31"),
@@ -897,13 +1021,25 @@ enum APICatalog {
             keyKind: .management, measure: .balanceAndSpend,
             forbidden: { L10n.t("This management key can't read billing. Give it billing access in the xAI Console") },
             notFound: { L10n.t("xAI has no billing for that team. Check the Team ID, or leave it empty") },
+            // Partial: the filter's field name is from xAI's analytics proto,
+            // not its REST docs.
+            subKeys: APISubKeys(
+                listing: APIListing(request: r("https://management-api.x.ai/auth/teams/{team}/api-keys"),
+                                    items: "apiKeys", id: "apiKeyId", name: "name", hint: "redactedApiKey",
+                                    offered: { item in
+                                        let off = item["disabled"]
+                                        return (off as? Bool) != true && (off as? String) != "true"
+                                    }),
+                perKey: APIRecipe(
+                    prefetch: xaiTeam,
+                    request: r("https://management-api.x.ai/v1/billing/teams/{team}/usage", method: "POST",
+                               body: #"{"analyticsRequest":{"timeRange":{"startTime":"{monthStartSpaced}","endTime":"{nowSpaced}","timezone":"Etc/GMT"},"timeUnit":"TIME_UNIT_DAY","values":[{"name":"usd","aggregation":"AGGREGATION_SUM"}],"groupBy":[],"filters":["api_key_id:{keyid}"]}}"#),
+                    parse: xaiKeyUsage),
+                perKeyMeasure: .spend),
             route: .catalog(APIRecipe(
                 // The management key's own description names its team, and
                 // asking for it is the check that the key is one at all.
-                prefetch: [APIPrefetch(variable: "team",
-                                       request: r("https://management-api.x.ai/auth/management-keys/validation"),
-                                       path: "teamId",
-                                       missing: { L10n.t("xAI didn't say which team this key is for. Add your Team ID") })],
+                prefetch: xaiTeam,
                 // The invoice preview, not the prepaid ledger: the ledger
                 // answers 404 for a team billed after the fact, and the
                 // preview has both — credits bought ahead and this cycle's
@@ -1201,6 +1337,13 @@ enum APICatalog {
             consoleURL: url("https://dashboard.exa.ai/api-keys"),
             fields: [APIField(id: "keyid", title: { L10n.t("API key ID") }, placeholder: "…", required: true)],
             keyKind: .service, measure: .spend,
+            subKeys: APISubKeys(
+                listing: APIListing(request: r("https://admin-api.exa.ai/team-management/api-keys"),
+                                    items: "apiKeys", id: "id", name: "name"),
+                wholeAccount: false,
+                perKey: APIRecipe(auth: .header("x-api-key"),
+                                  request: r("https://admin-api.exa.ai/team-management/api-keys/{keyid}/usage"),
+                                  parse: .spend("total_cost_usd", .money("USD"), period: .billingPeriod))),
             route: .catalog(APIRecipe(auth: .header("x-api-key"),
                                       request: r("https://admin-api.exa.ai/team-management/api-keys/{keyid}/usage"),
                                       parse: .spend("total_cost_usd", .money("USD"), period: .billingPeriod)))),
@@ -1364,6 +1507,33 @@ enum APICatalog {
         default:
             return nil
         }
+    }
+
+    /// For a key that can do more than read: how to make it one that can't,
+    /// in what each provider actually offers.
+    static func readOnlyAdvice(for entry: APICatalogEntry) -> String? {
+        switch entry.keyKind {
+        case .admin, .management, .service: break
+        default: return nil
+        }
+        switch entry.id {
+        case "openai":
+            return L10n.t("When you create it, set its permissions to Read only. pillr only reads costs.")
+        case "anthropic":
+            return L10n.t("Anthropic's Admin keys can't be limited to reading, so make one just for pillr. You can revoke it in the Console at any time.")
+        case "openroutercredits":
+            return L10n.t("OpenRouter's management keys can't be limited to reading, so make one just for pillr, with an expiry date.")
+        case "xai":
+            return L10n.t("Give it only the billing read permissions. pillr only reads.")
+        default:
+            return L10n.t("If \(entry.name) offers it, give the key read-only access. pillr only reads usage.")
+        }
+    }
+
+    /// Where a key goes once it is added: nowhere but the Keychain and the
+    /// provider it belongs to.
+    static func keptLocally(_ entry: APICatalogEntry) -> String {
+        L10n.t("Kept only in this Mac's Keychain. pillr has no server of its own: the key is sent to \(entry.name) and nowhere else, only to read.")
     }
 
     /// What the field offers before anything is typed: the keys people
