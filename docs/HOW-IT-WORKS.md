@@ -391,4 +391,3 @@ Sparkle appcast that updates installed copies, is `script/release.sh`.
   readers, the session monitors, approvals, setup and settings. XCTest.
 - `Sources/CZstd` — vendored Zstandard decoder for the Claude app's cache.
 - `script/` — bundling, signing, packaging and release.
-- `site/` — the static page at pillr.lol.

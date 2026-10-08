@@ -1,5 +1,5 @@
 <p align="center">
-  <a href="https://pillr.lol">
+  <a href="https://pillr-landing.vercel.app">
     <picture>
       <source media="(prefers-color-scheme: dark)" srcset="docs/media/lockup-white.png">
       <img src="docs/media/lockup-black.png" alt="pillr" width="280">
@@ -20,7 +20,7 @@
 <p align="center">
   <a href="https://github.com/chrisnguyen1211/pillrdotlol/releases/latest"><img alt="Download for macOS" src="https://img.shields.io/badge/Download_for_macOS-000000?style=for-the-badge&logo=apple&logoColor=white" height="40"></a>
   &nbsp;
-  <a href="https://pillr.lol"><img alt="pillr.lol" src="https://img.shields.io/badge/pillr.lol-1d4ed8?style=for-the-badge&logo=safari&logoColor=white" height="40"></a>
+  <a href="https://pillr-landing.vercel.app"><img alt="Website" src="https://img.shields.io/badge/website-1d4ed8?style=for-the-badge&logo=safari&logoColor=white" height="40"></a>
 </p>
 
 <p align="center">
@@ -120,10 +120,7 @@ Where a provider reports credit or spend, pillr shows it; where it doesn't, pill
 
 1. Download `pillr-<version>.dmg` from the [latest release](https://github.com/chrisnguyen1211/pillrdotlol/releases/latest).
 2. Open it and drag **pillr** onto **Applications**.
-3. Open pillr from Applications.
-
-> [!IMPORTANT]
-> pillr is not yet notarized by Apple. The first time, macOS may say *Apple could not verify "pillr" is free of malware*. Click **Done**, open **System Settings → Privacy & Security**, scroll to the message about pillr and click **Open Anyway**. It's asked only once; updates install without it.
+3. Open pillr from Applications — it's signed with a Developer ID and notarized by Apple, so it opens with a double-click. Updates install themselves.
 
 ## 🚀 First run
 
@@ -202,9 +199,9 @@ MacBooks have a hinge sensor that reports the lid's angle. pillr reads it, and o
 </details>
 
 <details>
-<summary><b>Why does macOS say it can't verify pillr?</b></summary>
+<summary><b>Is it safe to open?</b></summary>
 <br>
-Releases are signed but not yet notarized by Apple. Use <b>Open Anyway</b> once, as described in <a href="#-install">Install</a>, or build pillr yourself — a copy built on your own Mac is never blocked.
+Every release is signed with a Developer ID and notarized by Apple, so macOS checks it before the first launch — no Open Anyway, no warning. Updates are signed too, and pillr only installs one whose signature matches.
 </details>
 
 <details>
