@@ -135,15 +135,11 @@ struct SettingsView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // Above the preview: the preview's notch is laid out at full size
-            // and scaled down, and the box it takes up for hit-testing ran up
-            // over this bar — the appearance icon, search and quit took no
-            // clicks at all.
+            // Kept above what follows, so nothing below can take its clicks.
             topBar
                 .zIndex(1)
-            NotchPreview(preferences: preferences, usageStore: usageStore)
+            DashboardStrip(preferences: preferences)
                 .frame(height: SettingsView.previewHeight)
-                .contentShape(Rectangle())
                 .clipped()
                 .padding(.horizontal, 18)
             tabBar

@@ -62,8 +62,9 @@ final class DashboardModel: ObservableObject {
 
     private let extraKeys: () -> [ExtraKey]
 
-    init(extraKeys: @escaping () -> [ExtraKey]) {
+    init(extraKeys: @escaping () -> [ExtraKey], range: Range = .week) {
         self.extraKeys = extraKeys
+        _range = Published(initialValue: range)
     }
 
     /// For renders: figures set as they are, nothing loaded.
@@ -531,5 +532,85 @@ struct DashboardContent: View {
         let formatter = DateFormatter()
         formatter.setLocalizedDateFormatFromTemplate(range == .week ? "EEE" : "d")
         return formatter
+    }
+}
+
+/// The dashboard at the head of Settings, where the notch preview was: the
+/// six figures for today, this week or this month, and the way to the
+/// whole of it.
+struct DashboardStrip: View {
+    @ObservedObject var preferences: Preferences
+    @StateObject private var model: DashboardModel
+
+    init(preferences: Preferences) {
+        self.preferences = preferences
+        _model = StateObject(wrappedValue: DashboardModel(extraKeys: { [weak preferences] in preferences?.extraKeys ?? [] },
+                                                          range: .today))
+    }
+
+    private var money: (Double) -> String { { MoneyFormat.string($0, currency: model.currency) } }
+
+    var body: some View {
+        let a = model.activity
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 10) {
+                Text(L10n.t("Dashboard")).font(.system(size: 13, weight: .semibold))
+                Spacer()
+                Picker("", selection: $model.range) {
+                    ForEach(DashboardModel.Range.allCases) { Text($0.title).tag($0) }
+                }
+                .pickerStyle(.segmented).labelsHidden().controlSize(.small).frame(width: 250)
+                .accessibilityLabel(L10n.t("Period"))
+                Button { open() } label: { Image(systemName: "arrow.up.right.square") }
+                    .buttonStyle(.borderless)
+                    .help(L10n.t("Open Dashboard…"))
+                    .accessibilityLabel(L10n.t("Open Dashboard…"))
+            }
+            Grid(horizontalSpacing: 8, verticalSpacing: 8) {
+                GridRow {
+                    tile(L10n.t("Spent"), money(model.totalSpend), .orange)
+                    tile(L10n.t("Agents at work"), TimelinePane.duration(a.busy), .green)
+                    tile(L10n.t("Waiting on you"), TimelinePane.duration(a.waiting), .yellow)
+                }
+                GridRow {
+                    tile(L10n.t("Sessions finished"), "\(a.finished)", .blue)
+                    tile(L10n.t("Lines changed"), "+\(a.added) −\(a.removed)", .purple)
+                    tile(L10n.t("Cost per finished session"), model.costPerFinish.map(money) ?? "—", .pink)
+                }
+            }
+        }
+        .padding(.horizontal, 14).padding(.vertical, 12)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color.primary.opacity(0.045)))
+        .task {
+            // While Settings is up, kept as fresh as the ledgers are.
+            while !Task.isCancelled {
+                model.load()
+                try? await Task.sleep(nanoseconds: 60_000_000_000)
+            }
+        }
+    }
+
+    private func tile(_ title: String, _ value: String, _ tint: Color) -> some View {
+        Button(action: open) {
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 5) {
+                    Circle().fill(tint).frame(width: 6, height: 6)
+                    Text(title).font(.system(size: 10.5, weight: .medium)).foregroundStyle(.secondary).lineLimit(1)
+                }
+                Text(value).font(.system(size: 17, weight: .semibold).monospacedDigit()).lineLimit(1).minimumScaleFactor(0.6)
+            }
+            .padding(.horizontal, 10).padding(.vertical, 8)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(Color.primary.opacity(0.05)))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(title), \(value)")
+    }
+
+    private func open() {
+        let preferences = preferences
+        Costs.showDashboard { preferences.extraKeys }
     }
 }
