@@ -32,6 +32,28 @@ enum ReleaseNotes {
     static var all: [ReleaseNote] {
         [
             ReleaseNote(
+                version: "1.1.0",
+                headline: L10n.t("Signed by Apple, and sign-ins on your terms."),
+                changes: [
+                    ReleaseNote.Change(
+                        title: L10n.t("Opens with a double-click"),
+                        detail: L10n.t("pillr is now signed with a Developer ID and notarized by Apple, so macOS opens it without Open Anyway.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("pillr asks before reading other apps' sign-ins"),
+                        detail: L10n.t("Reading Claude Code's and Antigravity's keychain items without a prompt is now a choice in Settings → General → Sign-ins, off by default.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("Background Claude renewal can be turned off"),
+                        detail: L10n.t("The brief `claude` run that keeps Claude's sign-in fresh has its own switch in Settings → General → Sign-ins.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("Every language shows again"),
+                        detail: L10n.t("Français, 日本語, Português, Русский and 简体中文 are back in the app.")
+                    )
+                ]
+            ),
+            ReleaseNote(
                 version: "1.0.2",
                 headline: L10n.t("Safer approvals, and a locked-down app."),
                 changes: [
