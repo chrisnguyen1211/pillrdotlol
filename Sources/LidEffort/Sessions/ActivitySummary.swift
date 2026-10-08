@@ -62,5 +62,4 @@ struct ActivitySummary: Equatable {
         }
     }
 
-    var waitingSessions: [AgentSession] { sessions.filter { $0.state == .waiting } }
 }

@@ -26,7 +26,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-REPO=Catleader1407/pillr
+REPO=chrisnguyen1211/pillrdotlol
 
 if [ -z "${DEVELOPER_ID:-}" ]; then
   echo "note: no DEVELOPER_ID — signing for development, not notarizing." >&2
@@ -41,8 +41,8 @@ mkdir -p "$OUT"
 cp "build/pillr-$VERSION.dmg" "$OUT/"
 
 # What's new, written by hand in release-notes/<version>.md: shown in
-# Sparkle's update window (as pillr-<version>.html beside the DMG, which
-# generate_appcast embeds) and on the GitHub release.
+# Sparkle's update window (as pillr-<version>.html beside the zip, which
+# generate_appcast embeds — it only links to one unless told to embed) and on the GitHub release.
 NOTES_MD="release-notes/$VERSION.md"
 if [ -f "$NOTES_MD" ]; then
   python3 - "$NOTES_MD" "$OUT/pillr-$VERSION.html" <<'PY'
@@ -87,11 +87,13 @@ rm -rf "$STAGE"
 [ -f "$OUT/pillr-$VERSION.html" ] && mv "$OUT/pillr-$VERSION.html" "$SPARKLE/"
 
 TOOLS=.build/artifacts/sparkle/Sparkle/bin
-"$TOOLS/generate_appcast" --account pillr \
+"$TOOLS/generate_appcast" --account pillr --embed-release-notes \
   --download-url-prefix "https://github.com/$REPO/releases/download/v$VERSION/" \
   --link "https://github.com/$REPO" \
   --maximum-versions 1 --maximum-deltas 0 \
   "$SPARKLE/"
+# The feed's title comes from the app's file name in the zip; it is pillr.
+sed -i '' 's#<title>spyx</title>#<title>pillr</title>#' "$SPARKLE/appcast.xml"
 mv "$SPARKLE/appcast.xml" "$OUT/appcast.xml"
 mv "$SPARKLE/pillr-$VERSION.zip" "$OUT/"
 echo "release: $OUT/pillr-$VERSION.dmg + $OUT/pillr-$VERSION.zip + $OUT/appcast.xml"

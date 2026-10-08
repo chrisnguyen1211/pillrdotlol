@@ -73,6 +73,4 @@ struct NotchPlacement {
     /// The panel's extent along the stack, whichever axis that is.
     var panelLength: CGFloat { edge.isVertical ? panelSize.height : panelSize.width }
 
-    /// And across it.
-    var panelDepth: CGFloat { edge.isVertical ? panelSize.width : panelSize.height }
 }

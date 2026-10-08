@@ -62,7 +62,7 @@ final class LaunchPolishTests: XCTestCase {
 
     func testABugReportCarriesOnlyTheVersions() {
         let url = BugReport.url(version: "1.1.0", macOS: "Version 26.0").absoluteString
-        XCTAssertTrue(url.hasPrefix("https://github.com/Catleader1407/pillr/issues/new"))
+        XCTAssertTrue(url.hasPrefix("https://github.com/chrisnguyen1211/pillrdotlol/issues/new"))
         XCTAssertTrue(url.contains("1.1.0"))
         XCTAssertFalse(url.contains(NSUserName()), "nothing about the person")
     }

@@ -230,12 +230,10 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
     }
 }
 
-/// The settings sheet's host. Its top bar sits where a title bar would, and
-/// macOS hands a press in a title bar to the window server to move the
-/// window — before the app sees it — wherever the view under it says it can
-/// move the window. A hosting view says yes by default, so the appearance
-/// icon, search and quit never got their clicks. No: the bar's empty
-/// stretch moves the window itself (`WindowDragHandle`).
+/// The settings sheet's host. Its top bar sits where a title bar would, so
+/// nothing under it is allowed to move the window — the bar's empty stretch
+/// does that itself (`WindowDragHandle`), and a press on a control there is
+/// only ever a press.
 final class SettingsHostingView<Content: View>: NSHostingView<Content> {
     override var mouseDownCanMoveWindow: Bool { false }
 }

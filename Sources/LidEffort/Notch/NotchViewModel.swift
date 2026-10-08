@@ -230,13 +230,6 @@ final class NotchViewModel: ObservableObject {
     /// The notch is in hand: the move handle has been held past its threshold
     /// and the drop zones are up, waiting for a release.
     @Published var isMoving = false
-    /// Which edge a release would land on. Nil before the pointer has moved
-    /// far enough for a target to be meaningful.
-    @Published var moveTarget: NotchEdge?
-    /// A move finished on `edge`. The controller owns persisting it, for the
-    /// same reason it owns `onReposition`: this type knows the geometry, not
-    /// where preferences live.
-    var onMove: ((NotchEdge) -> Void)?
     /// A direct SwiftUI tap on the settings orb, independent of the panel's
     /// own AppKit-level click routing (`NotchPanel.mouseDown` →
     /// `NotchWindowController.handleClick`). That path relies on the panel's
@@ -532,12 +525,6 @@ final class NotchViewModel: ObservableObject {
     /// at every size and on every edge.
     var moveAlong: CGFloat {
         shapeLength - orbAlong
-    }
-
-    /// The mirror of `trailingExtent` at the near end — the room the move
-    /// handle needs before the notch's own start.
-    var leadingExtent: CGFloat {
-        max(0, -moveAlong + NotchLayout.orbHotZone / 2).rounded(.up)
     }
 
     /// Where the bar's far corner actually turns, along the stack.

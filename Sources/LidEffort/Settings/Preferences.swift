@@ -685,7 +685,6 @@ final class Preferences: ObservableObject {
     /// edge, the accounts switched off, the size. Copied across once, from
     /// the newest that has any, before anything reads the new domain.
     nonisolated static let previousDomains = [Rebrand.previousBundleID, "dev.lideffort"]
-    nonisolated static let previousDomain = "dev.lideffort"
 
     static func migrateFromPreviousDomain(into defaults: UserDefaults, from domain: String) {
         migrateFromPreviousDomain(into: defaults, from: [domain])
@@ -1020,36 +1019,6 @@ final class Preferences: ObservableObject {
     /// returned, for something the user never did.
     func setProviderOrder(_ ids: [String]) {
         providerOrder = ProviderOrder.remember(ids, keeping: providerOrder)
-    }
-
-    /// Forget everything this app has stored and quit.
-    ///
-    /// Deleting an app on macOS leaves `~/Library` untouched, so reinstalling
-    /// brings back the old readings, the old connection choices and the old
-    /// first-launch flag — which is exactly what makes a reinstall look broken.
-    /// Nothing but the app itself can clean that up, so the app has to offer it.
-    ///
-    /// Not tied to uninstalling: a reinstall is indistinguishable from an
-    /// update, and wiping data on every Sparkle update would be catastrophic.
-    /// It has to be something the user asks for.
-    static func eraseAllData() {
-        let bundleID = Bundle.main.bundleIdentifier ?? "lol.pillr.app"
-        // The extra keys' items would be orphaned once the list naming them
-        // is gone, so they go first, while it can still be read.
-        for key in storedExtraKeys() { ExtraKeySecrets.delete(id: key.id) }
-        UserDefaults.standard.removePersistentDomain(forName: bundleID)
-        UserDefaults.standard.synchronize()
-
-        let library = FileManager.default.urls(for: .libraryDirectory, in: .userDomainMask).first
-        for relative in ["Caches/\(bundleID)",
-                         "WebKit/\(bundleID)",
-                         "HTTPStorages/\(bundleID)",
-                         "HTTPStorages/\(bundleID).binarycookies",
-                         "Saved Application State/\(bundleID).savedState"] {
-            if let url = library?.appendingPathComponent(relative) {
-                try? FileManager.default.removeItem(at: url)
-            }
-        }
     }
 
     // MARK: - Login item

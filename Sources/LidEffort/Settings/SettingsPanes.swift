@@ -192,7 +192,7 @@ struct SectionHeader: View {
 /// A new GitHub issue with the version and macOS filled in — nothing else
 /// about the Mac — and the crash reports on the clipboard to paste.
 enum BugReport {
-    static let issues = URL(string: "https://github.com/Catleader1407/pillr/issues/new")!
+    static let issues = URL(string: "https://github.com/chrisnguyen1211/pillrdotlol/issues/new")!
 
     static func url(version: String, macOS: String = ProcessInfo.processInfo.operatingSystemVersionString) -> URL {
         var components = URLComponents(url: issues, resolvingAgainstBaseURL: false)!
@@ -378,17 +378,6 @@ struct NotchPane: View {
         .formStyle(NotchFormStyle())
     }
 
-    private var displayExplanation: String {
-        switch preferences.displayPreference {
-        case .followActiveWindow:
-            return L10n.t("Moves to the display with the window you are typing in.")
-        case .display(let id):
-            if let display = displays.first(where: { $0.id == id }) {
-                return L10n.t("Pinned to \(display.name).")
-            }
-            return L10n.t("That display is disconnected. pillr follows the active window until it returns.")
-        }
-    }
 }
 
 // MARK: - Sessions & Approvals
@@ -607,7 +596,6 @@ struct GeneralPane: View {
     var openSetup: () -> Void = {}
     var openTour: () -> Void = {}
     var quit: () -> Void = {}
-    @State private var copiedDiagnostics = false
     @State private var confirmingRemoval = false
     @State private var removed: [String]?
     var body: some View {

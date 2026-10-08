@@ -223,16 +223,16 @@ final class WaitingCardTests: XCTestCase {
 
 @MainActor
 final class PromptDesignRenderTests: XCTestCase {
-    private func prompt(_ json: String, name: String = "effort-lid-3c") throws -> PendingPrompt {
+    private func prompt(_ json: String, name: String = "launch-plan") throws -> PendingPrompt {
         var p = try XCTUnwrap(PendingPrompt(hookInput: Data(json.utf8)))
         p.sessionName = name
         return p
     }
 
     func testEveryStateBesideTheDoneCard() throws {
-        let bash = try prompt(#"{"cwd":"/Users/me/Effort Lid","tool_name":"Bash","tool_input":{"command":"swift test --filter PromptDraftTests"},"permission_suggestions":[{"type":"addRules"}]}"#)
-        let single = try prompt(#"{"cwd":"/Users/me/Effort Lid","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Which database should the sync job write to?","header":"Database","multiSelect":false,"options":[{"label":"Postgres","description":"The main cluster"},{"label":"SQLite","description":"A local file, for tests"},{"label":"Both","description":"Postgres, mirrored to SQLite"}]}]}}"#)
-        let multiJSON = #"{"cwd":"/Users/me/Effort Lid","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Which platforms should ship first?","header":"Platforms","multiSelect":true,"options":[{"label":"macOS","description":"The notch app"},{"label":"iOS","description":"Widget"},{"label":"Web","description":"Dashboard"},{"label":"CLI","description":"Terminal only"}]},{"question":"Release channel?","header":"Channel","multiSelect":false,"options":[{"label":"Beta"},{"label":"Stable"}]}]}}"#
+        let bash = try prompt(#"{"cwd":"/Users/me/shop-web","tool_name":"Bash","tool_input":{"command":"npm run test:e2e"},"permission_suggestions":[{"type":"addRules"}]}"#)
+        let single = try prompt(#"{"cwd":"/Users/me/shop-web","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Which database should the sync job write to?","header":"Database","multiSelect":false,"options":[{"label":"Postgres","description":"The main cluster"},{"label":"SQLite","description":"A local file, for tests"},{"label":"Both","description":"Postgres, mirrored to SQLite"}]}]}}"#)
+        let multiJSON = #"{"cwd":"/Users/me/shop-web","tool_name":"AskUserQuestion","tool_input":{"questions":[{"question":"Which platforms should ship first?","header":"Platforms","multiSelect":true,"options":[{"label":"macOS","description":"The notch app"},{"label":"iOS","description":"Widget"},{"label":"Web","description":"Dashboard"},{"label":"CLI","description":"Terminal only"}]},{"question":"Release channel?","header":"Channel","multiSelect":false,"options":[{"label":"Beta"},{"label":"Stable"}]}]}}"#
         let multi = try prompt(multiJSON)
         var picked = PromptDraft(questions: multi.questions)
         picked.toggle("macOS")
@@ -242,7 +242,7 @@ final class PromptDesignRenderTests: XCTestCase {
         var typed = PromptDraft(questions: single.questions)
         typed.setCustom("Postgres, but read replicas only")
 
-        let done = DoneToast(event: .init(session: AgentSession(id: "d", name: "effort-lid-3c", detail: "Terminal · Effort Lid",
+        let done = DoneToast(event: .init(session: AgentSession(id: "d", name: "launch-plan", detail: "Terminal · shop-web",
                                                                 state: .idle, waitingFor: nil, since: Date(), processID: 1),
                                           reason: .finished, providerID: "claude"), glyph: .claude)
         let view = HStack(alignment: .top, spacing: 24) {

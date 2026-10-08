@@ -32,7 +32,7 @@ enum ReleaseNotes {
     static var all: [ReleaseNote] {
         [
             ReleaseNote(
-                version: "1.1.0",
+                version: "1.1.1",
                 headline: L10n.t("Signed by Apple, and sign-ins on your terms."),
                 changes: [
                     ReleaseNote.Change(
@@ -50,6 +50,32 @@ enum ReleaseNotes {
                     ReleaseNote.Change(
                         title: L10n.t("Every language shows again"),
                         detail: L10n.t("Français, 日本語, Português, Русский and 简体中文 are back in the app.")
+                    )
+                ]
+            ),
+            ReleaseNote(
+                version: "1.1.0",
+                headline: L10n.t("Every API key has a place — and every agent says when it is done."),
+                changes: [
+                    ReleaseNote.Change(
+                        title: L10n.t("Every API key in one cell"),
+                        detail: L10n.t("Credit left, spent this month and spent in total, for about 70 providers. The ring follows the key closest to running out.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("Reply from the card"),
+                        detail: L10n.t("Hover an idle session and answer it. pillr types it in only when the agent is waiting, never over a draft.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("Ten agents say when they're done"),
+                        detail: L10n.t("Claude Code, Codex, Grok, Cursor, Kimi Code, Gemini CLI, OpenCode, Copilot CLI, Droid and Antigravity.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("Connect in one click"),
+                        detail: L10n.t("Setup connects each agent, and shows how to install one that isn't on your Mac.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("Light, Dark or System"),
+                        detail: L10n.t("One icon in Settings — or let pillr follow your Mac.")
                     )
                 ]
             ),

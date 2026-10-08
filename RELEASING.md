@@ -52,7 +52,7 @@ lets macOS keep a user's permissions across updates.
    ```
 
 4. That creates the release `v<version>` on
-   [Catleader1407/pillr](https://github.com/Catleader1407/pillr/releases)
+   [chrisnguyen1211/pillrdotlol](https://github.com/chrisnguyen1211/pillrdotlol/releases)
    with `pillr-<version>.dmg` and `appcast.xml`. Installed copies read
    `releases/latest/download/appcast.xml`, so the newest release is the feed:
    never mark an older one "latest", and never delete the newest's appcast.

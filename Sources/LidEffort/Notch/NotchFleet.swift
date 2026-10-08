@@ -392,7 +392,6 @@ final class NotchFleet {
     /// The tour's stand-in readings, shown instead of the real ones — which
     /// keep arriving underneath and come back the moment it ends.
     private var tourDemo: (snapshots: [ProviderSnapshot], sessions: [String: [AgentSession]])?
-    var isShowingTourDemo: Bool { tourDemo != nil }
 
     func showTourDemo(snapshots demo: [ProviderSnapshot], sessions demoSessions: [String: [AgentSession]]) {
         tourDemo = (demo, demoSessions)
@@ -465,21 +464,6 @@ final class NotchFleet {
         for each in all { each.foldForReply() }
         guard let pill = controller.screenRect(of: .notch) else { return nil }
         return (pill, screen, controller.model.edge)
-    }
-
-    /// Where a panel opened from the notch should sit beside: the tooltip it
-    /// came from (or the done card, or the pill), on the screen the pointer
-    /// is on, and the edge the pill is on.
-    func popoverAnchor() -> (rect: CGRect, screen: NSScreen, edge: NotchEdge)? {
-        let mouse = NSEvent.mouseLocation
-        let all = Array(controllers.values)
-        guard let controller = all.first(where: { $0.screen.map { NSMouseInRect(mouse, $0.frame, false) } ?? false }) ?? all.first,
-              let screen = controller.screen else { return nil }
-        let rect = (controller.model.isExpanded ? controller.screenRect(of: .tooltip) : nil)
-            ?? (controller.model.activeDoneToast != nil ? controller.screenRect(of: .toast) : nil)
-            ?? controller.screenRect(of: .notch)
-        guard let rect else { return nil }
-        return (rect, screen, controller.model.edge)
     }
 
     /// Where a part of the notch is on the display in front of the person —
@@ -599,11 +583,6 @@ final class NotchFleet {
         var seen = Set<NSNumber>()
         let add = desired.filter { want.contains($0) && !current.contains($0) && seen.insert($0).inserted }
         return (remove, add)
-    }
-
-    /// Exposed so a test can drive the fleet against the real screen list.
-    func reconcileForTesting() {
-        reconcile(screens: NSScreen.screens)
     }
 
     private func reconcile(screens: [NSScreen]) {

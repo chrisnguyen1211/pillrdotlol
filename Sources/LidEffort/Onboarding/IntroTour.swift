@@ -477,8 +477,6 @@ final class IntroTour: ObservableObject {
         preferences.notchEdge = order[(at + 1) % order.count]
     }
 
-    func sendHome() { preferences.notchEdge = Self.homeEdge }
-
     /// The reply step's demo, and its "Show me": the reply field opens beside
     /// the pill and a message is typed into the idle session — the field's
     /// own demo, which plays the whole send and sends nothing.
