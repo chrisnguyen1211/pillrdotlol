@@ -869,3 +869,54 @@ private final class CatalogEndpoint: URLProtocol {
         return data
     }
 }
+
+/// An individual Anthropic account has no Admin API at all, and an
+/// organization can read costs with a personal key as well as an Admin key.
+final class AnthropicCostKeyTests: XCTestCase {
+    private var session: URLSession!
+
+    override func setUpWithError() throws {
+        let config = URLSessionConfiguration.ephemeral
+        config.protocolClasses = [CatalogEndpoint.self]
+        session = URLSession(configuration: config)
+    }
+
+    override func tearDownWithError() throws {
+        session.invalidateAndCancel()
+        CatalogEndpoint.reset { _ in (500, [:], Data()) }
+    }
+
+    private func anthropic(_ key: String) throws -> CatalogKeyProvider {
+        let extra = ExtraKey(id: ExtraKey.makeID(base: "anthropic"), base: "anthropic", name: "Work")
+        return try XCTUnwrap(CatalogKeyProvider(extra: extra, session: session, secret: { key }))
+    }
+
+    func testAPersonalKeyIsSentAndNotRefusedForItsPrefix() async throws {
+        CatalogEndpoint.reset { _ in (200, [:], Data(#"{"data":[]}"#.utf8)) }
+        _ = try await anthropic("sk-ant-api03-personal").fetchSnapshot(freshness: .fromSource)
+        XCTAssertEqual(CatalogEndpoint.requests.first?.value(forHTTPHeaderField: "x-api-key"), "sk-ant-api03-personal")
+    }
+
+    func testARefusalSaysHowAnIndividualAccountGetsThere() async throws {
+        let refused = try XCTUnwrap(APICatalog.entry(id: "anthropic")?.refused?())
+        XCTAssertTrue(refused.contains("Console → Settings → Organization"))
+        for status in [401, 403] {
+            CatalogEndpoint.reset { _ in (status, [:], Data(#"{"type":"error","error":{"type":"permission_error"}}"#.utf8)) }
+            do {
+                _ = try await anthropic("sk-ant-api03-workspace").fetchSnapshot(freshness: .fromSource)
+                XCTFail("a \(status) is a refusal")
+            } catch {
+                XCTAssertEqual(String(describing: error), String(describing: UsageProviderError.apiError(refused)), "\(status)")
+            }
+        }
+    }
+
+    func testSomethingThatIsNotAnAnthropicKeyNeverLeaves() async throws {
+        CatalogEndpoint.reset { _ in (200, [:], Data(#"{"data":[]}"#.utf8)) }
+        do {
+            _ = try await anthropic("sk-proj-openai").fetchSnapshot(freshness: .fromSource)
+            XCTFail("an OpenAI key is not sent to Anthropic")
+        } catch {}
+        XCTAssertTrue(CatalogEndpoint.requests.isEmpty)
+    }
+}

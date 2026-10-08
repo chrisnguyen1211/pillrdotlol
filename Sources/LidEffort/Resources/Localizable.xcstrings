@@ -55046,6 +55046,74 @@
           }
         }
       }
+    },
+    "Anthropic won't share costs with this key. It needs an organization's Admin key, or a personal key not limited to one workspace. On an individual account, set up an organization first in Console → Settings → Organization." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anthropic ne partage pas les coûts avec cette clé. Il faut la clé Admin d'une organisation, ou une clé personnelle non limitée à un seul espace de travail. Sur un compte individuel, créez d'abord une organisation dans Console → Settings → Organization."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anthropic はこのキーではコストを共有しません。組織の Admin キーか、1 つのワークスペースに限定されていない個人キーが必要です。個人アカウントの場合は、まず Console → Settings → Organization で組織を作成してください。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Anthropic não compartilha custos com esta chave. É preciso a chave Admin de uma organização, ou uma chave pessoal não limitada a um workspace. Numa conta individual, crie antes uma organização em Console → Settings → Organization."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anthropic не показывает расходы для этого ключа. Нужен Admin-ключ организации или личный ключ, не ограниченный одним рабочим пространством. На индивидуальном аккаунте сначала создайте организацию в Console → Settings → Organization."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anthropic 不会通过此密钥提供费用数据。需要组织的 Admin 密钥，或不限于单个工作区的个人密钥。如果是个人账号，请先在 Console → Settings → Organization 中创建组织。"
+          }
+        }
+      }
+    },
+    "Anthropic shares costs only with an organization. Use an Admin key (Claude Console → Settings → Admin keys, it starts with sk-ant-admin) or a personal key that is not limited to one workspace. An individual account has neither until you set up an organization in Console → Settings → Organization." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anthropic ne partage les coûts qu'avec une organisation. Utilisez une clé Admin (Claude Console → Settings → Admin keys, elle commence par sk-ant-admin) ou une clé personnelle non limitée à un seul espace de travail. Un compte individuel n'a ni l'une ni l'autre tant que vous n'avez pas créé d'organisation dans Console → Settings → Organization."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anthropic がコストを共有するのは組織だけです。Admin キー（Claude Console → Settings → Admin keys、sk-ant-admin で始まります）か、1 つのワークスペースに限定されていない個人キーを使ってください。個人アカウントでは、Console → Settings → Organization で組織を作成するまでどちらも使えません。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A Anthropic só compartilha custos com uma organização. Use uma chave Admin (Claude Console → Settings → Admin keys, começa com sk-ant-admin) ou uma chave pessoal não limitada a um workspace. Uma conta individual não tem nenhuma das duas até você criar uma organização em Console → Settings → Organization."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anthropic показывает расходы только организациям. Используйте Admin-ключ (Claude Console → Settings → Admin keys, начинается с sk-ant-admin) или личный ключ, не ограниченный одним рабочим пространством. У индивидуального аккаунта их нет, пока вы не создадите организацию в Console → Settings → Organization."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anthropic 只向组织提供费用数据。请使用 Admin 密钥（Claude Console → Settings → Admin keys，以 sk-ant-admin 开头），或不限于单个工作区的个人密钥。个人账号在 Console → Settings → Organization 中创建组织之前，两者都没有。"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

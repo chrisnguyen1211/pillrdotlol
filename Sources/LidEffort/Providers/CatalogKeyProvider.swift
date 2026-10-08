@@ -540,7 +540,7 @@ actor CatalogKeyProvider: UsageProvider {
             return snapshot(for: .keyWorks(.keptUnchecked))
         }
         if let prefix = entry.requiredKeyPrefix, !key.hasPrefix(prefix) {
-            throw UsageProviderError.apiError(
+            throw UsageProviderError.apiError(entry.refused?() ??
                 L10n.t("\(entry.name) needs an admin key here, one that starts with \(prefix)"))
         }
         if let retryNoEarlierThan, retryNoEarlierThan > date {
@@ -677,6 +677,8 @@ actor CatalogKeyProvider: UsageProvider {
             throw UsageProviderError.badResponse(status: status)
         case _ where recipe.acceptedStatuses.contains(status):
             break
+        case 401 where entry.refused != nil, 403 where entry.refused != nil:
+            throw UsageProviderError.apiError(entry.refused!())
         case 401:
             if entry.readability == .adminKey {
                 throw UsageProviderError.apiError(adminRefusal)

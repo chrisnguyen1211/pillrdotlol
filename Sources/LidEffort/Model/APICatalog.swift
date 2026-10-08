@@ -241,6 +241,10 @@ struct APICatalogEntry: Identifiable, Sendable {
     /// general words would only say "unexpected answer".
     var forbidden: (@Sendable () -> String)? = nil
     var notFound: (@Sendable () -> String)? = nil
+    /// Said instead of the general words whenever the key is the wrong
+    /// kind: one that does not look right, and a 401 or 403 for it. For a
+    /// provider where which key works depends on the account, not the key.
+    var refused: (@Sendable () -> String)? = nil
     let route: APIRoute
 
     func region(_ id: String?) -> APIRegion? {
@@ -872,8 +876,12 @@ enum APICatalog {
         APICatalogEntry(
             id: "anthropic", name: "Anthropic", category: .llm, aliases: ["claude api"], readability: .adminKey,
             glyph: .anthropic, consoleURL: url("https://console.anthropic.com/settings/admin-keys"),
-            keyPrefix: "sk-ant-admin01-", requiredKeyPrefix: "sk-ant-admin", keyKind: .admin(prefix: "sk-ant-admin"),
+            // Costs come from the Admin API, which takes an Admin key or a
+            // personal or service account key not held to one workspace,
+            // and which individual accounts do not have at all.
+            keyPrefix: "sk-ant-admin01-", requiredKeyPrefix: "sk-ant-", keyKind: .admin(prefix: nil),
             measure: .spend,
+            refused: { L10n.t("Anthropic won't share costs with this key. It needs an organization's Admin key, or a personal key not limited to one workspace. On an individual account, set up an organization first in Console → Settings → Organization.") },
             route: .catalog(APIRecipe(
                 auth: .header("x-api-key"), headers: ["anthropic-version": "2023-06-01"],
                 request: r("https://api.anthropic.com/v1/organizations/cost_report?starting_at={monthStartISO}&bucket_width=1d&limit=31"),
@@ -1338,7 +1346,7 @@ enum APICatalog {
         case "openai":
             return L10n.t("OpenAI shares costs only with an Admin key. Create one at platform.openai.com → Settings → Organization → Admin keys; it starts with sk-admin-. A project key (sk-proj-) is refused.")
         case "anthropic":
-            return L10n.t("Anthropic shares costs only with an Admin key. Create one in the Claude Console → Settings → Admin keys; it starts with sk-ant-admin. An ordinary API key is refused.")
+            return L10n.t("Anthropic shares costs only with an organization. Use an Admin key (Claude Console → Settings → Admin keys, it starts with sk-ant-admin) or a personal key that is not limited to one workspace. An individual account has neither until you set up an organization in Console → Settings → Organization.")
         case "xai":
             return L10n.t("xAI shares billing only with a management key, not a key from the API Keys page. Create one in the xAI Console → Settings → Management keys, with access to billing. The team is read from the key, so Team ID can stay empty.")
         case "openroutercredits":
