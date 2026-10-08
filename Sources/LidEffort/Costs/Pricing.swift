@@ -52,7 +52,19 @@ final class PriceTable: ObservableObject {
     }
 
     /// The Mac's own currency (System Settings → Language & Region).
-    var currency: String { Locale.current.currency?.identifier ?? "USD" }
+    var localCurrency: String { Locale.current.currency?.identifier ?? "USD" }
+
+    /// Whether money is shown in dollars for want of a rate: Market data is
+    /// off and the Mac's currency is not the dollar. Better than "price
+    /// unknown" or a zero for money that is known, just not in this currency.
+    var inDollars: Bool { !rateKnown && localCurrency != "USD" }
+
+    /// The currency money is shown in: the Mac's own, or dollars until there
+    /// is a rate to bring it over.
+    var currency: String { inDollars ? "USD" : localCurrency }
+
+    /// Dollars to the shown currency: the rate, or one while in dollars.
+    var effectiveRate: Double { inDollars ? 1 : rate }
 
     static var fileURL: URL { CostPaths.directory.appendingPathComponent("prices.json") }
 
@@ -105,7 +117,7 @@ final class PriceTable: ObservableObject {
         let needPrices = force || (pricesUpdatedAt.map { Date().timeIntervalSince($0) > day } ?? true)
         let needRate = force || (rateUpdatedAt.map { Date().timeIntervalSince($0) > day } ?? true)
         guard needPrices || needRate else { return }
-        let currency = self.currency
+        let currency = self.localCurrency
         Task.detached(priority: .utility) {
             var newPrices: [ModelPrice]?
             var newRate: Double?
@@ -192,7 +204,7 @@ final class PriceTable: ObservableObject {
     }
 
     /// A snapshot usable off the main thread.
-    var pricer: Pricer { Pricer(prices: prices, rate: rate) }
+    var pricer: Pricer { Pricer(prices: prices, rate: effectiveRate) }
 }
 
 struct Pricer: Sendable {

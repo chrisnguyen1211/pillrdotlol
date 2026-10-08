@@ -10,7 +10,7 @@ struct CostSettingsPane: View {
     @ObservedObject var prices: PriceTable = .shared
     @ObservedObject var catalog: PlanCatalog = .shared
 
-    private var currencyName: String { Locale.current.localizedString(forCurrencyCode: prices.currency) ?? prices.currency }
+    private var currencyName: String { Locale.current.localizedString(forCurrencyCode: prices.localCurrency) ?? prices.localCurrency }
 
     var body: some View {
         Form {
@@ -100,7 +100,7 @@ private struct CostAccountRows: View {
     @ObservedObject private var catalog = PlanCatalog.shared
 
     var body: some View {
-        let auto = account.monthlyLocal(rate: prices.rate)
+        let auto = account.monthlyLocal(rate: prices.effectiveRate)
         Picker(selection: Binding(get: { account.billing }, set: { accounts.setBilling(account.id, $0) })) {
             ForEach(CostAccount.Billing.allCases) { Text($0.title).tag($0) }
         } label: {
@@ -145,6 +145,10 @@ private struct CostAccountRows: View {
             let priced = model.rows.compactMap(\.cost)
             let projects = model.rows.filter { !$0.isUnexplained }.count
             guard !priced.isEmpty else {
+                if account.billing == .subscription, account.monthlyPrice == 0,
+                   account.planTier.flatMap({ catalog.usd(for: $0) }) == 0 {
+                    return L10n.t("Free plan · nothing to pay")
+                }
                 return account.billing == .subscription
                     ? L10n.t("Set the monthly price to see money")
                     : L10n.t("No priced tokens yet")
@@ -159,7 +163,7 @@ private struct CostAccountRows: View {
     private var planDetail: String {
         guard let tier = account.planTier else { return L10n.t("Plan not detected yet") }
         let name = catalog.name(for: tier)
-        if let local = catalog.monthly(for: tier, currency: prices.currency, rate: prices.rate) {
+        if let local = catalog.monthly(for: tier, currency: prices.currency, rate: prices.effectiveRate) {
             return L10n.t("\(name) · \(MoneyFormat.string(local, currency: prices.currency))/month (catalog)")
         }
         return L10n.t("\(name) · price unknown, set it here")

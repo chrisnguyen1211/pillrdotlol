@@ -390,19 +390,14 @@ struct TimelinePane: View {
     /// login is paid. Shared with the dashboard.
     @MainActor
     static func sessions(in range: DateInterval, pricer: Pricer, accounts allAccounts: [CostAccount],
-                         titles: Bool = true, dollars: Bool = false) async -> [Row] {
+                         titles: Bool = true) async -> [Row] {
         let from = Int(range.start.timeIntervalSince1970)
         let to = Int(range.end.timeIntervalSince1970) - 1
         let models = CostModels.all.compactMap { m -> (CostAccount, Double, Double?, Int, CostStore)? in
             guard let s = m.store_, let idx = allAccounts.firstIndex(where: { $0.id == m.account.id }) else { return nil }
             let creditPoint: Double? = (m.creditBacked && m.account.creditLimit != nil)
                 ? m.account.creditLocal(rate: pricer.rate).map { $0 * m.account.creditLimit! / 100 } : nil
-            // In dollars, a plan's price is its catalogue price in dollars; one
-            // typed in the Mac's currency can't be brought over without a rate.
-            let monthly = dollars
-                ? (m.account.monthlyPrice > 0 ? 0 : m.account.planTier.flatMap { PlanCatalog.shared.usd(for: $0) } ?? 0)
-                : m.account.monthlyLocal(rate: pricer.rate)
-            return (m.account, monthly, creditPoint, idx, s)
+            return (m.account, m.account.monthlyLocal(rate: pricer.rate), creditPoint, idx, s)
         }
         let now = Int(Date().timeIntervalSince1970)
         return await Task.detached(priority: .userInitiated) { () -> [Row] in

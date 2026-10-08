@@ -92,8 +92,7 @@ final class DashboardModel: ObservableObject {
                                  localCurrency: PriceTable.shared.currency)
         Task {
             let sessions = await TimelinePane.sessions(in: interval, pricer: Self.pricer,
-                                                       accounts: CostAccountStore.shared.accounts, titles: false,
-                                                       dollars: Self.inDollars)
+                                                       accounts: CostAccountStore.shared.accounts, titles: false)
             let (rows, summary, streak) = await Task.detached(priority: .userInitiated) { () -> ([KeyRow], ActivityLedger.Summary, Int) in
                 let ledger = SpendLedger.shared
                 let rows = keys.map { extra in
@@ -120,13 +119,11 @@ final class DashboardModel: ObservableObject {
     /// With no exchange rate yet (Market data is off), everything is shown
     /// in dollars, the currency token prices and most keys are in: better
     /// than a zero where the money could not be brought over.
-    static var inDollars: Bool { !PriceTable.shared.rateKnown && PriceTable.shared.currency != "USD" }
+    static var inDollars: Bool { PriceTable.shared.inDollars }
 
-    static var pricer: Pricer {
-        inDollars ? Pricer(prices: PriceTable.shared.prices, rate: 1) : PriceTable.shared.pricer
-    }
+    static var pricer: Pricer { PriceTable.shared.pricer }
 
-    var currency: String { Self.inDollars ? "USD" : PriceTable.shared.currency }
+    var currency: String { PriceTable.shared.currency }
 
     /// A key's money in the Mac's currency, where it can be: as it is when
     /// the currencies agree, through the exchange rate from dollars.
@@ -137,7 +134,7 @@ final class DashboardModel: ObservableObject {
 
     func local(_ amount: Double, _ from: String) -> Double? {
         if from == currency { return amount }
-        let rate = Self.inDollars ? 1 : PriceTable.shared.rate
+        let rate = PriceTable.shared.effectiveRate
         return from == "USD" && rate > 0 ? amount * rate : nil
     }
 
@@ -511,9 +508,6 @@ struct DashboardContent: View {
             }
             if DashboardModel.inDollars {
                 Text(L10n.t("Shown in US dollars: turn on Market data in Settings → Costs to see your own currency."))
-                if CostAccountStore.shared.accounts.contains(where: { $0.billing == .subscription && $0.monthlyPrice > 0 }) {
-                    Text(L10n.t("A plan price you typed in your own currency is left out until there is an exchange rate."))
-                }
             }
             if !model.keySpendElsewhere.isEmpty {
                 Text(L10n.t("Keys billed in another currency are not added to the total until Market data in Settings → Costs has an exchange rate."))

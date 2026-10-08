@@ -57155,40 +57155,6 @@
         }
       }
     },
-    "A plan price you typed in your own currency is left out until there is an exchange rate." : {
-      "localizations" : {
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Un prix de forfait saisi dans votre devise est laissé de côté tant qu'il n'y a pas de taux de change."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "自分の通貨で入力したプラン料金は、為替レートが入るまで含まれません。"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Um preço de plano digitado na sua moeda fica de fora até haver uma taxa de câmbio."
-          }
-        },
-        "ru" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Цена плана, введённая в вашей валюте, не учитывается, пока нет курса."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "你以本地货币输入的套餐价格，在获得汇率之前不会计入。"
-          }
-        }
-      }
-    },
     "%lld sessions · %lld-day streak" : {
       "localizations" : {
         "fr" : {
@@ -57729,6 +57695,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ · 价格未知，请在此输入"
+          }
+        }
+      }
+    },
+    "Free plan · nothing to pay" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forfait gratuit · rien à payer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無料プラン · 支払いなし"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plano gratuito · nada a pagar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Бесплатный тариф · платить нечего"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "免费套餐 · 无需付费"
           }
         }
       }
