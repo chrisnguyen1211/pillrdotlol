@@ -92,13 +92,10 @@ struct DoneToast: Equatable, Identifiable {
 
     static func == (lhs: DoneToast, rhs: DoneToast) -> Bool { lhs.id == rhs.id }
 
-    /// What you asked a session and what it said last, from the tail of its
-    /// transcript, for an agent whose transcript pillr can find: Claude Code.
+    /// What you asked a session and what it said last, from its agent's own
+    /// record of the conversation — see `SessionContext`.
     @MainActor static func context(for session: AgentSession) -> PromptContext? {
-        guard let pid = session.processID, Handoff.source(of: session) == .claude,
-              let cwd = SessionFocus.currentDirectory(of: pid),
-              let transcript = Handoff.claudeTranscript(pid: pid, cwd: cwd) else { return nil }
-        return PromptContext.load(transcript: transcript.path, cwd: nil)
+        SessionContext.load(for: session)
     }
 }
 
