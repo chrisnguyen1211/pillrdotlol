@@ -544,6 +544,8 @@ final class NotchFleet {
         sessions[id] = live
         guard tourDemo == nil else { return }
         let now = Date()
+        // Kept over time for the dashboard: when each went busy, waited, finished.
+        ActivityLedger.shared?.observe(agent: id, sessions: live, at: now)
         menuModel.sessions[id] = live
         menuModel.now = now
         for controller in controllers.values {

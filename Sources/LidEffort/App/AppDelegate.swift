@@ -1194,6 +1194,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// Sounds and shows one finish or one wait.
     @MainActor
     private func announce(_ event: SessionCompletionWatcher.Event) {
+        recordCompletion(event)
         guard let preferences, let fleet = notchFleet else { return }
         Log.usage.info("session \(event.session.name, privacy: .private) \(String(describing: event.reason), privacy: .public)")
 
@@ -1213,6 +1214,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // A line from the pill, not the whole notch: the announcement must
         // not get in the way of the work it is announcing.
         fleet.showDoneToast(event, duration: preferences.peekDuration.seconds)
+    }
+
+    /// A finish, for the dashboard, with the folder's uncommitted tree read
+    /// off the main thread.
+    @MainActor
+    private func recordCompletion(_ event: SessionCompletionWatcher.Event) {
+        guard let ledger = ActivityLedger.shared else { return }
+        let session = event.session
+        let folder = session.processID.flatMap(SessionFocus.currentDirectory(of:))
+        let blocked = event.reason == .blocked
+        Task.detached(priority: .utility) {
+            let tree = blocked ? nil : folder.flatMap { GitChanges.stats(cwd: $0) }
+            ledger.completed(agent: event.providerID, session: session.id, blocked: blocked, folder: folder, tree: tree)
+        }
     }
 
     /// Steps effort down when an agent is about to run out, if switched on.

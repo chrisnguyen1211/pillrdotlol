@@ -5,6 +5,26 @@ import Foundation
 /// Everything uncommitted, not only this turn's: git has no way to tell
 /// them apart, and the tree is what you are about to review.
 enum GitChanges {
+    /// The uncommitted tree in numbers, for the activity ledger.
+    struct Stats: Equatable {
+        let files: Int
+        let added: Int
+        let removed: Int
+    }
+
+    static func stats(cwd: String, timeout: TimeInterval = 2) -> Stats? {
+        guard let stat = run(["diff", "--shortstat", "HEAD"], cwd: cwd, timeout: timeout) else { return nil }
+        return stats(shortstat: stat)
+    }
+
+    static func stats(shortstat: String) -> Stats {
+        func number(before word: String) -> Int {
+            guard let range = shortstat.range(of: #"(\d+) \#(word)"#, options: .regularExpression) else { return 0 }
+            return Int(shortstat[range].split(separator: " ").first ?? "") ?? 0
+        }
+        return Stats(files: number(before: "file"), added: number(before: "insertion"), removed: number(before: "deletion"))
+    }
+
     /// Nil when the folder is not a repository, nothing is changed, or git
     /// takes longer than `timeout` (a huge repository is not worth a stall).
     static func summary(cwd: String, timeout: TimeInterval = 2) -> String? {

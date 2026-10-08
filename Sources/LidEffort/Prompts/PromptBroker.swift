@@ -99,6 +99,7 @@ final class PromptBroker: @unchecked Sendable {
         reply.withUnsafeBytes { _ = write(entry.fd, $0.baseAddress, $0.count) }
         close(entry.fd)
         log.notice("prompt \(entry.prompt.toolName, privacy: .public) answered: \(String(describing: answer), privacy: .public)")
+        ActivityLedger.shared?.answered(agent: "claude", question: entry.prompt.isQuestion, asked: entry.prompt.receivedAt)
         let gone = onGone
         Task { @MainActor in gone?(id) }
     }
