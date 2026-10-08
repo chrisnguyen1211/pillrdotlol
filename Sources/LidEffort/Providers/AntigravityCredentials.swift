@@ -87,8 +87,9 @@ struct AntigravityCredentials {
         // `/usr/bin/security`, so it is refused the way Claude Code's is, and
         // this read used to raise the dialogue every time the cache's
         // five-minute retry came round — for a token Antigravity itself had
-        // long stopped refreshing. A refusal is retried through the security
-        // tool under the item's own account, which is not this user's.
+        // long stopped refreshing. With silent reads turned on, a refusal is
+        // retried through the security tool under the item's own account,
+        // which is not this user's.
         let interactive = prompt.take()
         let (status, data) = readKeychainForTesting?(interactive) ?? KeychainSecret.read(
             query: [

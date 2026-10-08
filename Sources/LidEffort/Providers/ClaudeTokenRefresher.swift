@@ -114,7 +114,11 @@ final class ClaudeTokenRefresher: ObservableObject {
     }
 
     private func tick() {
-        Task { await considerRenewing() }
+        Task {
+            // Stopped between the tick and this task running: launch nothing.
+            guard timer != nil else { return }
+            await considerRenewing()
+        }
     }
 
     // MARK: - The gate

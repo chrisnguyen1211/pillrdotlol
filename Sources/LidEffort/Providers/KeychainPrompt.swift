@@ -64,9 +64,10 @@ enum KeychainSecret {
     ///
     /// When not `interactive`, interaction is switched off for the read —
     /// `SecKeychainSetUserInteractionAllowed`, which legacy items honour, as well
-    /// as `kSecUseAuthenticationUIFail`, which they ignore — and a refusal is
-    /// retried through `/usr/bin/security` for `rescue`, the one reader such an
-    /// item always admits.
+    /// as `kSecUseAuthenticationUIFail`, which they ignore. Only when the user
+    /// has turned on `silentReadKey` is a refusal retried through
+    /// `/usr/bin/security` for `rescue`, the one reader such an item always
+    /// admits; otherwise the refusal is returned as it is.
     ///
     /// Readers that do not go through here (Cursor's, today) do not take the
     /// lock, so one of their reads landing inside the window is refused once

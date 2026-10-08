@@ -51,9 +51,10 @@ struct ClaudeCredentials {
             throw UsageProviderError.needsAuth
         }
 
-        // Never prompts unless a person asked — see `KeychainSecret.read`. A
-        // refusal is retried through `/usr/bin/security` under the account
-        // Claude Code files these items with, which is this user's.
+        // Never prompts unless a person asked — see `KeychainSecret.read`. With
+        // silent reads turned on, a refusal is retried through
+        // `/usr/bin/security` under the account Claude Code files these items
+        // with, which is this user's.
         let (status, item) = KeychainSecret.read(
             query: [
                 kSecClass: kSecClassGenericPassword,

@@ -50,23 +50,31 @@ final class PromptBroker: @unchecked Sendable {
         try FileManager.default.createDirectory(atPath: directory, withIntermediateDirectories: true,
                                                 attributes: [.posixPermissions: 0o700])
         // An existing directory keeps the mode it was made with.
-        chmod(directory, 0o700)
+        if chmod(directory, 0o700) != 0 {
+            log.error("could not restrict \(directory, privacy: .public): errno \(errno, privacy: .public)")
+        }
         unlink(path)
         let fd = socket(AF_UNIX, SOCK_STREAM, 0)
         guard fd >= 0 else { throw POSIXError(.init(rawValue: errno) ?? .EIO) }
         var address = Self.address(path)
         // The socket is created by bind(); a tight umask means it is never
-        // reachable by others, not even before the chmod below.
-        let previousMask = umask(0o077)
-        defer { umask(previousMask) }
-        let bound = withUnsafePointer(to: &address) {
-            $0.withMemoryRebound(to: sockaddr.self, capacity: 1) { bind(fd, $0, socklen_t(MemoryLayout<sockaddr_un>.size)) }
+        // reachable by others, not even before the chmod below. The mask is
+        // process-wide, so it is held for the bind alone.
+        let bound: Int32
+        do {
+            let previousMask = umask(0o077)
+            defer { umask(previousMask) }
+            bound = withUnsafePointer(to: &address) {
+                $0.withMemoryRebound(to: sockaddr.self, capacity: 1) { bind(fd, $0, socklen_t(MemoryLayout<sockaddr_un>.size)) }
+            }
         }
         guard bound == 0, listen(fd, 16) == 0 else {
             close(fd)
             throw POSIXError(.init(rawValue: errno) ?? .EIO)
         }
-        chmod(path, 0o600)
+        if chmod(path, 0o600) != 0 {
+            log.error("could not restrict the prompt socket: errno \(errno, privacy: .public)")
+        }
         listener = fd
         let thread = Thread { [weak self] in self?.acceptLoop(fd) }
         thread.name = "lol.pillr.app.prompts.accept"
