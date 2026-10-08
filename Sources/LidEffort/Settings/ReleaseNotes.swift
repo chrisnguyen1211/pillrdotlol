@@ -32,6 +32,32 @@ enum ReleaseNotes {
     static var all: [ReleaseNote] {
         [
             ReleaseNote(
+                version: "1.1.3",
+                headline: L10n.t("Every done card says which session it means."),
+                changes: [
+                    ReleaseNote.Change(
+                        title: L10n.t("The done card names the session"),
+                        detail: L10n.t("It shows the session's name or your last message, and the agent's last words, for Claude Code, Codex and the Codex app, Grok, Kimi, Cursor, Gemini CLI, OpenCode, Hermes, Antigravity, Copilot CLI and Droid.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("Track one key under a management key"),
+                        detail: L10n.t("Paste an OpenRouter, OpenAI, Anthropic, xAI or Exa management key and pick one of the keys under it, or keep the whole account.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("Safer keys, said plainly"),
+                        detail: L10n.t("Keys that can change things now link straight to where they are made, say how to make them read-only, and say they stay in this Mac's Keychain.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("Anthropic personal keys"),
+                        detail: L10n.t("A personal key that isn't held to one workspace now reads costs too, and an individual account is told how to get there.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("Every word translated"),
+                        detail: L10n.t("Sign-ins and the newer settings read in every language, and every Settings control has a name for VoiceOver.")
+                    )
+                ]
+            ),
+            ReleaseNote(
                 version: "1.1.2",
                 headline: L10n.t("Opens on every Mac again."),
                 changes: [

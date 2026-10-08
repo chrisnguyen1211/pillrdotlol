@@ -55556,6 +55556,380 @@
           }
         }
       }
+    },
+    "Every done card says which session it means." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chaque carte de fin dit de quelle session il s'agit."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完了カードが、どのセッションのことか伝えます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada cartão de conclusão diz de qual sessão se trata."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Каждая карточка завершения говорит, о каком сеансе речь."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每张完成卡片都会说明是哪个会话。"
+          }
+        }
+      }
+    },
+    "The done card names the session" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La carte de fin nomme la session"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完了カードにセッション名"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O cartão de conclusão nomeia a sessão"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Карточка завершения называет сеанс"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "完成卡片会写出会话"
+          }
+        }
+      }
+    },
+    "It shows the session's name or your last message, and the agent's last words, for Claude Code, Codex and the Codex app, Grok, Kimi, Cursor, Gemini CLI, OpenCode, Hermes, Antigravity, Copilot CLI and Droid." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elle affiche le nom de la session ou votre dernier message, et les derniers mots de l'agent, pour Claude Code, Codex et l'app Codex, Grok, Kimi, Cursor, Gemini CLI, OpenCode, Hermes, Antigravity, Copilot CLI et Droid."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code、Codex と Codex アプリ、Grok、Kimi、Cursor、Gemini CLI、OpenCode、Hermes、Antigravity、Copilot CLI、Droid で、セッション名またはあなたの最後のメッセージと、エージェントの最後の言葉を表示します。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra o nome da sessão ou sua última mensagem, e as últimas palavras do agente, para Claude Code, Codex e o app Codex, Grok, Kimi, Cursor, Gemini CLI, OpenCode, Hermes, Antigravity, Copilot CLI e Droid."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Показывает название сеанса или ваше последнее сообщение и последние слова агента: для Claude Code, Codex и приложения Codex, Grok, Kimi, Cursor, Gemini CLI, OpenCode, Hermes, Antigravity, Copilot CLI и Droid."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "对于 Claude Code、Codex 和 Codex App、Grok、Kimi、Cursor、Gemini CLI、OpenCode、Hermes、Antigravity、Copilot CLI 和 Droid，显示会话名称或你最后一条消息，以及代理最后说的话。"
+          }
+        }
+      }
+    },
+    "Track one key under a management key" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suivre une clé sous une clé de gestion"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "管理キー配下の 1 つのキーを追跡"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acompanhe uma chave sob uma chave de gerenciamento"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отслеживание одного ключа под ключом управления"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追踪管理密钥下的单个密钥"
+          }
+        }
+      }
+    },
+    "Paste an OpenRouter, OpenAI, Anthropic, xAI or Exa management key and pick one of the keys under it, or keep the whole account." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Collez une clé de gestion OpenRouter, OpenAI, Anthropic, xAI ou Exa et choisissez l'une des clés qui en dépendent, ou gardez tout le compte."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OpenRouter、OpenAI、Anthropic、xAI、Exa の管理キーを貼り付けて、その配下のキーを 1 つ選ぶか、アカウント全体のままにできます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cole uma chave de gerenciamento do OpenRouter, OpenAI, Anthropic, xAI ou Exa e escolha uma das chaves sob ela, ou mantenha a conta inteira."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вставьте ключ управления OpenRouter, OpenAI, Anthropic, xAI или Exa и выберите один из ключей под ним или оставьте весь аккаунт."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "粘贴 OpenRouter、OpenAI、Anthropic、xAI 或 Exa 的管理密钥，然后从它下面的密钥中选一个，或保留整个账号。"
+          }
+        }
+      }
+    },
+    "Safer keys, said plainly" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Des clés plus sûres, clairement expliquées"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "より安全なキーを、わかりやすく"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chaves mais seguras, explicadas com clareza"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Безопаснее ключи, понятными словами"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更安全的密钥，说得清清楚楚"
+          }
+        }
+      }
+    },
+    "Keys that can change things now link straight to where they are made, say how to make them read-only, and say they stay in this Mac's Keychain." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les clés qui peuvent modifier des choses renvoient maintenant directement à la page où on les crée, expliquent comment les limiter à la lecture, et rappellent qu'elles restent dans le trousseau de ce Mac."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "変更権限のあるキーは、作成ページへ直接リンクし、読み取り専用にする方法と、この Mac のキーチェーンにだけ保存されることを伝えます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chaves que podem alterar coisas agora levam direto à página onde são criadas, explicam como deixá-las somente leitura e avisam que ficam nas Chaves deste Mac."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ключи, которые могут что-то менять, теперь ведут прямо на страницу создания, объясняют, как сделать их только для чтения, и напоминают, что хранятся в связке ключей этого Mac."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可以更改内容的密钥现在会直接链接到创建页面，说明如何设为只读，并说明它们只保存在这台 Mac 的钥匙串中。"
+          }
+        }
+      }
+    },
+    "Anthropic personal keys" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clés personnelles Anthropic"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anthropic の個人キー"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chaves pessoais da Anthropic"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Личные ключи Anthropic"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anthropic 个人密钥"
+          }
+        }
+      }
+    },
+    "A personal key that isn't held to one workspace now reads costs too, and an individual account is told how to get there." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une clé personnelle non limitée à un espace de travail lit désormais aussi les coûts, et un compte individuel apprend comment y parvenir."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 つのワークスペースに限定されていない個人キーでもコストを読めるようになり、個人アカウントにはその方法を案内します。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma chave pessoal não limitada a um workspace agora também lê os custos, e uma conta individual fica sabendo como chegar lá."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Личный ключ, не ограниченный одним рабочим пространством, теперь тоже читает расходы, а индивидуальному аккаунту подсказывается, как этого добиться."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不限于单个工作区的个人密钥现在也能读取费用，个人账号也会得到操作指引。"
+          }
+        }
+      }
+    },
+    "Every word translated" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chaque mot traduit"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべての言葉を翻訳"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada palavra traduzida"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Переведено каждое слово"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每个字都已翻译"
+          }
+        }
+      }
+    },
+    "Sign-ins and the newer settings read in every language, and every Settings control has a name for VoiceOver." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les connexions et les réglages récents s'affichent dans toutes les langues, et chaque contrôle des Réglages a un nom pour VoiceOver."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サインインや新しい設定もすべての言語で表示され、設定のすべてのコントロールに VoiceOver 用の名前が付きました。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Logins e os ajustes mais novos aparecem em todos os idiomas, e cada controle dos Ajustes tem um nome para o VoiceOver."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Входы и новые настройки переведены на все языки, а у каждого элемента настроек есть название для VoiceOver."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "登录和较新的设置在所有语言中都能显示，设置里的每个控件都有 VoiceOver 名称。"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
