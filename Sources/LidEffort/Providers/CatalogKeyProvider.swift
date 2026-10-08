@@ -621,6 +621,9 @@ actor CatalogKeyProvider: UsageProvider {
         }
         let fresh = snapshot(for: combined)
         held.keep(fresh, at: date)
+        // Written down over time, so a day or a week can be told from the month.
+        SpendLedger.shared?.record(provider: id, reading: combined,
+                                   periods: recipe.figures?.read(answer.json, now: date) ?? [], at: date)
         return fresh
     }
 

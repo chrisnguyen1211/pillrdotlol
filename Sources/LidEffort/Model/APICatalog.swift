@@ -198,6 +198,49 @@ struct APIRecipe: Sendable {
     /// check — a 404 there means the key got past the door, a 401 that it
     /// did not.
     var acceptedStatuses: Set<Int> = []
+    /// Per-period figures in the same answer, for the spend ledger.
+    var figures: APIPeriodFigures? = nil
+}
+
+/// Figures a provider sums over its own periods, kept beside the reading so
+/// a day or a week can be told from the month: daily buckets, or a "today",
+/// "this week" and "this month" it adds up itself.
+struct APIPeriodFigures: Sendable {
+    struct Buckets: Sendable {
+        /// The list of buckets, each bucket's start, and the amounts in it.
+        let list: String
+        let start: String
+        let amount: String
+        var scale: Double = 1
+    }
+    var buckets: Buckets? = nil
+    /// Where `day`, `week` and `month` are, relative to the answer's root.
+    var root: String? = nil
+    var day: String? = nil
+    var week: String? = nil
+    var month: String? = nil
+    let unit: APIUnit
+
+    func read(_ json: Any?, now: Date) -> [SpendLedger.PeriodAmount] {
+        var found: [SpendLedger.PeriodAmount] = []
+        if let buckets {
+            var byDay: [Date: Double] = [:]
+            // A path to the list itself gives the list; to lists, each one.
+            for bucket in JSONPath.values(json, buckets.list).flatMap({ ($0 as? [Any]) ?? [$0] }) {
+                guard let start = JSONPath.date(bucket, buckets.start) else { continue }
+                let day = SpendLedger.range(.day, containing: start).from
+                let amounts = JSONPath.values(bucket, buckets.amount).compactMap(JSONPath.number)
+                byDay[day, default: 0] += amounts.reduce(0, +) * buckets.scale
+            }
+            found += byDay.map { SpendLedger.PeriodAmount(period: .day, start: $0.key, amount: $0.value, unit: unit) }
+        }
+        let base = root.map { JSONPath.value(json, $0) } ?? json
+        for (path, period) in [(day, SpendLedger.PeriodAmount.Period.day), (week, .week), (month, .month)] {
+            guard let path, let value = JSONPath.number(base, path), value >= 0 else { continue }
+            found.append(.init(period: period, start: SpendLedger.range(period, containing: now).from, amount: value, unit: unit))
+        }
+        return found
+    }
 }
 
 struct APIExtra: Sendable {
@@ -657,6 +700,14 @@ enum APICatalog {
         return recent > 0 ? .several([left, .spend(recent, .money("USD"), .billingPeriod)]) : left
     }
 
+    /// OpenAI's cost buckets: a day each, Unix start, dollars inside.
+    private static let openAIDays = APIPeriodFigures(
+        buckets: .init(list: "data", start: "start_time", amount: "results[*].amount.value"), unit: .money("USD"))
+
+    /// OpenRouter sums a key's spend itself: the UTC day, week and month.
+    private static let openRouterPeriods = APIPeriodFigures(
+        root: "data", day: "usage_daily", week: "usage_weekly", month: "usage_monthly", unit: .money("USD"))
+
     /// The team a management key belongs to, asked of the key itself.
     private static let xaiTeam = [APIPrefetch(
         variable: "team", request: r("https://management-api.x.ai/auth/management-keys/validation"), path: "teamId",
@@ -901,7 +952,8 @@ enum APICatalog {
             route: .catalog(APIRecipe(
                 request: r("https://openrouter.ai/api/v1/key"), parse: openRouterKey,
                 // The account's credits, when the key may see them.
-                extras: [APIExtra(request: r("https://openrouter.ai/api/v1/credits"), parse: openRouterCreditsLeft)]))),
+                extras: [APIExtra(request: r("https://openrouter.ai/api/v1/credits"), parse: openRouterCreditsLeft)],
+                figures: openRouterPeriods))),
         APICatalogEntry(
             id: "openroutercredits", name: "OpenRouter credits", category: .routers,
             aliases: ["openrouter", "management"], readability: .adminKey, glyph: .openrouter,
@@ -911,7 +963,8 @@ enum APICatalog {
                 listing: APIListing(request: r("https://openrouter.ai/api/v1/keys"), items: "data",
                                     id: "hash", name: "name", hint: "label",
                                     offered: { ($0["disabled"] as? Bool) != true }),
-                perKey: APIRecipe(request: r("https://openrouter.ai/api/v1/keys/{keyid}"), parse: openRouterSubKey),
+                perKey: APIRecipe(request: r("https://openrouter.ai/api/v1/keys/{keyid}"), parse: openRouterSubKey,
+                                  figures: openRouterPeriods),
                 perKeyMeasure: .balanceAndSpend),
             route: .catalog(APIRecipe(request: r("https://openrouter.ai/api/v1/credits"),
                                       parse: .balanceSpent(left: "data.total_credits", spent: "data.total_usage", .money("USD"))
@@ -984,10 +1037,12 @@ enum APICatalog {
                                     items: "data", id: "id", name: "name", hint: "redacted_value"),
                 perKey: APIRecipe(
                     request: r("https://api.openai.com/v1/organization/costs?start_time={monthStartUnix}&bucket_width=1d&limit=31&api_key_ids={keyid}"),
-                    parse: .spendSum("data[*].results[*].amount.value", list: "data", .money("USD")))),
+                    parse: .spendSum("data[*].results[*].amount.value", list: "data", .money("USD")),
+                    figures: openAIDays)),
             route: .catalog(APIRecipe(
                 request: r("https://api.openai.com/v1/organization/costs?start_time={monthStartUnix}&bucket_width=1d&limit=31"),
-                parse: .spendSum("data[*].results[*].amount.value", list: "data", .money("USD"))))),
+                parse: .spendSum("data[*].results[*].amount.value", list: "data", .money("USD")),
+                figures: openAIDays))),
         // Amounts are decimal strings in cents.
         APICatalogEntry(
             id: "anthropic", name: "Anthropic", category: .llm, aliases: ["claude api"], readability: .adminKey,
@@ -1009,7 +1064,9 @@ enum APICatalog {
             route: .catalog(APIRecipe(
                 auth: .header("x-api-key"), headers: ["anthropic-version": "2023-06-01"],
                 request: r("https://api.anthropic.com/v1/organizations/cost_report?starting_at={monthStartISO}&bucket_width=1d&limit=31"),
-                parse: .spendSum("data[*].results[*].amount", list: "data", .money("USD"), scale: 0.01)))),
+                parse: .spendSum("data[*].results[*].amount", list: "data", .money("USD"), scale: 0.01),
+                figures: APIPeriodFigures(buckets: .init(list: "data", start: "starting_at", amount: "results[*].amount", scale: 0.01),
+                                          unit: .money("USD"))))),
         // Partial: the team id comes from the inference API's own key
         // endpoint when it is not typed in, and the ledger's units and sign
         // are from CodexBar's notes.
@@ -1034,7 +1091,9 @@ enum APICatalog {
                     prefetch: xaiTeam,
                     request: r("https://management-api.x.ai/v1/billing/teams/{team}/usage", method: "POST",
                                body: #"{"analyticsRequest":{"timeRange":{"startTime":"{monthStartSpaced}","endTime":"{nowSpaced}","timezone":"Etc/GMT"},"timeUnit":"TIME_UNIT_DAY","values":[{"name":"usd","aggregation":"AGGREGATION_SUM"}],"groupBy":[],"filters":["api_key_id:{keyid}"]}}"#),
-                    parse: xaiKeyUsage),
+                    parse: xaiKeyUsage,
+                    figures: APIPeriodFigures(buckets: .init(list: "timeSeries[*].dataPoints", start: "timestamp", amount: "values[*]"),
+                                              unit: .money("USD"))),
                 perKeyMeasure: .spend),
             route: .catalog(APIRecipe(
                 // The management key's own description names its team, and
