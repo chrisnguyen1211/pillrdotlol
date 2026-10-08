@@ -57222,6 +57222,516 @@
           }
         }
       }
+    },
+    "Coding plans" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forfaits de code"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コーディングプラン"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Planos de código"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тарифы для кода"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编程套餐"
+          }
+        }
+      }
+    },
+    "No agent reports a plan yet. Claude and Codex logins count here when set to Monthly plan in Settings → Costs." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun agent n'indique encore de forfait. Les connexions Claude et Codex comptent ici quand elles sont réglées sur Forfait mensuel dans Réglages → Coûts."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "まだプランを報告しているエージェントはありません。Claude と Codex のログインは、設定 → コスト で月額プランにするとここに数えられます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum agente informa um plano ainda. Logins do Claude e do Codex entram aqui quando definidos como Plano mensal em Ajustes → Custos."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пока ни один агент не сообщает тариф. Входы Claude и Codex учитываются здесь, если в Настройки → Расходы выбран месячный тариф."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有代理报告套餐。Claude 和 Codex 登录在「设置 → 费用」中设为月度套餐后会计入这里。"
+          }
+        }
+      }
+    },
+    "No agent reports a plan yet. Claude and Codex logins count here when set to Monthly plan." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun agent n'indique encore de forfait. Les connexions Claude et Codex comptent ici quand elles sont réglées sur Forfait mensuel."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "まだプランを報告しているエージェントはありません。Claude と Codex のログインは、月額プランにするとここに数えられます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum agente informa um plano ainda. Logins do Claude e do Codex entram aqui quando definidos como Plano mensal."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пока ни один агент не сообщает тариф. Входы Claude и Codex учитываются здесь, если выбран месячный тариф."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "还没有代理报告套餐。Claude 和 Codex 登录设为月度套餐后会计入这里。"
+          }
+        }
+      }
+    },
+    "Per month" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Par mois"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "月額"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por mês"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "В месяц"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每月"
+          }
+        }
+      }
+    },
+    "Price unknown" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prix inconnu"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "価格不明"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preço desconhecido"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Цена неизвестна"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "价格未知"
+          }
+        }
+      }
+    },
+    "Price" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prix"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "価格"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preço"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Цена"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "价格"
+          }
+        }
+      }
+    },
+    "Plans %@ · pay as you go %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Forfaits %@ · à l'usage %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プラン %@ · 従量課金 %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Planos %@ · por uso %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тарифы %@ · по факту %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "套餐 %@ · 按量付费 %@"
+          }
+        }
+      }
+    },
+    "Plans count as a day's, a week's or the month's share of their list price. A login paid per token counts its tokens; API keys are what their providers report, by UTC day, week and month." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les forfaits comptent pour la part d'un jour, d'une semaine ou du mois de leur prix catalogue. Une connexion payée au jeton compte ses jetons ; les clés API reprennent ce que leurs fournisseurs indiquent, par jour, semaine et mois UTC."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プランは定価のうち 1 日分・1 週間分・1 か月分として数えます。トークン課金のログインはトークンで数え、API キーは各プロバイダが報告する値を UTC の日・週・月単位で使います。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os planos contam como a parte de um dia, de uma semana ou do mês do preço de tabela. Um login pago por token conta seus tokens; as chaves de API são o que os provedores informam, por dia, semana e mês UTC."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тарифы считаются долей прейскурантной цены за день, неделю или месяц. Вход с оплатой за токены считается по токенам; для API-ключей показано то, что сообщают провайдеры, по дням, неделям и месяцам UTC."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "套餐按标价的一天、一周或一个月份额计算。按令牌付费的登录按令牌计算；API 密钥为服务商报告的数值，按 UTC 日、周、月计算。"
+          }
+        }
+      }
+    },
+    "Monthly price for %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prix mensuel pour %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ の月額"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preço mensal de %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Месячная цена для %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 的月价"
+          }
+        }
+      }
+    },
+    "USD / month" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "USD / mois"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "USD / 月"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "USD / mês"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "USD / мес."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "美元 / 月"
+          }
+        }
+      }
+    },
+    "%@ / month" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ / mois"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ / 月"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ / mês"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ / мес."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ / 月"
+          }
+        }
+      }
+    },
+    "%@ · list price" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · prix catalogue"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · 定価"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · preço de tabela"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · прейскурант"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · 标价"
+          }
+        }
+      }
+    },
+    "%@ · your price" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · votre prix"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · あなたの価格"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · seu preço"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · ваша цена"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · 你的价格"
+          }
+        }
+      }
+    },
+    "%@ · price set for this login" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · prix défini pour cette connexion"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · このログインに設定した価格"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · preço definido para este login"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · цена, заданная для этого входа"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · 为此登录设置的价格"
+          }
+        }
+      }
+    },
+    "%@ · price not known, type it here" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · prix inconnu, saisissez-le ici"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · 価格不明、ここに入力"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · preço desconhecido, digite aqui"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · цена неизвестна, введите её здесь"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · 价格未知，请在此输入"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

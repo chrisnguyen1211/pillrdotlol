@@ -70,6 +70,8 @@ struct CostSettingsPane: View {
                 }
             }
 
+            CodingPlansSection()
+
             Section {
                 LabeledContent {
                     Button(L10n.t("Open Dashboard…")) {
@@ -161,5 +163,73 @@ private struct CostAccountRows: View {
             return L10n.t("\(name) · \(MoneyFormat.string(local, currency: prices.currency))/month (catalog)")
         }
         return L10n.t("\(name) · price unknown, set it here")
+    }
+}
+
+/// Every agent's plan as it reports it, and what a month of it costs: the
+/// list price where pillr knows it, a price typed here where it does not
+/// (or to override it).
+struct CodingPlansSection: View {
+    @ObservedObject var accounts: CostAccountStore = .shared
+    @State private var typed: [String: String] = [:]
+    @State private var rows: [CodingPlans.Row] = []
+
+    var body: some View {
+        Section(L10n.t("Coding plans")) {
+            if rows.isEmpty {
+                Text(L10n.t("No agent reports a plan yet. Claude and Codex logins count here when set to Monthly plan."))
+                    .font(.caption).foregroundStyle(.tertiary)
+            }
+            ForEach(rows) { row in
+                LabeledContent {
+                    HStack(spacing: 6) {
+                        TextField(row.monthly.map { CodingPlansSection.plain($0) } ?? L10n.t("Price"), text: binding(row.id))
+                            .textFieldStyle(.roundedBorder)
+                            .multilineTextAlignment(.trailing)
+                            .frame(width: 80)
+                            .accessibilityLabel(L10n.t("Monthly price for \(row.agentName)"))
+                        Text(row.currency == "USD" ? L10n.t("USD / month") : L10n.t("\(row.currency) / month"))
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
+                } label: {
+                    HStack(spacing: 8) {
+                        ProviderGlyphView(glyph: row.glyph, size: 14)
+                        SettingLabel(title: row.agentName, subtitle: subtitle(row))
+                    }
+                }
+            }
+        }
+        .onAppear(perform: reload)
+        .onReceive(accounts.$accounts) { _ in reload() }
+    }
+
+    private func reload() {
+        rows = CodingPlans.rows(snapshots: Costs.latestSnapshots, accounts: accounts.accounts,
+                                localCurrency: PriceTable.shared.currency)
+        typed = CodingPlans.overrides.mapValues { CodingPlansSection.plain($0) }
+    }
+
+    private func subtitle(_ row: CodingPlans.Row) -> String {
+        let plan = row.name ?? row.reported
+        switch row.source {
+        case .table: return L10n.t("\(plan) · list price")
+        case .typed: return L10n.t("\(plan) · your price")
+        case .account: return L10n.t("\(plan) · price set for this login")
+        case nil: return L10n.t("\(plan) · price not known, type it here")
+        }
+    }
+
+    private func binding(_ id: String) -> Binding<String> {
+        Binding(get: { typed[id] ?? "" }, set: { text in
+            typed[id] = text
+            var all = CodingPlans.overrides
+            let number = Double(text.replacingOccurrences(of: ",", with: ".").trimmingCharacters(in: .whitespaces))
+            if let number, number >= 0 { all[id] = number } else { all[id] = nil }
+            CodingPlans.overrides = all
+        })
+    }
+
+    static func plain(_ value: Double) -> String {
+        value == value.rounded() ? String(Int(value)) : String(format: "%.2f", value)
     }
 }

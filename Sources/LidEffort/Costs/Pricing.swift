@@ -296,13 +296,15 @@ final class PlanCatalog: ObservableObject {
         "default_claude_pro":       { "name": "Pro",      "prices": { "USD": 20 } },
         "default_claude_max_5x":    { "name": "Max 5x",   "prices": { "USD": 100, "BRL": 550 } },
         "default_claude_max_20x":   { "name": "Max 20x",  "prices": { "USD": 200 } },
-        "default_claude_team":      { "name": "Team",     "prices": { "USD": 30 } },
+        "default_claude_team":      { "name": "Team",     "prices": { "USD": 25 } },
         "default_claude_enterprise":{ "name": "Enterprise", "prices": {} },
         "free":       { "name": "Free",       "prices": { "USD": 0 } },
+        "go":         { "name": "Go",         "prices": { "USD": 8 } },
         "plus":       { "name": "Plus",       "prices": { "USD": 20 } },
+        "prolite":    { "name": "Pro 100",    "prices": { "USD": 100 } },
         "pro":        { "name": "Pro",        "prices": { "USD": 200 } },
-        "team":       { "name": "Team",       "prices": { "USD": 30 }, "credit_usd": 1 },
-        "business":   { "name": "Business",   "prices": { "USD": 30 }, "credit_usd": 1 },
+        "team":       { "name": "Business",   "prices": { "USD": 25 }, "credit_usd": 1 },
+        "business":   { "name": "Business",   "prices": { "USD": 25 }, "credit_usd": 1 },
         "enterprise": { "name": "Enterprise", "prices": {}, "credit_usd": 1 },
         "edu":        { "name": "Edu",        "prices": {} }
       }

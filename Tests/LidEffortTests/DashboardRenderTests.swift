@@ -27,6 +27,14 @@ final class DashboardRenderTests: XCTestCase {
                 .init(id: "b", name: "DeepSeek", glyph: .deepseek, day: .init(amount: 0.3, unit: usd, since: Date()),
                       week: .init(amount: 0.3, unit: usd, since: Date()), month: nil),
             ],
+            plans: [
+                .init(id: "claude", agentName: "Claude", glyph: .claude, reported: "Max 20x", name: "Max 20x", monthly: 200,
+                      currency: "USD", source: .table),
+                .init(id: "cursor", agentName: "Cursor", glyph: .cursor, reported: "pro_plus", name: "Pro+", monthly: 60,
+                      currency: "USD", source: .table),
+                .init(id: "kimi", agentName: "Kimi", glyph: .kimi, reported: "Vivace", name: "Vivace", monthly: nil,
+                      currency: "USD", source: nil),
+            ],
             activity: activity, streak: 6)
         let view = DashboardContent(model: model).frame(width: 1100)
         for dark in [false, true] {

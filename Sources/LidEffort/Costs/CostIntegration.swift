@@ -9,6 +9,8 @@ enum Costs {
     private static var subscriptions: [AnyCancellable] = []
     private static var activityWindow: NSWindow?
     private static var dashboardWindow: NSWindow?
+    /// Every provider's latest reading, for the plans each agent is on.
+    private(set) static var latestSnapshots: [ProviderSnapshot] = []
 
     static func attach(to store: UsageStore) {
         guard !Runtime.isUnderTest else { return }
@@ -19,6 +21,7 @@ enum Costs {
             store.$snapshots
                 .receive(on: RunLoop.main)
                 .sink { snapshots in
+                    latestSnapshots = snapshots
                     CostAccountStore.shared.rediscover()
                     CostModels.all.forEach { $0.observe(snapshots) }
                 },

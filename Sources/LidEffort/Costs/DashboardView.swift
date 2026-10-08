@@ -55,6 +55,7 @@ final class DashboardModel: ObservableObject {
     @Published var range: Range = .week { didSet { load() } }
     @Published private(set) var sessions: [TimelinePane.Row] = []
     @Published private(set) var keys: [KeyRow] = []
+    @Published private(set) var plans: [CodingPlans.Row] = []
     @Published private(set) var activity = ActivityLedger.Summary()
     @Published private(set) var streak = 0
     @Published private(set) var loading = false
@@ -68,13 +69,14 @@ final class DashboardModel: ObservableObject {
     /// For renders: figures set as they are, nothing loaded.
     private var frozen = false
 
-    static func forRender(range: Range, sessions: [TimelinePane.Row], keys: [KeyRow],
+    static func forRender(range: Range, sessions: [TimelinePane.Row], keys: [KeyRow], plans: [CodingPlans.Row] = [],
                           activity: ActivityLedger.Summary, streak: Int) -> DashboardModel {
         let model = DashboardModel(extraKeys: { [] })
         model.frozen = true
         model.range = range
         model.sessions = sessions
         model.keys = keys
+        model.plans = plans
         model.activity = activity
         model.streak = streak
         return model
@@ -86,6 +88,8 @@ final class DashboardModel: ObservableObject {
         let range = range
         let interval = range.interval
         let keys = extraKeys()
+        plans = CodingPlans.rows(snapshots: Costs.latestSnapshots, accounts: CostAccountStore.shared.accounts,
+                                 localCurrency: PriceTable.shared.currency)
         Task {
             let sessions = await TimelinePane.sessions(in: interval, pricer: Self.pricer,
                                                        accounts: CostAccountStore.shared.accounts, titles: false,
@@ -128,13 +132,30 @@ final class DashboardModel: ObservableObject {
     /// the currencies agree, through the exchange rate from dollars.
     func local(_ figure: SpendLedger.Figure?) -> Double? {
         guard let figure, case .money(let code) = figure.unit else { return nil }
-        let from = code ?? "USD"
-        if from == currency { return figure.amount }
-        let rate = Self.inDollars ? 1 : PriceTable.shared.rate
-        return from == "USD" && rate > 0 ? figure.amount * rate : nil
+        return local(figure.amount, code ?? "USD")
     }
 
+    func local(_ amount: Double, _ from: String) -> Double? {
+        if from == currency { return amount }
+        let rate = Self.inDollars ? 1 : PriceTable.shared.rate
+        return from == "USD" && rate > 0 ? amount * rate : nil
+    }
+
+    /// What every agent session cost, by its share of the plan or by its
+    /// tokens: where the money went.
     var agentSpend: Double { sessions.compactMap(\.cost).reduce(0, +) }
+
+    /// The sessions of logins paid per token: money spent, not a plan's share.
+    var tokenSpend: Double {
+        let perToken = Set(CostAccountStore.shared.accounts.filter { $0.billing == .api }.map(\.id))
+        return sessions.filter { perToken.contains($0.accountID) }.compactMap(\.cost).reduce(0, +)
+    }
+
+    /// This range's share of every plan: a day's worth, a week's or the month.
+    var planSpend: Double {
+        let share = CodingPlans.share(of: range)
+        return plans.compactMap { row in row.monthly.flatMap { local($0, row.currency) } }.reduce(0, +) * share
+    }
     var keySpend: Double { keys.compactMap { local($0.figure(range.keyPeriod)) }.reduce(0, +) }
     /// Keys' money that can't be brought into the Mac's currency (no rate
     /// yet: Market data is off), by its own currency, so it is still shown.
@@ -146,7 +167,8 @@ final class DashboardModel: ObservableObject {
         }
         return sums.map { ($0.key, $0.value) }.sorted { $0.code < $1.code }
     }
-    var totalSpend: Double { agentSpend + keySpend }
+    /// Plans for the range, and what was paid by use: tokens and keys.
+    var totalSpend: Double { planSpend + tokenSpend + keySpend }
 
     var costPerFinish: Double? { activity.finished > 0 && totalSpend > 0 ? totalSpend / Double(activity.finished) : nil }
     var costPerHundredLines: Double? {
@@ -225,6 +247,7 @@ struct DashboardContent: View {
                 chart
                 agents
             }
+            planTable
             keyTable
             modelTable
             footnotes
@@ -259,7 +282,7 @@ struct DashboardContent: View {
         let a = model.activity
         return LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 14), count: 3), spacing: 14) {
             card(L10n.t("Spent"), money(model.totalSpend),
-                 L10n.t("Agents \(money(model.agentSpend)) · API keys \(keysSpent)"), tint: .orange)
+                 L10n.t("Plans \(money(model.planSpend)) · pay as you go \(payAsYouGo)"), tint: .orange)
             card(L10n.t("Agents at work"), TimelinePane.duration(a.busy),
                  a.parallel >= 60 ? L10n.t("\(TimelinePane.duration(a.parallel)) with two or more at once") : L10n.t("One at a time"),
                  tint: .green)
@@ -278,10 +301,11 @@ struct DashboardContent: View {
 
     /// The keys' spend in the Mac's currency, and in its own where there is
     /// no rate to bring it over.
-    private var keysSpent: String {
+    private var payAsYouGo: String {
+        let here = model.tokenSpend + model.keySpend
         let elsewhere = model.keySpendElsewhere.map { MoneyFormat.string($0.amount, currency: $0.code) }
-        if elsewhere.isEmpty { return money(model.keySpend) }
-        return ((model.keySpend > 0 ? [money(model.keySpend)] : []) + elsewhere).joined(separator: " + ")
+        if elsewhere.isEmpty { return money(here) }
+        return ((here > 0 ? [money(here)] : []) + elsewhere).joined(separator: " + ")
     }
 
     private func card(_ title: String, _ value: String, _ detail: String, tint: Color) -> some View {
@@ -403,6 +427,44 @@ struct DashboardContent: View {
         }
     }
 
+    private var planTable: some View {
+        panel(L10n.t("Coding plans")) {
+            if model.plans.isEmpty {
+                Text(L10n.t("No agent reports a plan yet. Claude and Codex logins count here when set to Monthly plan in Settings → Costs."))
+                    .font(.caption).foregroundStyle(.secondary)
+            } else {
+                Grid(alignment: .leading, horizontalSpacing: 18, verticalSpacing: 9) {
+                    GridRow {
+                        Text(L10n.t("Agent"))
+                        Text(L10n.t("Plan"))
+                        Text(L10n.t("Per month")).gridColumnAlignment(.trailing)
+                        Text(model.range.title).gridColumnAlignment(.trailing)
+                    }
+                    .font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
+                    Divider().gridCellUnsizedAxes(.horizontal)
+                    ForEach(model.plans) { plan in
+                        GridRow {
+                            HStack(spacing: 7) {
+                                ProviderGlyphView(glyph: plan.glyph, size: 13)
+                                Text(plan.agentName).lineLimit(1)
+                            }
+                            Text(plan.name ?? plan.reported).lineLimit(1)
+                            if let monthly = plan.monthly {
+                                Text(MoneyFormat.string(monthly, currency: plan.currency)).monospacedDigit()
+                                Text(model.local(monthly, plan.currency).map { money($0 * CodingPlans.share(of: model.range)) } ?? "—")
+                                    .monospacedDigit()
+                            } else {
+                                Text(L10n.t("Price unknown")).foregroundStyle(.secondary)
+                                Text("—")
+                            }
+                        }
+                        .font(.system(size: 12))
+                    }
+                }
+            }
+        }
+    }
+
     private func figure(_ figure: SpendLedger.Figure?) -> some View {
         VStack(alignment: .trailing, spacing: 1) {
             Text(figure.map { APIAmount.short($0.amount, $0.unit) } ?? "—").monospacedDigit()
@@ -442,7 +504,7 @@ struct DashboardContent: View {
 
     private var footnotes: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(L10n.t("Agent spend is estimated from tokens and your plan; API keys are what their providers report, by UTC day, week and month."))
+            Text(L10n.t("Plans count as a day's, a week's or the month's share of their list price. A login paid per token counts its tokens; API keys are what their providers report, by UTC day, week and month."))
             Text(L10n.t("A key with only a balance or a monthly total is followed from when pillr first read it. Lines are counted from git as trees grow between finishes."))
             if let since = model.activitySince {
                 Text(L10n.t("Time at work is known since \(since.formatted(date: .abbreviated, time: .shortened))."))
