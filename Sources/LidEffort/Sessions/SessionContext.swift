@@ -32,6 +32,14 @@ enum SessionContext {
             found = cursor(composerID: rest, name: session.name)
         case "antigravity":
             found = antigravity(id: rest)
+        case "copilot":
+            found = copilot(id: rest)
+        case "droid":
+            found = droid(id: rest)
+        case "opencode":
+            found = openCode(id: rest)
+        case "gemini-cli":
+            found = geminiCLI(chat: rest)
         case "gemini-api":
             if rest.hasPrefix("opencode.") {
                 found = openCode(id: String(rest.dropFirst("opencode.".count)))
@@ -120,10 +128,15 @@ enum SessionContext {
     /// `<profile>.rollout-2026-10-02T00-53-12-<uuid>.jsonl`: the file sits
     /// under that day's folder, and the thread's name is in the state store.
     private static func codex(profileID: String, rest: String) -> PromptContext? {
-        guard rest.hasPrefix("rollout-"), rest.hasSuffix(".jsonl"),
-              let profile = CodexProfile.discover().first(where: { $0.id == profileID }) else { return nil }
-        let rollout = codexRollout(named: rest, under: profile.configDirectory.appendingPathComponent("sessions"))
-            ?? codexRolloutFromState(named: rest, state: profile.stateURL)
+        guard let profile = CodexProfile.discover().first(where: { $0.id == profileID }) else { return nil }
+        let rollout: URL?
+        if rest.hasPrefix("rollout-"), rest.hasSuffix(".jsonl") {
+            rollout = codexRollout(named: rest, under: profile.configDirectory.appendingPathComponent("sessions"))
+                ?? codexRolloutFromState(named: rest, state: profile.stateURL)
+        } else {
+            // The notify hook names the thread, not its file.
+            rollout = codexRolloutFromState(thread: rest, state: profile.stateURL)
+        }
         guard let rollout else { return nil }
         let title = codexTitle(rollout: rollout, state: profile.stateURL)
         return codex(lines: tailLines(of: rollout), title: title)
@@ -142,6 +155,13 @@ enum SessionContext {
         defer { sqlite3Close(db) }
         let path = SQLiteStore.rows(in: db, sql: "SELECT rollout_path FROM threads WHERE rollout_path LIKE ? LIMIT 1",
                                     bind: "%/" + name).first
+        return path.map(URL.init(fileURLWithPath:))
+    }
+
+    private static func codexRolloutFromState(thread: String, state: URL) -> URL? {
+        guard isPlainID(thread), let db = SQLiteStore.open(state) else { return nil }
+        defer { sqlite3Close(db) }
+        let path = SQLiteStore.rows(in: db, sql: "SELECT rollout_path FROM threads WHERE id = ? LIMIT 1", bind: thread).first
         return path.map(URL.init(fileURLWithPath:))
     }
 
@@ -210,7 +230,7 @@ enum SessionContext {
 
     /// The session folder holds `state.json`, with its title and your last
     /// prompt, and the main agent's `wire.jsonl`, whose text parts after the
-    /// last prompt are the reply.
+    /// last prompt are the reply. Shapes from Kimi Code's own test fixture.
     private static func kimi(sessionDirectory name: String) -> PromptContext? {
         let root = KimiActivity.root
         guard let folder = KimiActivity.index(root: root).values.first(where: { $0.lastPathComponent == name })
@@ -239,6 +259,9 @@ enum SessionContext {
             if let agent = record["agentId"] as? String, agent != "main" { continue }
             switch record["type"] as? String {
             case "turn.prompt":
+                // Skills, plugins, cron jobs and compaction also prompt; only
+                // what you typed is yours.
+                if let origin = (record["origin"] as? [String: Any])?["kind"] as? String, origin != "user" { continue }
                 ask = text(record["input"]) ?? ask
                 reply = ""
             case "content.part":
@@ -279,7 +302,8 @@ enum SessionContext {
         var messages: [Message] = []
         for header in headers.reversed().prefix(40) {
             guard let bubble = header["bubbleId"] as? String, let kind = (header["type"] as? NSNumber)?.intValue,
-                  kind == 1 || kind == 2, let body = value("bubbleId:\(id):\(bubble)"), let text = text(body["text"]) else { continue }
+                  kind == 1 || kind == 2, let body = value("bubbleId:\(id):\(bubble)"),
+                  body["isSimulatedMsg"] as? Bool != true, let text = text(body["text"]) else { continue }
             messages.append(Message(fromYou: kind == 1, text: text))
             if kind == 1 { break }
         }
@@ -288,9 +312,9 @@ enum SessionContext {
 
     // MARK: - Antigravity
 
-    /// `brain/<id>/.system_generated/logs/transcript.jsonl`, whose records are
-    /// `USER_INPUT` and `PLANNER_RESPONSE`. Partial: the field the words are
-    /// in has not been seen, so the usual names are tried and nothing else.
+    /// `brain/<id>/.system_generated/logs/transcript.jsonl`: one step a line,
+    /// `USER_INPUT` your prompt and `PLANNER_RESPONSE` its answer, the words
+    /// in `content` — as Antigravity's own instructions to its agent put it.
     private static func antigravity(id: String) -> PromptContext? {
         guard isPlainID(id) else { return nil }
         for root in AntigravityActivity.transcriptRoots {
@@ -302,7 +326,7 @@ enum SessionContext {
 
     static func antigravity(lines: [[String: Any]]) -> PromptContext {
         func words(_ line: [String: Any]) -> String? {
-            for key in ["content", "text", "message", "user_input", "response"] {
+            for key in ["content", "text"] {
                 if let found = text(line[key]) { return found }
             }
             return nil
@@ -310,7 +334,7 @@ enum SessionContext {
         var messages: [Message] = []
         for line in lines.reversed() {
             switch line["type"] as? String {
-            case "USER_INPUT":
+            case "USER_INPUT" where (line["source"] as? String).map { $0 == "USER_EXPLICIT" } ?? true:
                 if let text = words(line) { messages.append(Message(fromYou: true, text: text)) }
             case "PLANNER_RESPONSE":
                 if let text = words(line) { messages.append(Message(fromYou: false, text: text)) }
@@ -328,25 +352,125 @@ enum SessionContext {
     private static func geminiCLI(chat: String) -> PromptContext? {
         let root = GeminiCLIUsage.sessionsRoot
         guard let projects = try? FileManager.default.contentsOfDirectory(at: root, includingPropertiesForKeys: nil) else { return nil }
+        let chats = projects.map { $0.appendingPathComponent("chats") }
         let file = chat.hasSuffix(".jsonl") ? chat : chat + ".jsonl"
-        guard let url = projects.map({ $0.appendingPathComponent("chats").appendingPathComponent(file) })
-                .first(where: { FileManager.default.fileExists(atPath: $0.path) }) else { return nil }
-        return geminiCLI(lines: tailLines(of: url))
+        var url = chats.map { $0.appendingPathComponent(file) }.first { FileManager.default.fileExists(atPath: $0.path) }
+        // The hook names the session; its file is `session-<time>-<first 8>.jsonl`.
+        if url == nil, chat.count >= 8 {
+            let short = String(chat.prefix(8))
+            url = chats.lazy.compactMap { folder in
+                (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil))?
+                    .first { $0.pathExtension == "jsonl" && $0.lastPathComponent.contains(short) }
+            }.first
+        }
+        guard let url else { return nil }
+        // Replayed whole where it can be, so a rewind or a patch has its target.
+        return geminiCLI(lines: tailLines(of: url, bytes: 8 * 1024 * 1024))
     }
 
+    /// The file is a log of changes, replayed the way Gemini CLI replays
+    /// it: a record with an `id` adds or replaces a message, `$patch` edits
+    /// one, `$rewindTo` drops a message and all after it, and `$set` or the
+    /// header carry the session's `summary`.
     static func geminiCLI(lines: [[String: Any]]) -> PromptContext {
-        var messages: [Message] = []
-        for line in lines.reversed() {
-            switch line["type"] as? String {
-            case "user":
-                if let text = text(line["content"]) { messages.append(Message(fromYou: true, text: text)) }
-            case "gemini":
-                if let text = text(line["content"]) { messages.append(Message(fromYou: false, text: text)) }
-            default:
-                continue
+        var order: [String] = []
+        var byID: [String: (type: String, content: Any?)] = [:]
+        var summary: String?
+        func patch(_ change: [String: Any]) {
+            guard let id = change["id"] as? String, let held = byID[id], change.keys.contains("content") else { return }
+            byID[id] = (held.type, change["content"])
+        }
+        for line in lines {
+            if let rewind = line["$rewindTo"] as? String {
+                // A rewind to a message before this tail began says nothing
+                // about the messages this tail holds.
+                if let index = order.firstIndex(of: rewind) {
+                    order[index...].forEach { byID[$0] = nil }
+                    order.removeSubrange(index...)
+                }
+            } else if let change = line["$patch"] as? [String: Any] {
+                patch(change)
+                (change["updates"] as? [[String: Any]])?.forEach(patch)
+                for id in (change["removeIds"] as? [String]) ?? [] {
+                    byID[id] = nil
+                    order.removeAll { $0 == id }
+                }
+            } else if let set = line["$set"] as? [String: Any] {
+                summary = (set["summary"] as? String) ?? summary
+            } else if let id = line["id"] as? String, let type = line["type"] as? String {
+                if byID[id] == nil { order.append(id) }
+                byID[id] = (type, line["content"])
+            } else if line["sessionId"] != nil {
+                summary = (line["summary"] as? String) ?? summary
             }
         }
-        return fold(newestFirst: messages)
+        let messages = order.reversed().compactMap { id -> Message? in
+            guard let held = byID[id], held.type == "user" || held.type == "gemini", let text = text(held.content) else { return nil }
+            return Message(fromYou: held.type == "user", text: text)
+        }
+        return fold(newestFirst: messages, title: summary)
+    }
+
+    // MARK: - Copilot CLI
+
+    /// `~/.copilot/session-store.db`: `sessions` with its `summary`, and
+    /// `turns`, each your message and the answer to it. From the schema in
+    /// Copilot CLI's own runtime.
+    private static func copilot(id: String) -> PromptContext? {
+        let home = ProcessInfo.processInfo.environment["COPILOT_HOME"].flatMap { $0.isEmpty ? nil : URL(fileURLWithPath: $0) }
+            ?? URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent(".copilot")
+        guard isPlainID(id), let db = SQLiteStore.open(home.appendingPathComponent("session-store.db")) else { return nil }
+        defer { sqlite3Close(db) }
+        let summary = SQLiteStore.rows(in: db, sql: "SELECT coalesce(summary, '') FROM sessions WHERE id = ?", bind: id).first
+        let turns = SQLiteStore.rows(in: db, sql: """
+            SELECT coalesce(user_message, ''), coalesce(assistant_response, '') FROM turns
+            WHERE session_id = '\(id)' ORDER BY turn_index DESC LIMIT 3
+            """, columns: 2)
+        var messages: [Message] = []
+        for turn in turns {
+            if !turn[1].isEmpty { messages.append(Message(fromYou: false, text: turn[1])) }
+            if !turn[0].isEmpty { messages.append(Message(fromYou: true, text: turn[0])) }
+        }
+        return fold(newestFirst: messages, title: summary.flatMap { $0.isEmpty ? nil : $0 })
+    }
+
+    // MARK: - Droid
+
+    /// `~/.factory/sessions/<id>.jsonl`, or under `btw/` or a `-<folder>/`
+    /// directory: a `session_start` line with its `title`, then `message`
+    /// lines in Claude's shape. From Droid's own session store.
+    private static func droid(id: String) -> PromptContext? {
+        guard isPlainID(id) else { return nil }
+        let sessions = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent(".factory/sessions")
+        let file = "\(id).jsonl"
+        var candidates = [sessions.appendingPathComponent(file), sessions.appendingPathComponent("btw").appendingPathComponent(file)]
+        if let folders = try? FileManager.default.contentsOfDirectory(at: sessions, includingPropertiesForKeys: nil) {
+            candidates += folders.filter { $0.lastPathComponent.hasPrefix("-") }.map { $0.appendingPathComponent(file) }
+        }
+        guard let url = candidates.first(where: { FileManager.default.fileExists(atPath: $0.path) }) else { return nil }
+        var title: String?
+        if let handle = FileHandle(forReadingAtPath: url.path) {
+            defer { try? handle.close() }
+            if let head = try? handle.read(upToCount: 64 * 1024),
+               let first = head.split(separator: UInt8(ascii: "\n")).first,
+               let start = try? JSONSerialization.jsonObject(with: Data(first)) as? [String: Any],
+               start["type"] as? String == "session_start" {
+                title = start["title"] as? String
+            }
+        }
+        return droid(lines: tailLines(of: url), title: title)
+    }
+
+    static func droid(lines: [[String: Any]], title: String?) -> PromptContext {
+        var messages: [Message] = []
+        for line in lines.reversed() {
+            guard line["type"] as? String == "message", let message = line["message"] as? [String: Any] else { continue }
+            let role = message["role"] as? String
+            guard role == "user" || role == "assistant", let text = text(message["content"]) else { continue }
+            // Tool results come back as user messages with no text block.
+            messages.append(Message(fromYou: role == "user", text: text))
+        }
+        return fold(newestFirst: messages, title: title)
     }
 
     // MARK: - OpenCode

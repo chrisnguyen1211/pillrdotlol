@@ -65,6 +65,65 @@ final class SessionContextTests: XCTestCase {
         XCTAssertEqual(context.lead, "It explains the install steps.")
     }
 
+    func testGeminiCLIReplaysItsPatchesRewindsAndSummary() {
+        let context = SessionContext.geminiCLI(lines: lines([
+            #"{"sessionId":"s","projectHash":"p","kind":"main"}"#,
+            #"{"id":"u1","type":"user","content":[{"text":"first ask"}]}"#,
+            #"{"id":"g1","type":"gemini","content":"first answer"}"#,
+            #"{"id":"u2","type":"user","content":[{"text":"a wrong turn"}]}"#,
+            #"{"id":"g2","type":"gemini","content":"wrong answer"}"#,
+            #"{"$rewindTo":"u2"}"#,
+            #"{"id":"u3","type":"user","content":"rename the button"}"#,
+            #"{"id":"g3","type":"gemini","content":""}"#,
+            #"{"$patch":{"id":"g3","content":"Renamed it to Save."}}"#,
+            #"{"$set":{"summary":"Button copy"}}"#,
+        ]))
+        XCTAssertEqual(context, PromptContext(title: "Button copy", ask: "rename the button", lead: "Renamed it to Save."))
+    }
+
+    func testKimiCountsOnlyThePromptsYouTyped() {
+        let context = SessionContext.kimi(state: [:], wire: lines([
+            #"{"type":"turn.prompt","input":[{"type":"text","text":"deploy it"}],"origin":{"kind":"user"}}"#,
+            #"{"type":"context.append_loop_event","event":{"type":"content.part","part":{"type":"text","text":"Deployed."}}}"#,
+            #"{"type":"turn.prompt","input":[{"type":"text","text":"compaction summary"}],"origin":{"kind":"compaction_summary"}}"#,
+        ]))
+        XCTAssertEqual(context.ask, "deploy it")
+        XCTAssertEqual(context.lead, "Deployed.")
+    }
+
+    func testDroidReadsMessagesInClaudesShape() {
+        let context = SessionContext.droid(lines: lines([
+            #"{"type":"session_start","id":"s","title":"ignored here","cwd":"/x"}"#,
+            #"{"type":"message","id":"1","message":{"role":"user","content":[{"type":"text","text":"bump the version"}]}}"#,
+            #"{"type":"message","id":"2","message":{"role":"assistant","content":[{"type":"tool_use","name":"Edit"}]}}"#,
+            #"{"type":"message","id":"3","message":{"role":"user","content":[{"type":"tool_result","content":"ok"}]}}"#,
+            #"{"type":"message","id":"4","message":{"role":"assistant","content":[{"type":"text","text":"Bumped to 1.1.3."}]}}"#,
+        ]), title: "Release prep")
+        XCTAssertEqual(context, PromptContext(title: "Release prep", ask: "bump the version", lead: "Bumped to 1.1.3."))
+    }
+
+    @MainActor
+    func testCopilotReadsItsSessionStore() throws {
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: home); unsetenv("COPILOT_HOME") }
+        let sqlite = Process()
+        sqlite.executableURL = URL(fileURLWithPath: "/usr/bin/sqlite3")
+        sqlite.arguments = [home.appendingPathComponent("session-store.db").path, """
+            CREATE TABLE sessions (id TEXT PRIMARY KEY, cwd TEXT, summary TEXT);
+            CREATE TABLE turns (id INTEGER PRIMARY KEY, session_id TEXT, turn_index INTEGER, user_message TEXT, assistant_response TEXT);
+            INSERT INTO sessions VALUES ('abc-123', '/x', 'Fix flaky test');
+            INSERT INTO turns VALUES (1, 'abc-123', 0, 'old ask', 'old answer');
+            INSERT INTO turns VALUES (2, 'abc-123', 1, 'make the test stable', 'Added a retry with a fixed seed.');
+            """]
+        try sqlite.run()
+        sqlite.waitUntilExit()
+        setenv("COPILOT_HOME", home.path, 1)
+        let session = AgentSession(id: "copilot.abc-123", name: "x", detail: "", state: .success, waitingFor: nil, since: Date())
+        XCTAssertEqual(SessionContext.load(for: session),
+                       PromptContext(title: "Fix flaky test", ask: "make the test stable", lead: "Added a retry with a fixed seed."))
+    }
+
     func testAntigravityTriesOnlyTheUsualFields() {
         let context = SessionContext.antigravity(lines: lines([
             #"{"type":"USER_INPUT","content":"build the landing page"}"#,
@@ -74,6 +133,7 @@ final class SessionContextTests: XCTestCase {
         XCTAssertEqual(context.ask, "build the landing page")
         XCTAssertEqual(context.lead, "The landing page is up.")
         XCTAssertEqual(SessionContext.antigravity(lines: lines([#"{"type":"USER_INPUT","unknown":"x"}"#])), PromptContext())
+        XCTAssertNil(SessionContext.antigravity(lines: lines([#"{"type":"USER_INPUT","source":"SYSTEM","content":"injected"}"#])).ask)
     }
 
     func testTheFoldStopsAtYourNewestMessage() {
