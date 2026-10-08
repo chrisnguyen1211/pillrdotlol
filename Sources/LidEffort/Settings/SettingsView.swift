@@ -801,6 +801,7 @@ struct SoundRow: View {
                 }
                 ForEach(SessionChime.available, id: \.self) { Text($0).tag($0) }
             }
+            .accessibilityLabel(label)
             .disabled(!pickerEnabled)
             Button {
                 Log.usage.info("preview \(name, privacy: .public)")
@@ -810,6 +811,7 @@ struct SoundRow: View {
             }
             .buttonStyle(.borderless)
             .help(L10n.t("Play \(name)"))
+            .accessibilityLabel(L10n.t("Play \(name)"))
         }
     }
 }

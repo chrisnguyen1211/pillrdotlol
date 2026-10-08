@@ -54,6 +54,18 @@
             "state" : "translated",
             "value" : "%@ %@ · 来自 Ollama"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ %@ · via Ollama"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ %@ · via Ollama"
+          }
         }
       }
     },
@@ -348,6 +360,18 @@
             "state" : "translated",
             "value" : "%@ · 本地"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · Local"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ · Local"
+          }
         }
       }
     },
@@ -574,6 +598,18 @@
             "state" : "translated",
             "value" : "%lld 天前"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "il y a %lld jours"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "há %lld dias"
+          }
         }
       }
     },
@@ -731,6 +767,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld 次未使用重置"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld réinitialisations inutilisées"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld renovações não usadas"
           }
         }
       }
@@ -992,6 +1040,18 @@
             "state" : "translated",
             "value" : "1 次未使用重置"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 réinitialisation inutilisée"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 renovação não usada"
+          }
         }
       }
     },
@@ -1104,6 +1164,30 @@
             "state" : "translated",
             "value" : "30 天 token"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jetons sur 30 jours"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "30 日間のトークン"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tokens em 30 dias"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Токены за 30 дней"
+          }
         }
       }
     },
@@ -1160,6 +1244,18 @@
             "state" : "translated",
             "value" : "5 小时额度"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limite de 5 heures"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limite de 5 horas"
+          }
         }
       }
     },
@@ -1181,6 +1277,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "5 小时额度"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limite de 5 heures"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limite de 5 horas"
           }
         }
       }
@@ -1237,6 +1345,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "24 小时制的 Mac 会显示 24 小时制的重置时间，而不是上午、下午。"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un Mac réglé sur 24 heures affiche les réinitialisations sur 24 heures plutôt qu'en AM et PM."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um Mac em 24 horas mostra os horários de renovação em 24 horas, sem AM e PM."
           }
         }
       }
@@ -1396,6 +1516,18 @@
             "state" : "translated",
             "value" : "结束的会话会标明"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une session terminée le dit"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma sessão concluída avisa"
+          }
         }
       }
     },
@@ -1519,6 +1651,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "和摄像头凹槽合在一起的刘海，不再被整条上边缘任意位置的指针唤醒。"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une encoche fusionnée avec le boîtier de la caméra ne se réveille plus au passage du pointeur n'importe où sur le bord supérieur."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um notch unido ao módulo da câmera não acorda mais com o ponteiro em qualquer ponto da borda superior."
           }
         }
       }
@@ -1712,6 +1856,18 @@
             "state" : "translated",
             "value" : "第二条弧，画在主环内侧或外侧，给同时公布每周额度和会话额度的服务。默认关闭；外观里有开关。"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un second arc, à l'intérieur ou à l'extérieur de l'anneau principal, pour les fournisseurs qui publient une limite hebdomadaire en plus de celle de session. Désactivé par défaut ; l'interrupteur est dans Apparence."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um segundo arco, dentro ou fora do anel principal, para provedores que publicam um limite semanal além do de sessão. Desativado por padrão; a chave fica em Aparência."
+          }
         }
       }
     },
@@ -1733,6 +1889,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "周额度有了自己的圆环，液态玻璃，法语，以及直接从 Claude Desktop 自己的缓存读取用量。"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un second anneau pour la semaine, Liquid Glass, le français, et Claude Desktop lu directement depuis son propre cache."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um segundo anel para a semana, Liquid Glass, francês e o Claude Desktop lido direto do próprio cache."
           }
         }
       }
@@ -1926,6 +2094,18 @@
             "state" : "translated",
             "value" : "一条更细的每周额度圆环，画在主环外侧，圆环和刘海边缘之间的空隙里。"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un anneau plus fin pour la limite hebdomadaire, tracé autour du principal, dans la marge entre l'anneau et le bord de l'encoche."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um anel mais fino para o limite semanal, desenhado em volta do principal, na margem entre o anel e a borda do notch."
+          }
         }
       }
     },
@@ -1947,6 +2127,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "一条更细的每周额度圆环，画在主环内侧。和工作指示共用那个空隙。"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un anneau plus fin pour la limite hebdomadaire, tracé à l'intérieur du principal. Il partage l'espace avec l'indicateur d'activité."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um anel mais fino para o limite semanal, desenhado dentro do principal. Ele divide o espaço com o indicador de trabalho."
           }
         }
       }
@@ -1970,6 +2162,18 @@
             "state" : "translated",
             "value" : "外观里第三种语言，与 English 和 简体中文并列。"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une troisième langue dans Apparence, aux côtés de l'anglais et du 简体中文."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um terceiro idioma em Aparência, ao lado do inglês e do 简体中文."
+          }
         }
       }
     },
@@ -1992,6 +2196,18 @@
             "state" : "translated",
             "value" : "读取 Claude 账号的第三条路径，在 CLI 和令牌答不上来时使用。什么都不会发出去：缓存就在这台 Mac 上，只做解压。"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une troisième façon de lire un compte Claude, utilisée quand la CLI et le jeton ne répondent pas. Rien n'est envoyé : le cache est sur ce Mac et il est seulement décompressé."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma terceira forma de ler uma conta do Claude, usada quando a CLI e o token não respondem. Nada é enviado: o cache fica neste Mac e só é descompactado."
+          }
         }
       }
     },
@@ -2001,6 +2217,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已保存令牌，每次请求都会带上。"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un jeton est enregistré et envoyé avec chaque requête."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トークンは保存され、リクエストごとに送信されます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um token é guardado e enviado em cada requisição."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Токен сохраняется и отправляется с каждым запросом."
           }
         }
       }
@@ -2182,6 +2422,30 @@
             "state" : "translated",
             "value" : "API 令牌"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jeton d'API"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API トークン"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Token de API"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "API-токен"
+          }
         }
       }
     },
@@ -2260,6 +2524,30 @@
             "state" : "translated",
             "value" : "账号用量（%@）"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consommation du compte (%@)"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "アカウントの使用量 (%@)"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uso da conta (%@)"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Использование аккаунта (%@)"
+          }
         }
       }
     },
@@ -2316,6 +2604,18 @@
             "state" : "translated",
             "value" : "使用中"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Actif"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ativo"
+          }
         }
       }
     },
@@ -2371,6 +2671,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "助手会话带有完成状态，已经跑完的和还在进行的看起来不一样。"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les sessions d'agent portent un état de réussite : une exécution terminée se distingue d'une exécution en cours."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As sessões de agente têm um estado de sucesso, então uma execução concluída aparece diferente de uma em andamento."
           }
         }
       }
@@ -2666,6 +2978,18 @@
             "state" : "translated",
             "value" : "nvm、Volta 或 pnpm 下的安装也会被找到，这些安装的后台登录续期也一并恢复。"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une installation via nvm, Volta ou pnpm est détectée comme les autres, ce qui rétablit aussi le renouvellement de connexion en arrière-plan pour ces configurations."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma instalação via nvm, Volta ou pnpm é encontrada como qualquer outra, o que também traz de volta a renovação de login em segundo plano nesses casos."
+          }
         }
       }
     },
@@ -2755,6 +3079,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Antigravity：选择哪项额度打头"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antigravity : choisir la limite principale"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antigravity: escolha o limite principal"
           }
         }
       }
@@ -2936,6 +3272,30 @@
             "state" : "translated",
             "value" : "应用"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Appliquer"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "適用"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Применить"
+          }
         }
       }
     },
@@ -2957,6 +3317,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "批准"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Approbation"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aprovação"
           }
         }
       }
@@ -3082,6 +3454,18 @@
             "state" : "translated",
             "value" : "自动"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatique"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automático"
+          }
         }
       }
     },
@@ -3125,6 +3509,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "检查连接"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérifier la connexion"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "接続を確認"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verificar conexão"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверить подключение"
           }
         }
       }
@@ -3170,6 +3578,30 @@
             "state" : "translated",
             "value" : "正在检查 LM Studio…"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérification de LM Studio…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LM Studio を確認中…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verificando o LM Studio…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверка LM Studio…"
+          }
         }
       }
     },
@@ -3179,6 +3611,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在检查 Ollama…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérification d'Ollama…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ollama を確認中…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verificando o Ollama…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Проверка Ollama…"
           }
         }
       }
@@ -3304,6 +3760,18 @@
             "state" : "translated",
             "value" : "选择 Antigravity 在主刘海里显示哪项额度。"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez la limite affichée dans l'encoche principale pour Antigravity."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escolha qual limite aparece no notch principal para o Antigravity."
+          }
         }
       }
     },
@@ -3360,6 +3828,18 @@
             "state" : "translated",
             "value" : "能找到 npm 安装的 Claude Code"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code trouvé là où npm l'installe"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code encontrado onde o npm o coloca"
+          }
         }
       }
     },
@@ -3382,6 +3862,18 @@
             "state" : "translated",
             "value" : "Claude Desktop 用量，从它自己的缓存读取"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consommation de Claude Desktop, lue depuis son propre cache"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uso do Claude Desktop, lido do próprio cache"
+          }
         }
       }
     },
@@ -3403,6 +3895,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Claude 和 GPT 模型"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modèles Claude et GPT"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modelos Claude e GPT"
           }
         }
       }
@@ -3970,6 +4474,18 @@
             "state" : "translated",
             "value" : "已完成"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminé"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Concluído"
+          }
         }
       }
     },
@@ -4082,6 +4598,30 @@
             "state" : "translated",
             "value" : "正在连接 LM Studio…"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connexion à LM Studio…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LM Studio に接続中…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectando ao LM Studio…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подключение к LM Studio…"
+          }
         }
       }
     },
@@ -4091,6 +4631,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在连接 Ollama…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connexion à Ollama…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ollama に接続中…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conectando ao Ollama…"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подключение к Ollama…"
           }
         }
       }
@@ -4113,6 +4677,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "连接"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connexion"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conexão"
           }
         }
       }
@@ -4226,6 +4802,30 @@
             "state" : "translated",
             "value" : "费用"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coût"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コスト"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Custo"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Стоимость"
+          }
         }
       }
     },
@@ -4269,6 +4869,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "当前连续"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Série en cours"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在の連続日数"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sequência atual"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Текущая серия"
           }
         }
       }
@@ -4326,6 +4950,18 @@
             "state" : "translated",
             "value" : "自定"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personnalisé"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personalizado"
+          }
         }
       }
     },
@@ -4335,6 +4971,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "每日费用"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coût quotidien"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 日のコスト"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Custo diário"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Расход за день"
           }
         }
       }
@@ -4379,6 +5039,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "每日 token"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jetons quotidiens"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 日のトークン"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tokens diários"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Токены за день"
           }
         }
       }
@@ -4457,6 +5141,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "检测到的模型会出现在「账号 → 已连接」。模型加载和卸载每秒检查一次。"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les modèles détectés apparaissent dans Comptes → Connectés. Le chargement et le déchargement des modèles sont vérifiés chaque seconde."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "見つかったモデルは アカウント → 接続済み に表示されます。モデルの読み込みと解放は毎秒確認します。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os modelos detectados aparecem em Contas → Conectado. O carregamento e descarregamento dos modelos é verificado a cada segundo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Найденные модели появляются в Аккаунты → Подключён. Загрузка и выгрузка моделей проверяется каждую секунду."
           }
         }
       }
@@ -4990,6 +5698,18 @@
             "state" : "translated",
             "value" : "请先运行 Antigravity IDE，才能读取此账号。"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lancez l'IDE Antigravity pour lire ce compte."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deixe o IDE do Antigravity aberto para ler esta conta."
+          }
         }
       }
     },
@@ -5113,6 +5833,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ 到期"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expire %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expira %@"
           }
         }
       }
@@ -5374,6 +6106,18 @@
             "state" : "translated",
             "value" : "Français"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Français"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Français"
+          }
         }
       }
     },
@@ -5417,6 +6161,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已充值"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Approvisionné"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "入金済み"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Com saldo"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пополнено"
           }
         }
       }
@@ -5473,6 +6241,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gemini 模型"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modèles Gemini"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modelos Gemini"
           }
         }
       }
@@ -5699,6 +6479,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已从刘海隐藏 · 仍加载在 Ollama"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masqué de l'encoche · Chargé dans Ollama"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oculto do notch · Carregado no Ollama"
           }
         }
       }
@@ -5959,6 +6751,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "内侧"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À l'intérieur"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dentro"
           }
         }
       }
@@ -6378,6 +7182,30 @@
             "state" : "translated",
             "value" : "累计 token"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jetons au total"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "累計トークン"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tokens no total"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Токены за всё время"
+          }
         }
       }
     },
@@ -6400,6 +7228,18 @@
             "state" : "translated",
             "value" : "液态玻璃"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liquid Glass"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liquid Glass"
+          }
         }
       }
     },
@@ -6409,6 +7249,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已加载的模型会出现在「账号 → 已连接」，每秒检查一次。不显示嵌入模型。"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les modèles chargés apparaissent dans Comptes → Connectés et sont vérifiés chaque seconde. Les modèles d'embedding ne sont pas affichés."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "読み込まれたモデルは アカウント → 接続済み に表示され、毎秒確認します。埋め込みモデルは表示しません。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os modelos carregados aparecem em Contas → Conectado e são verificados a cada segundo. Modelos de embedding não aparecem."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Загруженные модели появляются в Аккаунты → Подключён и проверяются каждую секунду. Модели эмбеддингов не показываются."
           }
         }
       }
@@ -6465,6 +7329,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "本地会话"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Session locale"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sessão local"
           }
         }
       }
@@ -6646,6 +7522,30 @@
             "state" : "translated",
             "value" : "最长对话"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus longue conversation"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最長のチャット"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conversa mais longa"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Самый длинный чат"
+          }
         }
       }
     },
@@ -6655,6 +7555,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "最长连续"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus longue série"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "最長の連続日数"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maior sequência"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Самая длинная серия"
           }
         }
       }
@@ -6768,6 +7692,30 @@
             "state" : "translated",
             "value" : "测量速度与思考"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mesurer la vitesse et la réflexion"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "速度と思考を計測"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medir velocidade e raciocínio"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Измерять скорость и размышления"
+          }
         }
       }
     },
@@ -6880,6 +7828,30 @@
             "state" : "translated",
             "value" : "未在监视。"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Surveillance désactivée."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "監視はオフです。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Monitoramento desativado."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Мониторинг выключен."
+          }
         }
       }
     },
@@ -6991,6 +7963,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "大多数读数借自已经持有该账号的工具。DeepSeek 是例外：点「登录」会打开 pillr 自己的 WebView，在这里退出只会清掉这次会话和已保存的读数。"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La plupart des lectures viennent d'un outil qui détient déjà le compte. DeepSeek fait exception : Se connecter ouvre sa propre WebView pillr, et se déconnecter ici efface seulement cette session et sa lecture enregistrée."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ほとんどの値は、すでにアカウントを持っているツールから借りて読みます。例外は DeepSeek で、「サインイン」を押すと pillr 専用の WebView が開きます。ここでサインアウトすると、そのセッションと保存した値だけが消えます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A maioria das leituras vem de uma ferramenta que já tem a conta. O DeepSeek é a exceção: clicar em Entrar abre uma WebView própria do pillr, e sair aqui apaga só essa sessão e a leitura salva."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Большинство данных берётся из инструмента, где аккаунт уже есть. Исключение DeepSeek: кнопка «Войти» открывает собственный WebView pillr, а выход здесь удаляет только этот сеанс и его сохранённые данные."
           }
         }
       }
@@ -7286,6 +8282,18 @@
             "state" : "translated",
             "value" : "下次 %@ 到期"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prochaine expiration %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Próxima expira %@"
+          }
         }
       }
     },
@@ -7341,6 +8349,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "这段时间还没有 Ollama 用量记录。"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune consommation Ollama enregistrée pour cette période."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum uso do Ollama registrado neste período ainda."
           }
         }
       }
@@ -7432,6 +8452,18 @@
             "state" : "translated",
             "value" : "不再留下 transcript 文件夹"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus de dossiers de transcription laissés derrière"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem pastas de transcrição deixadas para trás"
+          }
         }
       }
     },
@@ -7487,6 +8519,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "暂无未使用重置"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune réinitialisation inutilisée"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma renovação não usada"
           }
         }
       }
@@ -7645,6 +8689,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "刘海显示"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'encoche affiche"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O notch mostra"
           }
         }
       }
@@ -7838,6 +8894,18 @@
             "state" : "translated",
             "value" : "关闭"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Désactivé"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desativado"
+          }
         }
       }
     },
@@ -7859,6 +8927,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ollama API 密钥"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clé API Ollama"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chave de API do Ollama"
           }
         }
       }
@@ -7950,6 +9030,18 @@
             "state" : "translated",
             "value" : "每个服务一个圆环，显示主额度。每周额度仍在提示卡里。"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un anneau par fournisseur, avec la limite principale. Le quota hebdomadaire reste dans la carte au survol."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um anel por provedor, com o limite principal. A cota semanal fica no cartão ao passar o mouse."
+          }
         }
       }
     },
@@ -7959,6 +9051,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "仅当 LM Studio 服务器要求令牌时才需要（开发者 → 服务器设置）。不填则请求不带 Authorization 头。"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utile seulement si le serveur de LM Studio exige un jeton (Developer → Server Settings). Sans jeton, les requêtes partent sans en-tête Authorization."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LM Studio のサーバーがトークンを必要とする場合だけ使います（Developer → Server Settings）。なければ Authorization ヘッダなしで送信します。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Só é necessário quando o servidor do LM Studio exige um token (Developer → Server Settings). Sem ele, as requisições vão sem o cabeçalho Authorization."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Нужен, только если сервер LM Studio требует токен (Developer → Server Settings). Без него запросы отправляются без заголовка Authorization."
           }
         }
       }
@@ -7981,6 +9097,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "只有硬件刘海才会唤醒贴上去的刘海"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seule l'encoche matérielle réveille une encoche qui lui est jointe"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Só o notch físico acorda um notch unido a ele"
           }
         }
       }
@@ -8094,6 +9222,30 @@
             "state" : "translated",
             "value" : "打开 LM Studio"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir LM Studio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "LM Studio を開く"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir o LM Studio"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть LM Studio"
+          }
         }
       }
     },
@@ -8103,6 +9255,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "打开 Ollama"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir Ollama"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ollama を開く"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir o Ollama"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открыть Ollama"
           }
         }
       }
@@ -8330,6 +9506,18 @@
             "state" : "translated",
             "value" : "外侧"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "À l'extérieur"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fora"
+          }
         }
       }
     },
@@ -8374,6 +9562,30 @@
             "state" : "translated",
             "value" : "峰值 token"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pic de jetons"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トークンのピーク"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pico de tokens"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Пик токенов"
+          }
         }
       }
     },
@@ -8383,6 +9595,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "待出"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En attente"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保留中"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pendente"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ожидает"
           }
         }
       }
@@ -8406,6 +9642,18 @@
             "state" : "translated",
             "value" : "权限"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autorisation"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Permissão"
+          }
         }
       }
     },
@@ -8427,6 +9675,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "个人"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personnel"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pessoal"
           }
         }
       }
@@ -8586,6 +9846,18 @@
             "state" : "translated",
             "value" : "预设"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Préréglage"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Predefinição"
+          }
         }
       }
     },
@@ -8607,6 +9879,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "预设大小"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taille prédéfinie"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamanho predefinido"
           }
         }
       }
@@ -8698,6 +9982,18 @@
             "state" : "translated",
             "value" : "提问"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Question"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pergunta"
+          }
         }
       }
     },
@@ -8787,6 +10083,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "以前每次轮询 Claude 用量都在一个新目录里跑，Claude Code 会给每一次建一个 transcript 文件夹。现在固定在一处、以 print 模式运行，不再写任何会话。"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La lecture de la consommation de Claude se lançait dans un nouveau dossier à chaque relevé, et Claude Code créait un dossier de transcription pour chacun. Elle se lance maintenant depuis un seul endroit, en mode print, sans écrire de session."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A leitura do uso do Claude rodava numa pasta nova a cada consulta, e o Claude Code criava uma pasta de transcrição para cada uma. Agora roda de um só lugar, em modo print, sem gravar sessão nenhuma."
           }
         }
       }
@@ -9002,6 +10310,30 @@
             "state" : "translated",
             "value" : "剩余"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restant"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "残り"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restante"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Осталось"
+          }
         }
       }
     },
@@ -9080,6 +10412,30 @@
             "state" : "translated",
             "value" : "请求"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requêtes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リクエスト"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requisições"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Запросы"
+          }
         }
       }
     },
@@ -9101,6 +10457,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "今日请求 · 上次使用 %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requêtes aujourd'hui · dernière utilisation %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Requisições hoje · último uso %@"
           }
         }
       }
@@ -9259,6 +10627,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "重置时间跟随 Mac 的时钟"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les heures de réinitialisation suivent l'horloge du Mac"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os horários de renovação seguem o relógio do Mac"
           }
         }
       }
@@ -9554,6 +10934,18 @@
             "state" : "translated",
             "value" : "在终端运行 %@ 以登录 %@。"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lancez %@ dans le Terminal pour vous connecter à %@."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Execute %@ no Terminal para entrar no %@."
+          }
         }
       }
     },
@@ -9609,6 +11001,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已保存"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistré"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salvo"
           }
         }
       }
@@ -9721,6 +11125,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "服务器地址"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adresse du serveur"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サーバーのアドレス"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Endereço do servidor"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Адрес сервера"
           }
         }
       }
@@ -10015,6 +11443,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在刘海里显示或隐藏此模型。它仍加载在 Ollama 中。"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher ou masquer ce modèle dans l'encoche. Il reste chargé dans Ollama."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar ou ocultar este modelo no notch. Ele continua carregado no Ollama."
           }
         }
       }
@@ -10684,6 +12124,18 @@
             "state" : "translated",
             "value" : "纯黑"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noir uni"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preto sólido"
+          }
         }
       }
     },
@@ -10761,6 +12213,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已花费"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dépensé"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用額"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gasto"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Потрачено"
           }
         }
       }
@@ -10919,6 +12395,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "表面"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Surface"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Superfície"
           }
         }
       }
@@ -11248,6 +12736,18 @@
             "state" : "translated",
             "value" : "系统液态玻璃。跟随这台 Mac 的外观设置，包括通透或着色玻璃，以及浅色或深色模式。"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le Liquid Glass du système. Suit les réglages d'apparence de ce Mac, y compris le verre transparent ou teinté et le mode clair ou sombre."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Liquid Glass do sistema. Segue os ajustes de Aparência deste Mac, incluindo vidro transparente ou colorido e modo claro ou escuro."
+          }
         }
       }
     },
@@ -11508,6 +13008,18 @@
             "state" : "translated",
             "value" : "主圆环可以跟着指定的额度走，而不一定是最紧的那项；只有 CLI 的安装也算真实账号。"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'anneau principal peut suivre une limite choisie plutôt que la plus serrée du moment, et une installation en CLI seule compte comme un vrai compte."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O anel principal pode seguir um limite escolhido em vez do mais apertado no momento, e uma instalação só com CLI conta como conta de verdade."
+          }
         }
       }
     },
@@ -11734,6 +13246,18 @@
             "state" : "translated",
             "value" : "展开的刘海、提示卡和设置圆球用上系统自己的玻璃表面，折射背后的内容，而不是盖在上面。「降低透明度」会变成实心。"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'encoche ouverte, son infobulle et l'orbe des réglages prennent la surface de verre du système : elles réfractent ce qui est derrière au lieu de s'y poser. Réduire la transparence la rend opaque."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O notch aberto, a dica e o orbe de ajustes usam a superfície de vidro do sistema, refratando o que está atrás em vez de ficar por cima. Reduzir Transparência deixa sólido."
+          }
         }
       }
     },
@@ -11755,6 +13279,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "原来的不透明黑刘海。无论 Mac 外观如何，始终是深色。"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L'encoche noire opaque d'origine. Toujours sombre, quelle que soit l'apparence du Mac."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O notch preto opaco original. Sempre escuro, seja qual for a aparência do Mac."
           }
         }
       }
@@ -11811,6 +13347,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "周额度有了自己的圆环"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La semaine a son propre anneau"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A semana ganha um anel próprio"
           }
         }
       }
@@ -11901,6 +13449,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "思考中"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réflexion"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pensando"
           }
         }
       }
@@ -12014,6 +13574,30 @@
             "state" : "translated",
             "value" : "要测量回复，把聊天客户端指向 http://127.0.0.1:11435，并保持 pillr 打开。"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pour mesurer les réponses, dirigez votre client de chat vers http://127.0.0.1:11435 et gardez pillr ouvert."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "応答を計測するには、チャットクライアントの接続先を http://127.0.0.1:11435 にして、pillr を開いたままにしてください。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Para medir as respostas, aponte seu cliente de chat para http://127.0.0.1:11435 e deixe o pillr aberto."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Чтобы измерять ответы, направьте чат-клиент на http://127.0.0.1:11435 и не закрывайте pillr."
+          }
         }
       }
     },
@@ -12024,6 +13608,30 @@
             "state" : "translated",
             "value" : "今日"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aujourd'hui"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoje"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сегодня"
+          }
         }
       }
     },
@@ -12033,6 +13641,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Token"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jetons"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トークン"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tokens"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Токены"
           }
         }
       }
@@ -12260,6 +13892,18 @@
             "state" : "translated",
             "value" : "未使用重置"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réinitialisations inutilisées"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renovações não usadas"
+          }
         }
       }
     },
@@ -12405,6 +14049,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "用量明细"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Détails de consommation"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用量の詳細"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detalhes de uso"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подробности использования"
           }
         }
       }
@@ -12598,6 +14266,18 @@
             "state" : "translated",
             "value" : "等待中"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En attente"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aguardando"
+          }
         }
       }
     },
@@ -12756,6 +14436,18 @@
             "state" : "translated",
             "value" : "每周额度"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limite hebdomadaire"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limite semanal"
+          }
         }
       }
     },
@@ -12811,6 +14503,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "每周圆环"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anneau hebdomadaire"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anel semanal"
           }
         }
       }
@@ -13004,6 +14708,18 @@
             "state" : "translated",
             "value" : "正在 %@ 中工作"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En cours dans %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trabalhando em %@"
+          }
         }
       }
     },
@@ -13127,6 +14843,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已完成"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "terminé"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "concluído"
           }
         }
       }
@@ -13320,6 +15048,18 @@
             "state" : "translated",
             "value" : "需要你的输入"
           }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "attend votre réponse"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "precisa de você"
+          }
         }
       }
     },
@@ -13363,6 +15103,30 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "峰值 %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pic %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ピーク %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pico %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "пик %@"
           }
         }
       }
@@ -13555,6 +15319,18 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "昨天"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "hier"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ontem"
           }
         }
       }
@@ -52791,6 +54567,482 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在大多数 Mac 上，1.1.1 一打开就退出，因为它在错误的位置寻找自己的语言和图标。现在它会在 App 内找到它们。"
+          }
+        }
+      }
+    },
+    "Read Claude Code and Antigravity sign-ins without asking" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lire les connexions de Claude Code et d'Antigravity sans demander"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code と Antigravity のサインインを確認なしで読む"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ler os logins do Claude Code e do Antigravity sem perguntar"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Читать входы Claude Code и Antigravity без запроса"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无需询问即可读取 Claude Code 和 Antigravity 的登录信息"
+          }
+        }
+      }
+    },
+    "Uses Apple's security tool to read their keychain items in the background. Off: macOS asks before pillr reads them." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilise l'outil de sécurité d'Apple pour lire leurs éléments du trousseau en arrière-plan. Désactivé : macOS demande avant que pillr les lise."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple のセキュリティツールで、それぞれのキーチェーン項目をバックグラウンドで読みます。オフにすると、pillr が読む前に macOS が確認します。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa a ferramenta de segurança da Apple para ler os itens das chaves em segundo plano. Desativado: o macOS pergunta antes de o pillr lê-los."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Использует системную утилиту Apple, чтобы читать их записи в связке ключей в фоне. Выкл.: macOS спрашивает, прежде чем pillr их прочтёт."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用 Apple 的安全工具在后台读取它们的钥匙串项目。关闭时，pillr 读取前 macOS 会先询问。"
+          }
+        }
+      }
+    },
+    "Renew Claude's sign-in in the background" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renouveler la connexion de Claude en arrière-plan"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude のサインインをバックグラウンドで更新"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renovar o login do Claude em segundo plano"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Обновлять вход Claude в фоне"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在后台续期 Claude 的登录"
+          }
+        }
+      }
+    },
+    "Runs `claude` briefly when its token is about to expire, so usage keeps updating." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lance brièvement `claude` quand son jeton va expirer, pour que la consommation reste à jour."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "トークンの期限が近づくと `claude` を短時間実行し、使用量の更新を続けます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Executa o `claude` por um instante quando o token está para expirar, para o uso continuar atualizando."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ненадолго запускает `claude`, когда его токен скоро истечёт, чтобы использование продолжало обновляться."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "令牌快过期时短暂运行 `claude`，让用量持续更新。"
+          }
+        }
+      }
+    },
+    "Sign-ins" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connexions"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サインイン"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Logins"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Входы"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "登录"
+          }
+        }
+      }
+    },
+    "Signed by Apple, and sign-ins on your terms." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Signé par Apple, et les connexions comme vous l'entendez."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple の署名付きに。サインインはあなたの決めたとおりに。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Assinado pela Apple, e os logins do seu jeito."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Подписано Apple, а входы по вашим правилам."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "由 Apple 签名，登录方式由你决定。"
+          }
+        }
+      }
+    },
+    "Opens with a double-click" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "S'ouvre d'un double-clic"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダブルクリックで開きます"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre com um clique duplo"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открывается двойным щелчком"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "双击即可打开"
+          }
+        }
+      }
+    },
+    "pillr is now signed with a Developer ID and notarized by Apple, so macOS opens it without Open Anyway." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pillr est désormais signé avec un Developer ID et notarisé par Apple : macOS l'ouvre sans « Ouvrir quand même »."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pillr は Developer ID で署名され、Apple の公証も受けたので、「このまま開く」なしで macOS が開きます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O pillr agora é assinado com um Developer ID e notarizado pela Apple, então o macOS o abre sem \"Abrir Mesmo Assim\"."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pillr теперь подписан Developer ID и заверен Apple, поэтому macOS открывает его без «Всё равно открыть»."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pillr 现已使用 Developer ID 签名并通过 Apple 公证，macOS 打开时不再需要「仍要打开」。"
+          }
+        }
+      }
+    },
+    "pillr asks before reading other apps' sign-ins" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pillr demande avant de lire les connexions d'autres apps"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pillr は他のアプリのサインインを読む前に確認します"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O pillr pergunta antes de ler os logins de outros apps"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pillr спрашивает, прежде чем читать входы других приложений"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pillr 读取其他 App 的登录信息前会先询问"
+          }
+        }
+      }
+    },
+    "Reading Claude Code's and Antigravity's keychain items without a prompt is now a choice in Settings → General → Sign-ins, off by default." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lire sans invite les éléments du trousseau de Claude Code et d'Antigravity est maintenant un choix dans Réglages → Général → Connexions, désactivé par défaut."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude Code と Antigravity のキーチェーン項目を確認なしで読むかどうかは、設定 → 一般 → サインイン で選べるようになりました。初期設定はオフです。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ler sem aviso os itens das chaves do Claude Code e do Antigravity agora é uma opção em Ajustes → Geral → Logins, desativada por padrão."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Чтение записей связки ключей Claude Code и Antigravity без запроса теперь включается в Настройки → Общие → Входы и по умолчанию выключено."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无需提示读取 Claude Code 和 Antigravity 的钥匙串项目，现在是「设置 → 通用 → 登录」里的一个选项，默认关闭。"
+          }
+        }
+      }
+    },
+    "Background Claude renewal can be turned off" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le renouvellement de Claude en arrière-plan peut être désactivé"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude のバックグラウンド更新をオフにできます"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A renovação do Claude em segundo plano pode ser desativada"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Фоновое обновление Claude можно отключить"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可以关闭 Claude 的后台续期"
+          }
+        }
+      }
+    },
+    "The brief `claude` run that keeps Claude's sign-in fresh has its own switch in Settings → General → Sign-ins." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le court lancement de `claude` qui garde la connexion de Claude à jour a son propre interrupteur dans Réglages → Général → Connexions."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claude のサインインを保つための短い `claude` 実行に、設定 → 一般 → サインイン で専用のスイッチができました。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A execução rápida do `claude` que mantém o login do Claude em dia tem a própria chave em Ajustes → Geral → Logins."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "У короткого запуска `claude`, который поддерживает вход Claude, теперь свой переключатель в Настройки → Общие → Входы."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "让 Claude 登录保持有效的那次短暂 `claude` 运行，现在在「设置 → 通用 → 登录」里有单独的开关。"
+          }
+        }
+      }
+    },
+    "Every language shows again" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toutes les langues s'affichent à nouveau"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべての言語が再び表示されます"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todos os idiomas aparecem de novo"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Все языки снова отображаются"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "所有语言重新显示"
+          }
+        }
+      }
+    },
+    "Français, 日本語, Português, Русский and 简体中文 are back in the app." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Français, 日本語, Português, Русский et 简体中文 sont de retour dans l'app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Français、日本語、Português、Русский、简体中文 がアプリに戻りました。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Français, 日本語, Português, Русский e 简体中文 estão de volta no app."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Français, 日本語, Português, Русский и 简体中文 снова в приложении."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Français、日本語、Português、Русский 和 简体中文 已回到 App 中。"
           }
         }
       }

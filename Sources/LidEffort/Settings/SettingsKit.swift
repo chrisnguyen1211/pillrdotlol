@@ -498,6 +498,7 @@ struct SettingsSearchField: View {
                 .font(.system(size: 12))
                 .foregroundStyle(.secondary)
             TextField(L10n.t("Search"), text: $text)
+                .accessibilityLabel(L10n.t("Search"))
                 .textFieldStyle(.plain)
                 .font(.system(size: 13))
                 .focused($focused)

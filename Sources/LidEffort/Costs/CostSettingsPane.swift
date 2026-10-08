@@ -99,6 +99,7 @@ private struct CostAccountRows: View {
         } label: {
             SettingLabel(title: L10n.t("Billing"), subtitle: CostModels.model(for: account.id)?.statsLine())
         }
+        .accessibilityLabel(L10n.t("Billing"))
         .pickerStyle(.segmented)
         .fixedSize()
 

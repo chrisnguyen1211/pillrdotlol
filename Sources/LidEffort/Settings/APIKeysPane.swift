@@ -483,6 +483,7 @@ struct APIKeyForm: View {
                     .textContentType(.oneTimeCode)
                     .textFieldStyle(.roundedBorder)
                     .labelsHidden()
+                    .accessibilityLabel(L10n.t("API key"))
                     .frame(maxWidth: 360)
                     .focused($keyFocused)
                     .onSubmit(add)
@@ -491,6 +492,7 @@ struct APIKeyForm: View {
                 TextField(entry.map(defaultName(for:)) ?? L10n.t("Key \(1)"), text: $name)
                     .textFieldStyle(.roundedBorder)
                     .labelsHidden()
+                    .accessibilityLabel(L10n.t("Name"))
                     .frame(maxWidth: 200)
                     .onSubmit(add)
             }
@@ -512,6 +514,7 @@ struct APIKeyForm: View {
                                   text: binding(for: field.id))
                             .textFieldStyle(.roundedBorder)
                             .labelsHidden()
+                            .accessibilityLabel(field.title())
                             .frame(maxWidth: 260)
                             .onSubmit(add)
                     }
@@ -609,6 +612,7 @@ struct APIKeyForm: View {
             }
             .frame(width: 16)
             TextField(L10n.t("Search providers"), text: $query)
+                .accessibilityLabel(L10n.t("Provider"))
                 .textFieldStyle(.plain)
                 .focused($providerFocused)
                 .onChange(of: query) { _, text in

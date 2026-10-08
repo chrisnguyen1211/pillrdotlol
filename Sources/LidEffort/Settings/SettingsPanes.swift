@@ -275,6 +275,7 @@ struct NotchPane: View {
                 } label: {
                     SettingLabel(title: L10n.t("Show on"), subtitle: showOnExplanation)
                 }
+                .accessibilityLabel(L10n.t("Show on"))
 
                 // There is no slider here on purpose: the notch is moved by
                 // ⌥-dragging it, and this row is the one place that gesture is
@@ -299,6 +300,7 @@ struct NotchPane: View {
                 } label: {
                     SettingLabel(title: L10n.t("Show"), subtitle: preferences.notchVisibility.explanation)
                 }
+                .accessibilityLabel(L10n.t("Show"))
 
                 // Offered only where there is a glass to choose.
                 if #available(macOS 26.0, *) {
@@ -307,6 +309,7 @@ struct NotchPane: View {
                     } label: {
                         SettingLabel(title: L10n.t("Surface"), info: preferences.notchSurfaceStyle.explanation)
                     }
+                    .accessibilityLabel(L10n.t("Surface"))
                     .pickerStyle(.segmented)
 
                     if preferences.notchSurfaceStyle == .glass {
@@ -362,12 +365,14 @@ struct NotchPane: View {
                 } label: {
                     SettingLabel(title: L10n.t("Reset time"), subtitle: preferences.resetTimeFormat.explanation)
                 }
+                .accessibilityLabel(L10n.t("Reset time"))
 
                 Picker(selection: $preferences.weeklyRing) {
                     ForEach(WeeklyRing.allCases) { Text($0.title).tag($0) }
                 } label: {
                     SettingLabel(title: L10n.t("Weekly ring"), info: preferences.weeklyRing.explanation)
                 }
+                .accessibilityLabel(L10n.t("Weekly ring"))
 
                 Toggle(isOn: $preferences.showUsagePace) {
                     SettingLabel(title: L10n.t("Usage pace"),
@@ -412,6 +417,7 @@ struct SessionsPane: View {
                     SettingLabel(title: L10n.t("Hide idle sessions after"),
                                  subtitle: L10n.t("A terminal left open is not a session anyone is in."))
                 }
+                .accessibilityLabel(L10n.t("Hide idle sessions after"))
             }
 
             Section {
@@ -483,6 +489,7 @@ struct NotificationsPane: View {
                     SettingLabel(title: L10n.t("Remind me"),
                                  subtitle: L10n.t("The sound again while nobody has answered."))
                 }
+                .accessibilityLabel(L10n.t("Remind me"))
                 .disabled(!preferences.promptSound)
 
                 Toggle(isOn: $preferences.promptSystemNotification) {
@@ -497,6 +504,7 @@ struct NotificationsPane: View {
                     SettingLabel(title: L10n.t("Over full-screen apps"),
                                  info: L10n.t("With Sound only, a prompt that arrives while a game, video or presentation is full screen waits as a sound, and its card comes up when you are back. No card appears under a pointer that is busy elsewhere, so a click meant for the game can never land on Allow."))
                 }
+                .accessibilityLabel(L10n.t("Over full-screen apps"))
             } header: {
                 SectionHeader(title: L10n.t("When Claude asks"),
                               info: L10n.t("Approvals and questions answered from the notch. See Sessions & Approvals to switch them on. These say that one is waiting; the card itself stays until it is answered."))
@@ -513,6 +521,7 @@ struct NotificationsPane: View {
                 } label: {
                     SettingLabel(title: L10n.t("For"), info: preferences.peekDuration.explanation)
                 }
+                .accessibilityLabel(L10n.t("For"))
                 .disabled(!preferences.announceSessionEnd)
 
                 Toggle(L10n.t("Play a sound"), isOn: $preferences.sessionEndSound)
@@ -615,11 +624,13 @@ struct GeneralPane: View {
                 } label: {
                     SettingLabel(title: L10n.t("App icon"), info: preferences.appPresence.explanation)
                 }
+                .accessibilityLabel(L10n.t("App icon"))
                 Picker(selection: $preferences.language) {
                     ForEach(AppLanguage.allCases) { Text($0.title).tag($0) }
                 } label: {
                     SettingLabel(title: L10n.t("Language"), info: preferences.language.explanation)
                 }
+                .accessibilityLabel(L10n.t("Language"))
             }
 
             Section {
