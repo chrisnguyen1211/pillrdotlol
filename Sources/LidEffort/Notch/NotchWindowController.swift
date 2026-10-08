@@ -1492,7 +1492,9 @@ final class NotchWindowController {
         // Grok card wearing Claude's mark said nothing about which finished.
         let glyph = model.snapshots.first { $0.providerID == event.providerID }?.glyph
             ?? ProviderGlyph.forProvider(event.providerID) ?? .third
-        var toast = DoneToast(event: event, glyph: glyph)
+        // A few hundred kilobytes of the transcript's end: quick, and the
+        // card has to name the session from its first frame.
+        var toast = DoneToast(event: event, glyph: glyph, context: DoneToast.context(for: event.session))
         toast.changes = changes
         Log.usage.notice("done card for \(event.session.name, privacy: .private) pid \(toast.pid ?? -1, privacy: .public), rect \(NSStringFromRect(self.doneToastRect), privacy: .public), panel \(NSStringFromRect(panel.frame), privacy: .public)")
         // A session waiting on you is not news that goes stale in five

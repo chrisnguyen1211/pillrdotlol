@@ -93,7 +93,7 @@ enum Handoff {
         return parts.joined(separator: " ")
     }
 
-    private static func claudeTranscript(pid: pid_t, cwd: String) -> URL? {
+    static func claudeTranscript(pid: pid_t, cwd: String) -> URL? {
         let home = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".claude")
         guard let data = try? Data(contentsOf: home.appendingPathComponent("sessions/\(pid).json")),
               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],

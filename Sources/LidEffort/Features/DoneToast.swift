@@ -65,15 +65,23 @@ struct DoneToast: Equatable, Identifiable {
     /// The session itself, for ⌥-click → reply.
     let session: AgentSession
 
-    init(event: SessionCompletionWatcher.Event, glyph: ProviderGlyph) {
+    /// - Parameter context: what you last asked the session and what it said
+    ///   at the end, where its transcript can be read. Several sessions can
+    ///   share one folder; the folder alone did not say which one to answer.
+    init(event: SessionCompletionWatcher.Event, glyph: ProviderGlyph, context: PromptContext? = nil) {
         let session = event.session
         isBlocked = event.reason == .blocked
         let line = DoneCheer.line(for: session, blocked: isBlocked)
-        title = line.title
+        // Which piece of work: the name you gave the session, or else what
+        // you last asked it. The cheer only when neither is known.
+        title = context?.title ?? context?.ask.map { "“\($0)”" } ?? line.title
         subtitle = session.detail.isEmpty ? session.name : "\(session.name) · \(session.detail)"
-        // The question itself beats any line about there being one.
+        // The question itself beats any line about there being one, and
+        // what the agent said at the end beats a cheer.
         if isBlocked, let question = session.waitingFor, !question.isEmpty {
             self.line = L10n.t("Asking: \(question)")
+        } else if !isBlocked, let lead = context?.lead {
+            self.line = lead
         } else {
             self.line = line.status
         }
@@ -83,6 +91,15 @@ struct DoneToast: Equatable, Identifiable {
     }
 
     static func == (lhs: DoneToast, rhs: DoneToast) -> Bool { lhs.id == rhs.id }
+
+    /// What you asked a session and what it said last, from the tail of its
+    /// transcript, for an agent whose transcript pillr can find: Claude Code.
+    @MainActor static func context(for session: AgentSession) -> PromptContext? {
+        guard let pid = session.processID, Handoff.source(of: session) == .claude,
+              let cwd = SessionFocus.currentDirectory(of: pid),
+              let transcript = Handoff.claudeTranscript(pid: pid, cwd: cwd) else { return nil }
+        return PromptContext.load(transcript: transcript.path, cwd: nil)
+    }
 }
 
 /// The card: glyph, title, the session and where it runs, and a status line
