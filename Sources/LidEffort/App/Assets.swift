@@ -8,7 +8,7 @@ import AppKit
 enum Assets {
     static func image(named name: String) -> NSImage? {
         if let image = NSImage(named: name) { return image }
-        guard let catalogue = Bundle.module.url(forResource: "Assets", withExtension: "xcassets") else { return nil }
+        guard let catalogue = Bundle.appResources.url(forResource: "Assets", withExtension: "xcassets") else { return nil }
         let set = catalogue.appendingPathComponent("\(name).imageset")
         guard let files = try? FileManager.default.contentsOfDirectory(at: set, includingPropertiesForKeys: nil) else { return nil }
         for ext in ["svg", "pdf", "png"] {

@@ -32,6 +32,16 @@ enum ReleaseNotes {
     static var all: [ReleaseNote] {
         [
             ReleaseNote(
+                version: "1.1.2",
+                headline: L10n.t("Opens on every Mac again."),
+                changes: [
+                    ReleaseNote.Change(
+                        title: L10n.t("No more quitting at launch"),
+                        detail: L10n.t("1.1.1 closed the moment it opened on most Macs, because it looked for its own languages and icons in the wrong place. It finds them inside the app now.")
+                    )
+                ]
+            ),
+            ReleaseNote(
                 version: "1.1.1",
                 headline: L10n.t("Signed by Apple, and sign-ins on your terms."),
                 changes: [

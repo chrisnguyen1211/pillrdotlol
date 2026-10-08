@@ -52692,6 +52692,108 @@
           }
         }
       }
+    },
+    "Opens on every Mac again." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "S’ouvre de nouveau sur tous les Mac."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "どの Mac でもまた開けます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre de novo em qualquer Mac."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Снова открывается на любом Mac."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在每台 Mac 上都能正常打开了。"
+          }
+        }
+      }
+    },
+    "No more quitting at launch" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus de fermeture au lancement"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "起動直後に終了しなくなりました"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não fecha mais ao abrir"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Больше не закрывается при запуске"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "启动时不再退出"
+          }
+        }
+      }
+    },
+    "1.1.1 closed the moment it opened on most Macs, because it looked for its own languages and icons in the wrong place. It finds them inside the app now." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sur la plupart des Mac, la 1.1.1 se fermait dès son ouverture : elle cherchait ses langues et ses icônes au mauvais endroit. Elle les trouve maintenant dans l’app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1.1.1 は多くの Mac で開いた瞬間に終了していました。言語ファイルとアイコンを間違った場所で探していたためです。今はアプリ内から見つけます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Na maioria dos Macs, o 1.1.1 fechava assim que abria, porque procurava seus idiomas e ícones no lugar errado. Agora ele os encontra dentro do app."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "На большинстве Mac версия 1.1.1 закрывалась сразу после запуска: она искала свои языки и значки не там. Теперь она находит их внутри приложения."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在大多数 Mac 上，1.1.1 一打开就退出，因为它在错误的位置寻找自己的语言和图标。现在它会在 App 内找到它们。"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

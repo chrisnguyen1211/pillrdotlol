@@ -9,7 +9,7 @@ import Foundation
 /// test binary), which has no `.lproj` of its own: looking there found
 /// nothing, and every language quietly read as English.
 enum L10n {
-    static var bundle: Bundle { Bundle.module }
+    static var bundle: Bundle { Bundle.appResources }
 
     /// Posted after `apply` so windows can rebuild copy. A notification
     /// rather than an observable object because `t` is called off the main
