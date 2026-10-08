@@ -28,7 +28,7 @@ final class Updater: NSObject, ObservableObject {
             case .upToDate: return L10n.t("pillr is up to date.")
             case .found(let v): return L10n.t("Version \(v) is available.")
             case .ready(let v): return L10n.t("Version \(v) is ready. Restart pillr to finish updating.")
-            case .unreachable: return L10n.t("Couldn't reach the update server. pillr will try again on its own — nothing is wrong with this copy.")
+            case .unreachable: return L10n.t("Couldn't reach the update server. pillr will try again on its own. Nothing is wrong with this copy.")
             case .failed(let why): return why
             }
         }

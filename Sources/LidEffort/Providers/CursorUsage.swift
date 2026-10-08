@@ -107,7 +107,7 @@ enum CursorUsage {
 
         let membership = (root["membershipType"] as? String) ?? "this"
         if (root["isUnlimited"] as? Bool) == true {
-            throw UsageProviderError.nothingMetered(L10n.t("Unlimited on the \(membership) plan — nothing to meter"))
+            throw UsageProviderError.nothingMetered(L10n.t("Unlimited on the \(membership) plan, nothing to meter"))
         }
         throw UsageProviderError.nothingMetered(L10n.t("The \(membership) plan has nothing for Cursor to meter yet"))
     }

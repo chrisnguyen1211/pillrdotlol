@@ -50,7 +50,7 @@ actor GLMProvider: UsageProvider {
 
     nonisolated var signInRoute: SignInRoute {
         if isExtraKey { return .guidance(ExtraKey.signInGuidance) }
-        return .guidance(L10n.t("Usage rides on a Z.ai GLM Coding Plan key held by a coding tool — Claude Code's settings.json, ZCode or OpenCode. Set one up there and the notch reads it."))
+        return .guidance(L10n.t("Usage rides on a Z.ai GLM Coding Plan key held by a coding tool: Claude Code's settings.json, ZCode or OpenCode. Set one up there and the notch reads it."))
     }
 
     nonisolated func forgetCachedCredential() {

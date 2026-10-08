@@ -26,7 +26,7 @@ actor GrokLocalProvider: UsageProvider {
     nonisolated var credentialFiles: [URL] { [authURL] }
 
     nonisolated var signInRoute: SignInRoute {
-        .guidance(L10n.t("Run grok login — it signs in and refreshes the token this reads."))
+        .guidance(L10n.t("Run grok login. It signs in and refreshes the token this reads."))
     }
 
     nonisolated func account() -> ProviderAccount? { GrokCredentials.account() }

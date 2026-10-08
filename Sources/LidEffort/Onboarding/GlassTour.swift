@@ -908,7 +908,7 @@ struct TourResultCard: View {
                 .foregroundStyle(.white.opacity(0.72))
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
-            Label(L10n.t("Just the tour — nothing was sent"), systemImage: "sparkles")
+            Label(L10n.t("Just the tour, nothing was sent"), systemImage: "sparkles")
                 .font(.system(size: 11.5, weight: .medium, design: .rounded))
                 .foregroundStyle(GlassTour.glow)
         }

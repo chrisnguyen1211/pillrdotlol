@@ -224,7 +224,7 @@ private struct SetupPage: View {
         case .hooks:
             return L10n.t("Each agent tells pillr the moment its turn ends, so the done card is never a guess. Where an agent can ask for approval through a hook, you answer it from the notch.")
         case .terminals:
-            return L10n.t("pillr talks to the terminal a session runs in — to take you to it, and to set the effort level live. macOS asks you once for each app.")
+            return L10n.t("pillr talks to the terminal a session runs in, to take you to it and to set the effort level live. macOS asks you once for each app.")
         case .desktopApps:
             return L10n.t("An agent's desktop app has no terminal to type into. With Accessibility, pillr can reach the ones listed here; the rest pick the lid's level up next session.")
         case .agents:
@@ -232,7 +232,7 @@ private struct SetupPage: View {
         case .ready:
             return IntroGate.seen
                 ? L10n.t("Here is what the lid will set for each agent. Everything here can be changed later in Settings.")
-                : L10n.t("Here is what the lid will set for each agent. Next, a short tour shows where everything lives — skip it any time.")
+                : L10n.t("Here is what the lid will set for each agent. Next, a short tour shows where everything lives. Skip it any time.")
         }
     }
 }
@@ -242,10 +242,10 @@ private struct WelcomeBody: View {
         VStack(alignment: .leading, spacing: 16) {
             Feature(icon: "circle.dashed", tint: .blue,
                     title: L10n.t("Usage in the notch"),
-                    detail: L10n.t("A ring per agent you use — Claude Code, Codex, Grok, Cursor and more — with the time until it resets."))
+                    detail: L10n.t("A ring per agent you use (Claude Code, Codex, Grok, Cursor and more) with the time until it resets."))
             Feature(icon: "laptopcomputer", tint: .orange,
                     title: L10n.t("⌘ + lid sets the effort"),
-                    detail: L10n.t("Hold ⌘ and tilt the lid: open for more thinking, close for less — for the agent you're working with."))
+                    detail: L10n.t("Hold ⌘ and tilt the lid to set thinking for the agent you're working with: open for more, close for less."))
             Feature(icon: "bell.badge.fill", tint: .green,
                     title: L10n.t("Know when any agent is done"),
                     detail: L10n.t("Claude Code, Codex, Grok, Cursor: a card the moment a turn ends, with Reply beside it."))
@@ -315,7 +315,7 @@ private struct HooksBody: View {
             if model.hookLinks.contains(where: { $0.present && $0.approvalsHooked != nil }) {
             Divider().padding(.leading, 44)
             SetupRow(icon: "checkmark.bubble", title: L10n.t("Answer approvals from the notch"),
-                     detail: L10n.t("Questions and permission requests, answered without switching windows — for every agent whose hooks can hold one open.")) {
+                     detail: L10n.t("Questions and permission requests, answered without switching windows, for every agent whose hooks can hold one open.")) {
                 Toggle("", isOn: Binding(get: { model.preferences.answerPromptsFromNotch },
                                          set: { model.preferences.answerPromptsFromNotch = $0 }))
                     .toggleStyle(.switch)
@@ -324,7 +324,7 @@ private struct HooksBody: View {
             }
         }
         if !HookConsent.locationAllows() {
-            Hint(L10n.t("Hooks go in once pillr is in Applications — they point at where pillr lives, and a copy on the disk image disappears."))
+            Hint(L10n.t("Hooks go in once pillr is in Applications. They point at where pillr lives, and a copy on the disk image disappears."))
         }
         let here = model.hookLinks.filter(\.present)
         let elsewhere = model.hookLinks.filter { !$0.present }.map(\.name)
@@ -437,7 +437,7 @@ private struct DesktopAppsBody: View {
             ForEach(Array(model.desktopApps.enumerated()), id: \.element.id) { index, app in
                 if index > 0 { Divider().padding(.leading, 50) }
                 SetupRow(appIcon: app.bundleID, title: app.name,
-                         detail: app.reach ?? L10n.t("Can't be reached from outside yet — its sessions pick the lid's level up when they start.")) {
+                         detail: app.reach ?? L10n.t("Can't be reached from outside yet. Its sessions pick the lid's level up when they start.")) {
                     if app.reach != nil {
                         Toggle("", isOn: Binding(get: { model.typesIntoClaudeDesktop }, set: { model.typesIntoClaudeDesktop = $0 }))
                             .toggleStyle(.switch)
@@ -667,7 +667,7 @@ private struct CatalogRow: View {
                 let need = model.need(for: status, agent: agent)
                 failedNeed = need
                 if case .error(let why) = status {
-                    phase = .failed(L10n.t("Couldn't connect — \(why)"))
+                    phase = .failed(L10n.t("Couldn't connect: \(why)"))
                 } else if case .unsupported(let why) = status {
                     phase = .failed(why)
                 } else {
@@ -681,7 +681,7 @@ private struct CatalogRow: View {
     /// long as signing in plausibly takes.
     private func startSignIn() {
         guard model.beginSignIn(agent.id) else { return }
-        phase = .signingIn(L10n.t("Sign in, then come back — pillr is watching for it"))
+        phase = .signingIn(L10n.t("Sign in, then come back (pillr is watching for it)"))
         watch?.cancel()
         watch = Task { @MainActor in
             for _ in 0..<45 {
@@ -705,10 +705,10 @@ private struct CatalogRow: View {
         case .idle: break
         }
         guard on else {
-            if missing != nil { return L10n.t("Not installed on this Mac — install it first") }
+            if missing != nil { return L10n.t("Not installed on this Mac, install it first") }
             return model.isFoundOnMac(agent) ? L10n.t("Found on this Mac") : L10n.t("Not set up on this Mac")
         }
-        if missing != nil { return L10n.t("Not installed on this Mac — install it first") }
+        if missing != nil { return L10n.t("Not installed on this Mac, install it first") }
         if let need = model.needs[agent.id] { return need.reason }
         guard let snapshot = model.snapshot(for: agent.id) else { return L10n.t("Checking…") }
         switch snapshot.status {

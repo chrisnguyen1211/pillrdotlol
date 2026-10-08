@@ -61,7 +61,7 @@ actor KiroProvider: UsageProvider {
     nonisolated var signInCommand: String? { "kiro-cli login" }
 
     nonisolated var signInRoute: SignInRoute {
-        .guidance(L10n.t("Run kiro-cli login in Terminal — the notch asks kiro-cli /usage for your credits."))
+        .guidance(L10n.t("Run kiro-cli login in Terminal. The notch asks kiro-cli /usage for your credits."))
     }
 
     nonisolated func forgetCachedCredential() {

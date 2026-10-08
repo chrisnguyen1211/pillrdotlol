@@ -116,7 +116,7 @@ final class UsageRefreshDeadlineTests: XCTestCase {
         store.refreshNow()
         await settle()
         XCTAssertEqual(store.snapshots.first { $0.id == "blocked" }?.status,
-                       .error("no reply — check your connection; pillr will try again"))
+                       .error("no reply. Check your connection; pillr will try again"))
         blocked.release()
     }
 

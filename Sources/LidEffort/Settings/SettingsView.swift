@@ -603,7 +603,7 @@ struct SettingsView: View {
     /// this, sees four blank rings and concludes it is broken — and the
     /// distinction that catches them out is Claude *Code*, not the Claude app.
     static var setupCopy: String {
-        L10n.t("pillr reads usage from tools already signed in on this Mac — it never asks for your password. Install and sign in to any of Claude Code (the terminal tool, not the Claude app), Cursor (the editor or cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, Command Code, GitHub Copilot, Kimi Code or a Gemini API key (via Gemini CLI, OpenCode or Hermes), and its ring appears in the notch.")
+        L10n.t("pillr reads usage from tools already signed in on this Mac. It never asks for your password. Install and sign in to any of Claude Code (the terminal tool, not the Claude app), Cursor (the editor or cursor-agent), Codex, Antigravity, GLM, Grok, OpenCode, Command Code, GitHub Copilot, Kimi Code or a Gemini API key (via Gemini CLI, OpenCode or Hermes), and its ring appears in the notch.")
     }
 
     /// Said before it happens rather than after. A system dialogue asking to
@@ -612,7 +612,7 @@ struct SettingsView: View {
     /// it return on every read, which is what "it asks every time" turns out to
     /// be.
     static var keychainCopy: String {
-        L10n.t("macOS will ask once for permission to read Claude Code's, Antigravity's and cursor-agent's saved logins. Choose Always Allow — plain Allow makes it ask again every time.")
+        L10n.t("macOS will ask once for permission to read Claude Code's, Antigravity's and cursor-agent's saved logins. Choose Always Allow. Plain Allow makes it ask again every time.")
     }
 
     /// A provider has just been switched on: put it after the ones already
@@ -986,8 +986,8 @@ private struct AccountRow: View {
             // inside, this warning would be swallowed by the very row that
             // makes everything look fine.
             if isConnected, provider.needsSignInRenewal {
-                Text(provider.signInCommand.map { L10n.t("\(provider.name) usage needs its sign-in renewed — run `\($0)` once in a terminal.") }
-                     ?? L10n.t("\(provider.name) usage needs its sign-in renewed — sign in to \(provider.name) again."))
+                Text(provider.signInCommand.map { L10n.t("\(provider.name) usage needs its sign-in renewed. Run `\($0)` once in a terminal.") }
+                     ?? L10n.t("\(provider.name) usage needs its sign-in renewed. Sign in to \(provider.name) again."))
                     .font(.caption)
                     .foregroundStyle(.orange)
                     .padding(.leading, 48)
@@ -1292,7 +1292,7 @@ private struct AccountRow: View {
         return HStack(spacing: 6) {
             Text(!isConnected
                  ? L10n.t("Hidden from the notch · \(count)")
-                 : keys.isEmpty ? L10n.t("No keys yet — add one under API")
+                 : keys.isEmpty ? L10n.t("No keys yet, add one under API")
                  : off == 0 ? L10n.t("\(count), shown together in one cell")
                  : L10n.t("\(count), \(off) switched off"))
                 .foregroundStyle(.secondary)
@@ -1393,7 +1393,7 @@ private struct AccountRow: View {
                  : L10n.t("Hidden from the notch · Loaded in \(provider.runtimeName ?? "Ollama")"))
                 .foregroundStyle(.secondary)
         } else if !isConnected {
-            Text(L10n.t("Not connected — nothing is read, and no readings are kept."))
+            Text(L10n.t("Not connected. Nothing is read, and no readings are kept."))
                 .foregroundStyle(.tertiary)
         } else if let account = provider.account {
             VStack(alignment: .leading, spacing: 2) {
@@ -1536,8 +1536,8 @@ private struct AccountRow: View {
     /// What a failed check says, in the row's one line.
     nonisolated static func reason(for status: ProviderStatus, need: ConnectNeed?, takesKey: Bool) -> String {
         switch status {
-        case .needsAuth where takesKey: return L10n.t("No working key — add one under API")
-        case .error(let why): return L10n.t("Couldn't connect — \(why)")
+        case .needsAuth where takesKey: return L10n.t("No working key, add one under API")
+        case .error(let why): return L10n.t("Couldn't connect: \(why)")
         case .unsupported(let why): return why
         default: return need?.reason ?? L10n.t("Not signed in")
         }

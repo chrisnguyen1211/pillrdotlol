@@ -27,7 +27,7 @@ actor AmpProvider: UsageProvider {
     nonisolated var credentialFiles: [URL] { [AmpCredentials.secretsURL] }
 
     nonisolated var signInRoute: SignInRoute {
-        .guidance(L10n.t("Run amp login in Terminal — the notch reads ~/.local/share/amp/secrets.json."))
+        .guidance(L10n.t("Run amp login in Terminal. The notch reads ~/.local/share/amp/secrets.json."))
     }
 
     nonisolated func account() -> ProviderAccount? {

@@ -58,9 +58,9 @@ struct EffortOffer: Identifiable, Equatable {
         if !installed {
             warning = L10n.t("Not on this Mac")
         } else if model != nil, perLevel == nil {
-            warning = L10n.t("\(ModelName.pretty(model ?? "")) has no effort level — the lid leaves it alone")
+            warning = L10n.t("\(ModelName.pretty(model ?? "")) has no effort level, so the lid leaves it alone")
         } else if let model, let listed, !listed.isEmpty, !listed.contains(model) {
-            warning = L10n.t("\(model) isn't in \(target.displayName)'s current model list — if it stops working, pick another in \(target.configPath)")
+            warning = L10n.t("\(model) isn't in \(target.displayName)'s current model list. If it stops working, pick another in \(target.configPath)")
         }
         return EffortOffer(id: target.id, name: target.displayName, model: model, enabled: target.enabled,
                            installed: installed, scale: scale, current: current, perLevel: perLevel,

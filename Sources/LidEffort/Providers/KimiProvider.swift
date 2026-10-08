@@ -30,7 +30,7 @@ actor KimiProvider: UsageProvider {
     nonisolated var signInCommand: String? { "kimi login" }
 
     nonisolated var signInRoute: SignInRoute {
-        .guidance(L10n.t("Run kimi and sign in with /login — it writes and refreshes the token this reads."))
+        .guidance(L10n.t("Run kimi and sign in with /login. It writes and refreshes the token this reads."))
     }
 
     nonisolated func account() -> ProviderAccount? { KimiCredentials.account() }

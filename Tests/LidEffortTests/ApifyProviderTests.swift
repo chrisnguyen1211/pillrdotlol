@@ -145,7 +145,7 @@ final class ApifyProviderTests: XCTestCase {
         let store = UsageStore(providers: [provider()], archive: archive)
         await store.refresh()
         let snapshot = try XCTUnwrap(store.snapshots.first)
-        XCTAssertEqual(snapshot.status, .error("This Apify token cannot read account limits — use one with full account access"))
+        XCTAssertEqual(snapshot.status, .error("This Apify token cannot read account limits. Use one with full account access"))
         XCTAssertFalse(snapshot.hasReading)
         XCTAssertEqual(ApifyEndpoint.requests.count, 1)
     }

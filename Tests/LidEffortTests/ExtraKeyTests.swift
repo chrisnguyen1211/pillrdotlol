@@ -308,7 +308,7 @@ final class ExtraKeyTests: XCTestCase {
                 StubProvider(id: extra.id, name: extra.displayName, error: .rateLimited(retryAfter: 60))
             },
             storeSecret: { _, _ in stored += 1; return true })
-        XCTAssertEqual(throttled, .failed(L10n.t("Couldn't check the key just now — try again in a minute")),
+        XCTAssertEqual(throttled, .failed(L10n.t("Couldn't check the key just now. Try again in a minute")),
                        "a throttle proves nothing about the key")
         XCTAssertEqual(stored, 0)
     }

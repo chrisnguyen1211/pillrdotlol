@@ -39,7 +39,7 @@ actor OpenCodeProvider: UsageProvider {
     nonisolated var signInCommand: String? { "opencode auth login" }
 
     nonisolated var signInRoute: SignInRoute {
-        .guidance(L10n.t("Usage rides on the opencode-go key OpenCode stores on sign-in — connect Go inside OpenCode (`opencode auth login`) and the notch reads it."))
+        .guidance(L10n.t("Usage rides on the opencode-go key OpenCode stores on sign-in. Connect Go inside OpenCode (`opencode auth login`) and the notch reads it."))
     }
 
     nonisolated func forgetCachedCredential() {

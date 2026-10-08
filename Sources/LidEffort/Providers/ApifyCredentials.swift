@@ -112,7 +112,7 @@ enum ApifyCredentials {
     }
 
     private static var unreadable: UsageProviderError {
-        .apiError(L10n.t("~/.apify/auth.json is not readable — run apify login again"))
+        .apiError(L10n.t("~/.apify/auth.json is not readable. Run apify login again"))
     }
 
     static func load(_ sources: ApifyCredentialSources = ApifyCredentialSources()) throws -> Credential {

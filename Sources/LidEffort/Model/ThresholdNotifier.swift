@@ -81,7 +81,7 @@ enum ThresholdAlerts {
                 : L10n.t("\(alert.providerName) is at \(alert.usedPercent)%")
             if alert.threshold >= 100 {
                 content.body = alert.resetsAt.map {
-                    L10n.t("Its \(alert.windowLabel.lowercased()) limit is spent — resets \($0.formatted(date: .omitted, time: .shortened))")
+                    L10n.t("Its \(alert.windowLabel.lowercased()) limit is spent (resets \($0.formatted(date: .omitted, time: .shortened)))")
                 } ?? L10n.t("Its \(alert.windowLabel.lowercased()) limit is spent.")
             } else {
                 content.body = L10n.t("\(alert.usedPercent)% of its \(alert.windowLabel.lowercased()) limit used.")

@@ -106,12 +106,12 @@ enum SessionCommander {
         switch reach {
         case .iterm(let tty):
             guard EffortInjector.itermAllowed else {
-                return .failed(L10n.t("iTerm2 hasn't allowed pillr yet — allow it in Settings → General → Run Setup Again… → Terminals"))
+                return .failed(L10n.t("iTerm2 hasn't allowed pillr yet. Allow it in Settings → General → Run Setup Again… → Terminals"))
             }
             return outcome(ITermWriter.write(line, tty: tty), host: "iTerm2")
         case .terminal(let tty):
             guard EffortInjector.terminalAllowed else {
-                return .failed(L10n.t("Terminal hasn't allowed pillr yet — allow it in Settings → General → Run Setup Again… → Terminals"))
+                return .failed(L10n.t("Terminal hasn't allowed pillr yet. Allow it in Settings → General → Run Setup Again… → Terminals"))
             }
             return outcome(EffortInjector.typeMessage(line, tty: tty), host: "Terminal")
         case .superset:
@@ -176,7 +176,7 @@ enum SessionCommander {
     /// can work.
     private static func accessibilityOff() -> String {
         AccessibilityAccess.request()
-        return L10n.t("Accessibility is off for pillr — switch it on in System Settings → Privacy & Security → Accessibility")
+        return L10n.t("Accessibility is off for pillr. Switch it on in System Settings → Privacy & Security → Accessibility")
     }
 
     private static func outcome(_ result: EffortInjector.Outcome, host: String) -> ReplyOutcome {
@@ -185,7 +185,7 @@ enum SessionCommander {
         case .promptNotIdle: return .busy
         case .tabNotFound: return .failed(L10n.t("Its \(host) tab wasn't found"))
         case .contentUnreadable: return .failed(L10n.t("\(host) wouldn't let pillr read the tab"))
-        case .appleScriptError: return .failed(L10n.t("\(host) refused the message — check pillr is allowed under Automation"))
+        case .appleScriptError: return .failed(L10n.t("\(host) refused the message. Check pillr is allowed under Automation"))
         case .noTTY, .hostedBy: return .failed(L10n.t("This session has no terminal to write to"))
         }
     }

@@ -159,7 +159,7 @@ final class StatusItemController: NSObject, NSMenuDelegate {
     /// The provider's own row: name, headline figure, and age when stale — the
     /// same three facts the tooltip header shows. Clicking re-reads it.
     private func headerItem(for snapshot: ProviderSnapshot, now: Date) -> NSMenuItem {
-        var title = "\(snapshot.displayName) — \(Self.headline(for: snapshot))"
+        var title = "\(snapshot.displayName): \(Self.headline(for: snapshot))"
         if snapshot.kind == .usage, let since = snapshot.status.staleSince, since != .distantPast {
             title += " · \(ElapsedCopy.ago(since: since, now: now))"
         }

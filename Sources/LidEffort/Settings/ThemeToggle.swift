@@ -51,7 +51,7 @@ struct ThemeChooser: View {
                 .contentShape(Circle())
         }
         .buttonStyle(.plain)
-        .help(L10n.t("Appearance: \(choice.title) — click for \(next.title)"))
+        .help(L10n.t("Appearance: \(choice.title) (click for \(next.title))"))
         .accessibilityLabel(L10n.t("Appearance"))
         .accessibilityValue(choice.title)
         .accessibilityHint(L10n.t("Switches to \(next.title)"))

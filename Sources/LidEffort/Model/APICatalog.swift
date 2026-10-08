@@ -885,17 +885,17 @@ enum APICatalog {
             id: "xai", name: "xAI", category: .llm, aliases: ["grok"], readability: .adminKey, glyph: .xai,
             consoleURL: url("https://console.x.ai"), keyPrefix: "xai-",
             fields: [APIField(id: "team", title: { L10n.t("Team ID") },
-                              placeholder: L10n.t("Optional — read from the key"), required: false)],
+                              placeholder: L10n.t("Optional (read from the key)"), required: false)],
             keyKind: .management, measure: .balanceAndSpend,
-            forbidden: { L10n.t("This management key can't read billing — give it billing access in the xAI Console") },
-            notFound: { L10n.t("xAI has no billing for that team — check the Team ID, or leave it empty") },
+            forbidden: { L10n.t("This management key can't read billing. Give it billing access in the xAI Console") },
+            notFound: { L10n.t("xAI has no billing for that team. Check the Team ID, or leave it empty") },
             route: .catalog(APIRecipe(
                 // The management key's own description names its team, and
                 // asking for it is the check that the key is one at all.
                 prefetch: [APIPrefetch(variable: "team",
                                        request: r("https://management-api.x.ai/auth/management-keys/validation"),
                                        path: "teamId",
-                                       missing: { L10n.t("xAI didn't say which team this key is for — add your Team ID") })],
+                                       missing: { L10n.t("xAI didn't say which team this key is for. Add your Team ID") })],
                 // The invoice preview, not the prepaid ledger: the ledger
                 // answers 404 for a team billed after the fact, and the
                 // preview has both — credits bought ahead and this cycle's
@@ -1340,7 +1340,7 @@ enum APICatalog {
         case "anthropic":
             return L10n.t("Anthropic shares costs only with an Admin key. Create one in the Claude Console → Settings → Admin keys; it starts with sk-ant-admin. An ordinary API key is refused.")
         case "xai":
-            return L10n.t("xAI shares billing only with a management key — not a key from the API Keys page. Create one in the xAI Console → Settings → Management keys, with access to billing. The team is read from the key, so Team ID can stay empty.")
+            return L10n.t("xAI shares billing only with a management key, not a key from the API Keys page. Create one in the xAI Console → Settings → Management keys, with access to billing. The team is read from the key, so Team ID can stay empty.")
         case "openroutercredits":
             return L10n.t("The account's credits need a management key from OpenRouter → Settings → Management keys. For one key's own spend, choose OpenRouter instead.")
         case "mistral":
@@ -1350,7 +1350,7 @@ enum APICatalog {
         case "cloudflare":
             return L10n.t("Create an API token under My Profile → API Tokens with Account Analytics: Read, then copy the Account ID from the right-hand side of the Cloudflare dashboard.")
         case "featherless", "cartesia", "exa":
-            return L10n.t("This provider shares usage only with an admin key. Create one in its dashboard's team or admin settings — an ordinary API key is refused.")
+            return L10n.t("This provider shares usage only with an admin key. Create one in its dashboard's team or admin settings. An ordinary API key is refused.")
         case "upstash":
             return L10n.t("Use a Developer API key from Upstash → Account → Management API, and the email you sign in with.")
         default:

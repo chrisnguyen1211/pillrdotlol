@@ -236,7 +236,7 @@ struct HandoffView: View {
                 ForEach(targets) { agent in
                     Button {
                         if demo {
-                            demoNote = L10n.t("Demo — would open \(agent.displayName) in a new Terminal window")
+                            demoNote = L10n.t("Demo: would open \(agent.displayName) in a new Terminal window")
                         } else if Handoff.launch(agent, brief: brief, for: session) {
                             onClose()
                         }

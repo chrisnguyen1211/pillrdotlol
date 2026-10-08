@@ -162,8 +162,8 @@ struct OrbReplyView: View {
         let title: String
         switch outcome {
         case .sent: good = true; title = L10n.t("Sent to \(session.name)")
-        case .pasted(let app): good = true; title = L10n.t("Pasted into \(app) — press Return there")
-        case .copied(let app): good = true; title = L10n.t("Copied — paste it into the session's tab in \(app)")
+        case .pasted(let app): good = true; title = L10n.t("Pasted into \(app). Press Return there")
+        case .copied(let app): good = true; title = L10n.t("Copied. Paste it into the session's tab in \(app)")
         case .busy: good = false; title = L10n.t("\(session.name) is busy or has a draft")
         case .otherSession: good = false; title = L10n.t("Open \(session.name) in the Claude app first")
         case .failed: good = false; title = L10n.t("Not sent to \(session.name)")
@@ -173,7 +173,7 @@ struct OrbReplyView: View {
         if case .failed(let reason) = outcome {
             cardBody = L10n.t("\(reason). Your message is kept.")
         } else {
-            cardBody = good ? message : L10n.t("Nothing was sent. Your message is kept — try again in a moment.")
+            cardBody = good ? message : L10n.t("Nothing was sent. Your message is kept, so try again in a moment.")
         }
 
         wordsShown = 0

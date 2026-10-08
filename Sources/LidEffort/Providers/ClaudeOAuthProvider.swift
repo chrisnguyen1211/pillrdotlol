@@ -402,7 +402,7 @@ actor ClaudeOAuthProvider: UsageProvider {
     nonisolated var signInRoute: SignInRoute {
         // Names the command for a profile, because that is the only way to
         // reach it: plain `claude` signs the default one in, not this.
-        .guidance(L10n.t("Run `\(profile.signInCommand)` once — it signs in and is what these readings come from. Use /login there to change account."))
+        .guidance(L10n.t("Run `\(profile.signInCommand)` once. It signs in and is what these readings come from. Use /login there to change account."))
     }
 
     /// Reached only from "Allow access…", so this is the one path allowed to

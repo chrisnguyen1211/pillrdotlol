@@ -47,7 +47,7 @@ actor KiloProvider: UsageProvider {
     nonisolated var signInCommand: String? { "kilo auth login" }
 
     nonisolated var signInRoute: SignInRoute {
-        .guidance(L10n.t("Usage rides on the account Kilo CLI signs into — run `kilo` once and sign in, and the notch reads it."))
+        .guidance(L10n.t("Usage rides on the account Kilo CLI signs into. Run `kilo` once and sign in, and the notch reads it."))
     }
 
     nonisolated func forgetCachedCredential() {
@@ -136,7 +136,7 @@ actor KiloProvider: UsageProvider {
                 // Signed in, and nothing metered: an honest empty, not an
                 // error — the same shape Cursor's free plan reports.
                 throw UsageProviderError.nothingMetered(
-                    L10n.t("This Kilo account has no usage to read yet — top up credits or subscribe to a coding plan.")
+                    L10n.t("This Kilo account has no usage to read yet. Top up credits or subscribe to a coding plan.")
                 )
             }
 

@@ -30,7 +30,7 @@ struct EffortOfferRow: View {
                 if offer.installed, !offer.scale.isEmpty {
                     chips
                     if let liveOnly = offer.liveAtTop {
-                        footnote(L10n.t("\(liveOnly) is typed into the session in view at the lid's top — the config can't hold it."))
+                        footnote(L10n.t("\(liveOnly) is typed into the session in view at the lid's top. The config can't hold it."))
                     }
                     ForEach(offer.liveChoices, id: \.self) { choice in
                         footnote(L10n.t("\(choice) runs multi-agent workflows on every task and uses many more tokens. No lid level reaches it: let go of the effort bar in the ring's tooltip on it, and it is typed into the session in view only."))

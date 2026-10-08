@@ -58,7 +58,7 @@ actor ApifyProvider: UsageProvider {
 
     nonisolated var signInRoute: SignInRoute {
         if isExtraKey { return .guidance(ExtraKey.signInGuidance) }
-        return .guidance(L10n.t("Run apify login in Terminal — the notch reads that login — or add an Apify API token under API."))
+        return .guidance(L10n.t("Run apify login in Terminal (the notch reads that login) or add an Apify API token under API."))
     }
 
     nonisolated func account() -> ProviderAccount? { ApifyCredentials.account(sources) }
@@ -115,7 +115,7 @@ actor ApifyProvider: UsageProvider {
             // That is not "signed out", and sending someone to log in again
             // would not fix it.
             throw UsageProviderError.apiError(
-                L10n.t("This Apify token cannot read account limits — use one with full account access")
+                L10n.t("This Apify token cannot read account limits. Use one with full account access")
             )
         }
         if status == 429 {

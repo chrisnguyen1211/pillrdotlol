@@ -52,7 +52,7 @@ enum ResetCheer {
         let mid = midSentence(limit)
         return [
             Line(title: L10n.t("Hurray! \(provider) is back"),
-                 subtitle: L10n.t("\(limit) reset — let's build.")),
+                 subtitle: L10n.t("\(limit) reset. Let's build.")),
             Line(title: L10n.t("Fresh window, \(provider)"),
                  subtitle: L10n.t("\(limit) reset. Go ship it.")),
             Line(title: L10n.t("Tank's full again"),
@@ -64,7 +64,7 @@ enum ResetCheer {
             Line(title: L10n.t("Zero percent, all yours"),
                  subtitle: L10n.t("\(provider)'s \(mid) just reset.")),
             Line(title: L10n.t("Clean slate, \(provider)"),
-                 subtitle: L10n.t("\(limit) reset — make it count.")),
+                 subtitle: L10n.t("\(limit) reset. Make it count.")),
             Line(title: L10n.t("\(provider) says go"),
                  subtitle: L10n.t("\(limit) reset. Let's build.")),
         ]

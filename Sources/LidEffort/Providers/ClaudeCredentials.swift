@@ -167,7 +167,7 @@ struct ClaudeCredentials {
 
     static func explain(_ status: OSStatus) -> String {
         switch status {
-        case errSecItemNotFound:          return "no such item — Claude Code has not signed in"
+        case errSecItemNotFound:          return "no such item: Claude Code has not signed in"
         case errSecInteractionNotAllowed: return "access not permitted without interaction"
         case errSecUserCanceled:          return "the access prompt was dismissed or denied"
         case errSecAuthFailed:            return "authorisation failed"

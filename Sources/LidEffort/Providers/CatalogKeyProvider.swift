@@ -541,7 +541,7 @@ actor CatalogKeyProvider: UsageProvider {
         }
         if let prefix = entry.requiredKeyPrefix, !key.hasPrefix(prefix) {
             throw UsageProviderError.apiError(
-                L10n.t("\(entry.name) needs an admin key here — one that starts with \(prefix)"))
+                L10n.t("\(entry.name) needs an admin key here, one that starts with \(prefix)"))
         }
         if let retryNoEarlierThan, retryNoEarlierThan > date {
             throw UsageProviderError.rateLimited(retryAfter: retryNoEarlierThan.timeIntervalSince(date))
@@ -692,7 +692,7 @@ actor CatalogKeyProvider: UsageProvider {
             case .keyCheck: throw UsageProviderError.needsAuth
             case .usage:
                 throw UsageProviderError.apiError(
-                    L10n.t("\(entry.name) won't share usage with this key — try one with full account access"))
+                    L10n.t("\(entry.name) won't share usage with this key. Try one with full account access"))
             }
         case 429:
             let delay = max(60, headers["retry-after"].flatMap(Double.init) ?? 60)

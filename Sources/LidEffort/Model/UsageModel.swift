@@ -441,7 +441,7 @@ struct ProviderSnapshot: Identifiable, Equatable {
         case "gemini":     return L10n.t("Sign in to Antigravity to read your usage", locale: locale)
         // An extra key has nothing to sign into: the key works or it does not.
         case _ where ExtraKey.isExtraKey(providerID: id):
-            return L10n.t("This key was not accepted — remove it in Settings and add a working one", locale: locale)
+            return L10n.t("This key was not accepted. Remove it in Settings and add a working one", locale: locale)
         case "glm":        return L10n.t("Set up a GLM Coding Plan key for a coding tool to read your usage", locale: locale)
         case "copilot":    return L10n.t("Sign in with GitHub CLI to read your Copilot usage", locale: locale)
         case "opencode":   return L10n.t("Connect the Go plan in OpenCode to read your usage", locale: locale)
@@ -476,7 +476,7 @@ struct ProviderSnapshot: Identifiable, Equatable {
         case .signedOutByOwner:
             // Names the cause, because "sign in again" on its own invites the
             // reasonable conclusion that this app lost the login.
-            return L10n.t("Claude Code emptied this profile's saved login — it does that to every profile at once after it updates itself. Sign in again to \(displayName) to read your usage.", locale: locale)
+            return L10n.t("Claude Code emptied this profile's saved login. It does that to every profile at once after it updates itself. Sign in again to \(displayName) to read your usage.", locale: locale)
         case .accessDenied:
             // Says what happened and what fixes it. "Sign in to Claude Code"
             // would send someone who *is* signed in to fix the wrong thing.
@@ -485,11 +485,11 @@ struct ProviderSnapshot: Identifiable, Equatable {
             // are not allowed to.
             return L10n.t("macOS refused pillr access to \(displayName)'s saved login. Use Allow access… in Settings to ask again.", locale: locale)
         case .unsupported(let why): return why
-        case .error(let why): return L10n.t("Couldn't read usage — \(why)", locale: locale)
+        case .error(let why): return L10n.t("Couldn't read usage: \(why)", locale: locale)
         case .stale:
             // Stale with nothing to show: checks are being refused for now
             // (rate limit, a login due a refresh). Says it is not stuck.
-            return L10n.t("No reading yet — pillr keeps trying. If this lasts, open \(displayName) once to refresh its login.", locale: locale)
+            return L10n.t("No reading yet, but pillr keeps trying. If this lasts, open \(displayName) once to refresh its login.", locale: locale)
         case .ok:             return L10n.t("Waiting for the first reading…", locale: locale)
         }
     }

@@ -264,7 +264,7 @@ struct DesktopAgentApp: Identifiable, Equatable {
 
     static let all: [DesktopAgentApp] = [
         DesktopAgentApp(bundleID: ClaudeDesktopComposer.bundleID, name: "Claude",
-                        reach: L10n.t("Types /effort and your replies into the session it shows — only when idle and its box is empty.")),
+                        reach: L10n.t("Types /effort and your replies into the session it shows, only when idle and its box is empty.")),
         DesktopAgentApp(bundleID: "com.openai.codex", name: "Codex",
                         reach: nil),
     ]

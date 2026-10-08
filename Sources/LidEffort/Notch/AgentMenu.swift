@@ -228,7 +228,7 @@ extension NotchWindowController {
                 < (order.firstIndex(of: $1.state) ?? 9, -$1.since.timeIntervalSince1970)
         }
         for session in sorted {
-            let item = ActionMenuItem("\(session.name) — \(Self.label(session.state))") { [weak self] in
+            let item = ActionMenuItem("\(session.name) · \(Self.label(session.state))") { [weak self] in
                 if let pid = session.processID { self?.model.onFocusSession?(pid) }
             }
             item.toolTip = session.detail

@@ -126,7 +126,7 @@ struct PendingPrompt: Identifiable, Equatable {
         case "WebSearch":
             return "Search “\((toolInput["query"] as? String) ?? "")”"
         case "ExitPlanMode":
-            return L10n.t("The plan is ready — start on it?")
+            return L10n.t("The plan is ready. Start on it?")
         default:
             if let text = toolInput.values.compactMap({ $0 as? String }).first(where: { !$0.isEmpty }) {
                 return "\(toolName): \(text)"

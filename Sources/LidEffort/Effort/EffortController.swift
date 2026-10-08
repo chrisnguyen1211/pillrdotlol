@@ -510,7 +510,7 @@ final class EffortController: ObservableObject {
                     if choice == "ultracode off" { ultracodeOn.remove(desktop.info.pid) }
                 }
                 if choice == nil, ultracodeOn.contains(desktop.info.pid), let current = note {
-                    note = L10n.t("\(current) · ultracode is still on — pick it again in the ring's tooltip to switch it off")
+                    note = L10n.t("\(current) · ultracode is still on. Pick it again in the ring's tooltip to switch it off")
                 }
                 if desktopNote.waits {
                     pendingDesktop = PendingDesktop(pid: desktop.info.pid, command: command, name: desktop.name,

@@ -620,7 +620,7 @@ final class APICatalogTests: XCTestCase {
 
         // A typed team that is not the key's: said in xAI's terms, not as "unexpected".
         await assertFails(try provider("xai", fields: ["team": "wrong"], key: "mgmt"),
-                          .apiError(L10n.t("xAI has no billing for that team — check the Team ID, or leave it empty")))
+                          .apiError(L10n.t("xAI has no billing for that team. Check the Team ID, or leave it empty")))
     }
 
     func testSpecialKeysAreExplainedTheMomentTheirProviderIsChosen() {
@@ -649,7 +649,7 @@ final class APICatalogTests: XCTestCase {
         await assertFails(try provider("featherless"),
                           .apiError(L10n.t("\("Featherless") refused this key. Reading usage needs \(L10n.t("an admin key")).")))
         await assertFails(try provider("venice"),
-                          .apiError(L10n.t("\("Venice AI") won't share usage with this key — try one with full account access")))
+                          .apiError(L10n.t("\("Venice AI") won't share usage with this key. Try one with full account access")))
         CatalogEndpoint.reset { _ in (429, ["Retry-After": "5"], Data()) }
         await assertFails(try provider("poe"), .rateLimited(retryAfter: 60), "never sooner than a minute")
         CatalogEndpoint.reset { _ in (500, [:], Data()) }
@@ -682,7 +682,7 @@ final class APICatalogTests: XCTestCase {
     func testAnAdminEntryRefusesAnOrdinaryKeyBeforeSendingIt() async throws {
         CatalogEndpoint.reset { _ in (200, [:], Data(#"{"data":[]}"#.utf8)) }
         await assertFails(try provider("openai", key: "sk-proj-abc"),
-                          .apiError(L10n.t("\("OpenAI") needs an admin key here — one that starts with \("sk-admin-")")))
+                          .apiError(L10n.t("\("OpenAI") needs an admin key here, one that starts with \("sk-admin-")")))
         XCTAssertTrue(CatalogEndpoint.requests.isEmpty, "the wrong key never leaves the Mac")
         _ = try await provider("openai", key: "sk-admin-abc").fetchSnapshot()
         XCTAssertEqual(CatalogEndpoint.requests.count, 1)
@@ -761,7 +761,7 @@ final class APICatalogTests: XCTestCase {
 
         for (status, body, reason) in [
             (401, "", L10n.t("That key was not accepted")),
-            (200, "[]", L10n.t("Couldn't connect — \(L10n.t("\("OpenRouter") answered in a way pillr doesn't recognise"))")),
+            (200, "[]", L10n.t("Couldn't connect: \(L10n.t("\("OpenRouter") answered in a way pillr doesn't recognise"))")),
         ] {
             CatalogEndpoint.reset { _ in (status, [:], Data(body.utf8)) }
             stored = []

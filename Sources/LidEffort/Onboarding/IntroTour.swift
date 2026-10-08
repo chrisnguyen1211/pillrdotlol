@@ -105,8 +105,8 @@ final class IntroTour: ObservableObject {
     var tryHint: String? {
         guard invitesTry else { return nil }
         switch step {
-        case .approval: return L10n.t("Try it — press Allow on the card")
-        case .question: return L10n.t("Try it — pick an answer, then Send")
+        case .approval: return L10n.t("Try it: press Allow on the card")
+        case .question: return L10n.t("Try it: pick an answer, then Send")
         case .anywhere: return L10n.t("Try Show me")
         default: return nil
         }
@@ -217,7 +217,7 @@ final class IntroTour: ObservableObject {
                         self.levelAtLidStep = state.level
                         self.play(.tick)
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.12) { [weak self] in self?.play(.approve) }
-                        self.cheer(L10n.t("You got it — effort is \(state.level.description) now."))
+                        self.cheer(L10n.t("You got it. Effort is \(state.level.description) now."))
                     }
                 }
                 .store(in: &cancellables)
@@ -410,15 +410,15 @@ final class IntroTour: ObservableObject {
         case .approval:
             fleet?.endPeek()
             show(Self.demoApproval())
-            nudge(L10n.t("Go on — press Allow. It's a demo, nothing runs."))
+            nudge(L10n.t("Go on, press Allow. It's a demo, nothing runs."))
         case .question:
             fleet?.endPeek()
             show(Self.demoQuestion())
-            nudge(L10n.t("Go on — pick one and press Send. Nothing is sent."))
+            nudge(L10n.t("Go on, pick one and press Send. Nothing is sent."))
         case .anywhere:
             visitedEdges = [preferences.notchEdge]
             showWholePill()
-            nudge(L10n.t("Press Show me — watch it flow round the screen."))
+            nudge(L10n.t("Press Show me and watch it flow round the screen."))
         case .lid:
             levelAtLidStep = effort()?.state.level
         case .finish:
@@ -465,7 +465,7 @@ final class IntroTour: ObservableObject {
     func handleSessionClick(_ pid: pid_t) -> Bool {
         guard TourDemo.pids.contains(pid) else { return false }
         let name = TourDemo.session(pid: pid).map { "\($0.name) (\($0.detail))" } ?? L10n.t("that session")
-        cheer(L10n.t("Jumped to \(name) — its window comes to the front."))
+        cheer(L10n.t("Jumped to \(name). Its window comes to the front."))
         play(.approve)
         return true
     }
@@ -494,7 +494,7 @@ final class IntroTour: ObservableObject {
         let said = DispatchWorkItem { [weak self] in
             guard let self, self.step == .reply else { return }
             self.play(.answer)
-            self.cheer(L10n.t("Just the tour — nothing was sent"))
+            self.cheer(L10n.t("Just the tour, nothing was sent"))
         }
         let done = DispatchWorkItem { [weak self] in self?.isReplying = false }
         replyWork += [said, done]
@@ -784,22 +784,22 @@ extension IntroTour {
     var stepText: String {
         switch step {
         case .hello:
-            return L10n.t("Each ring is one coding agent. Hover it for its session and weekly limits, when they reset, and every session it's running — no opening Claude, Codex or Cursor to check. Click a session to jump straight to it.")
+            return L10n.t("Each ring is one coding agent. Hover it for its session and weekly limits, when they reset, and every session it's running. No need to open Claude, Codex or Cursor to check. Click a session to jump straight to it.")
         case .apiKeys:
-            return L10n.t("Add keys in Settings → API — \(APICatalog.entries.count) providers, each checked before it's kept. Every key's balance, spend and limits are right here.")
+            return L10n.t("Add keys in Settings → API: \(APICatalog.entries.count) providers, each checked before it's kept. Every key's balance, spend and limits are right here.")
         case .sessions:
-            return L10n.t("Running several sessions across Claude, Codex and Cursor? Each ring lists its own — working, waiting on you, done or idle. Click one to jump straight to its window. Try it on one of these.")
+            return L10n.t("Running several sessions across Claude, Codex and Cursor? Each ring lists its own: working, waiting on you, done or idle. Click one to jump straight to its window. Try it on one of these.")
         case .done:
-            return L10n.t("When an agent finishes, a note slides out of the pill — even with the notch folded. Click it to jump straight to that session.")
+            return L10n.t("When an agent finishes, a note slides out of the pill, even with the notch folded. Click it to jump straight to that session.")
         case .reply:
-            return L10n.t("Hover a session and press Reply. pillr types it into that session's terminal or the Claude app — only when it's idle, never mid-task.")
+            return L10n.t("Hover a session and press Reply. pillr types it into that session's terminal or the Claude app, but only when it's idle, never mid-task.")
         case .approval:
             return result == nil
-                ? L10n.t("Claude wants to run something? Allow or deny it without leaving what you're doing. Try it now: press Allow on the card beside the pill — it's only a demo.")
+                ? L10n.t("Claude wants to run something? Allow or deny it without leaving what you're doing. Try it now: press Allow on the card beside the pill. It's only a demo.")
                 : L10n.t("That's the whole of it: one click, and you're back to what you were doing.")
         case .question:
             return result == nil
-                ? L10n.t("When Claude asks, answer from the card. Try it now: pick an option beside the pill and press Send — it's only a demo.")
+                ? L10n.t("When Claude asks, answer from the card. Try it now: pick an option beside the pill and press Send. It's only a demo.")
                 : L10n.t("Several sessions asking at once? Each question waits under its own session, in turn.")
         case .anywhere:
             return L10n.t("Drag the pill to any edge, or hover it and click ↻. Show me flies it round all four sides and back home to the right. It follows the display you're working on, so notes land where you look.")
@@ -807,7 +807,7 @@ extension IntroTour {
             if !effortState.sensorAvailable {
                 return L10n.t("This Mac has no lid sensor, so set the level from the dots on any ring's tooltip instead.")
             }
-            return L10n.t("Hold ⌘ and tilt the lid: open it further for more effort, close it a little for less. Let go to set it — every agent follows.")
+            return L10n.t("Hold ⌘ and tilt the lid: open it further for more effort, close it a little for less. Let go to set it. Every agent follows.")
         case .finish:
             if leadsIntoSetup {
                 return L10n.t("Next, a short setup: pick your agents and give macOS's permissions once, so nothing interrupts you later.")
@@ -840,7 +840,7 @@ struct TourResult: Equatable {
         case .allow:
             title = L10n.t("Allowed")
             detail = "npm run build"
-            meaning = L10n.t("Claude runs it and carries on — you never left your window.")
+            meaning = L10n.t("Claude runs it and carries on. You never left your window.")
             isPositive = true
         case .allowAlways:
             title = L10n.t("Allowed, and remembered")
@@ -860,7 +860,7 @@ struct TourResult: Equatable {
         case .passThrough:
             title = question ? L10n.t("Left to Claude") : L10n.t("Opened in Claude")
             detail = nil
-            meaning = L10n.t("Claude asks in its own window instead — your call, every time.")
+            meaning = L10n.t("Claude asks in its own window instead. Your call, every time.")
             isPositive = false
         }
     }

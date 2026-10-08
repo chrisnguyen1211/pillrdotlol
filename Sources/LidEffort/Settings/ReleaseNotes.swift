@@ -55,7 +55,7 @@ enum ReleaseNotes {
             ),
             ReleaseNote(
                 version: "1.1.0",
-                headline: L10n.t("Every API key has a place — and every agent says when it is done."),
+                headline: L10n.t("Every API key has a place, and every agent says when it is done."),
                 changes: [
                     ReleaseNote.Change(
                         title: L10n.t("Every API key in one cell"),
@@ -75,7 +75,7 @@ enum ReleaseNotes {
                     ),
                     ReleaseNote.Change(
                         title: L10n.t("Light, Dark or System"),
-                        detail: L10n.t("One icon in Settings — or let pillr follow your Mac.")
+                        detail: L10n.t("One icon in Settings, or let pillr follow your Mac.")
                     )
                 ]
             ),
@@ -93,7 +93,7 @@ enum ReleaseNotes {
                     ),
                     ReleaseNote.Change(
                         title: L10n.t("Only plain effort values are written"),
-                        detail: L10n.t("A value from an agent's model list that is not a plain level is ignored — never written into a config or typed into a session.")
+                        detail: L10n.t("A value from an agent's model list that is not a plain level is ignored. It is never written into a config or typed into a session.")
                     )
                 ]
             ),
@@ -103,7 +103,7 @@ enum ReleaseNotes {
                 changes: [
                     ReleaseNote.Change(
                         title: L10n.t("The session on screen gets the change"),
-                        detail: L10n.t("The card names the Claude app session you are looking at, and /effort goes into that one — even right after you switch.")
+                        detail: L10n.t("The card names the Claude app session you are looking at, and /effort goes into that one, even right after you switch.")
                     ),
                     ReleaseNote.Change(
                         title: L10n.t("Works with any input method"),
@@ -111,13 +111,13 @@ enum ReleaseNotes {
                     ),
                     ReleaseNote.Change(
                         title: L10n.t("The card says why a change is waiting"),
-                        detail: L10n.t("Claude mid-reply, a draft in the message box, Codex chats that keep their level — and it comes back once the change is live.")
+                        detail: L10n.t("Claude mid-reply, a draft in the message box, Codex chats that keep their level. It comes back once the change is live.")
                     )
                 ]
             ),
             ReleaseNote(
                 version: "1.0.0",
-                headline: L10n.t("Your agents' limits, status and effort — on a notch, and a lid."),
+                headline: L10n.t("Your agents' limits, status and effort, on a notch, and a lid."),
                 changes: [
                     ReleaseNote.Change(
                         title: L10n.t("Hold ⌘ and move the lid to set effort"),

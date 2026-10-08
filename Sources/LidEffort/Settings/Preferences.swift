@@ -1038,7 +1038,7 @@ final class Preferences: ObservableObject {
             // Commonly refused for an app running from a build directory rather
             // than /Applications, which is worth saying plainly.
             Log.usage.error("launch at login failed: \(error.localizedDescription, privacy: .public)")
-            launchAtLoginProblem = L10n.t("macOS refused this — try moving pillr to /Applications.")
+            launchAtLoginProblem = L10n.t("macOS refused this. Try moving pillr to /Applications.")
             launchAtLogin = Self.isRegisteredForLogin
         }
     }

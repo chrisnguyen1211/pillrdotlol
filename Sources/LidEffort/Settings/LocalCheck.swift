@@ -18,7 +18,7 @@ struct LocalCheckResult: Equatable {
                 : L10n.t("Connected to \(name) at \(address) · \(found)")
             return LocalCheckResult(ok: true, text: text, at: now)
         case .error(let why):
-            return LocalCheckResult(ok: false, text: L10n.t("Couldn't reach \(name) at \(address) — \(why). Is it running?"), at: now)
+            return LocalCheckResult(ok: false, text: L10n.t("Couldn't reach \(name) at \(address) (\(why)). Is it running?"), at: now)
         case .needsAuth, .accessDenied:
             return LocalCheckResult(ok: false, text: L10n.t("\(name) answered but asked for a token. Add it below."), at: now)
         case .unsupported(let why):

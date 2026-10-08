@@ -1217,7 +1217,7 @@ final class UpdateOutcomeTests: XCTestCase {
     func testAnUnreachableFeedSaysSoWithoutBlamingTheApp() throws {
         let message = try XCTUnwrap(Updater.Outcome.unreachable.message)
         XCTAssertTrue(message.contains("Couldn't reach"))
-        XCTAssertTrue(message.contains("nothing is wrong with this copy"))
+        XCTAssertTrue(message.contains("Nothing is wrong with this copy"))
         XCTAssertFalse(message.lowercased().contains("error occurred"))
     }
 
@@ -1325,7 +1325,7 @@ final class StatusMenuTests: XCTestCase {
         let menu = NSMenu()
         controller.rebuild(menu: menu, now: now)
         let titles = menu.items.map(\.title)
-        XCTAssertTrue(titles[0].contains("Codex — 29%"), titles[0])
+        XCTAssertTrue(titles[0].contains("Codex: 29%"), titles[0])
         XCTAssertTrue(titles[0].contains("20 hr 21 min ago"), titles[0])
         XCTAssertTrue(titles[1].contains("Weekly limit"), titles[1])
         XCTAssertTrue(titles[1].contains("29% Used · 71% left"), titles[1])

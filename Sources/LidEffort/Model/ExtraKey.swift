@@ -357,9 +357,9 @@ enum ExtraKeyVerifier {
     nonisolated static func reason(for status: ProviderStatus) -> String {
         switch status {
         case .needsAuth, .accessDenied: return L10n.t("That key was not accepted")
-        case .error(let why): return L10n.t("Couldn't connect — \(why)")
+        case .error(let why): return L10n.t("Couldn't connect: \(why)")
         case .unsupported(let why): return why
-        case .stale: return L10n.t("Couldn't check the key just now — try again in a minute")
+        case .stale: return L10n.t("Couldn't check the key just now. Try again in a minute")
         default: return L10n.t("That key was not accepted")
         }
     }

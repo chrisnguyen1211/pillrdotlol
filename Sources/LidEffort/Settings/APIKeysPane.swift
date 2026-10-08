@@ -311,7 +311,7 @@ struct APIKeyRow: View {
                 Text(L10n.t("Checking…")).foregroundStyle(.secondary)
             }
         } else if !isOn {
-            Text(L10n.t("Switched off — nothing is read."))
+            Text(L10n.t("Switched off. Nothing is read."))
                 .foregroundStyle(.tertiary)
         } else if let line = Self.line(for: snapshot) {
             Text(line.text)
@@ -830,7 +830,7 @@ struct APIProviderSuggestions: View {
             }
             Text(typed
                  ? L10n.t("↑↓ to move · Return to choose")
-                 : L10n.t("Type a name, or what it does — voice, search, China… \(APICatalog.entries.count) providers"))
+                 : L10n.t("Type a name, or what it does: voice, search, China… \(APICatalog.entries.count) providers"))
                 .font(.system(size: 10.5))
                 .foregroundStyle(.tertiary)
                 .padding(.horizontal, 10)

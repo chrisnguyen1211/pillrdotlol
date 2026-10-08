@@ -44,12 +44,12 @@ final class StatusItemLocalRuntimeTests: XCTestCase {
         let joined = titles.joined(separator: "\n")
 
         let cell = try XCTUnwrap(fleet.menuModel.snapshots.first { $0.id == qwen })
-        XCTAssertTrue(titles.contains("LM Studio — 2 models loaded"), joined)
+        XCTAssertTrue(titles.contains("LM Studio: 2 models loaded"), joined)
         XCTAssertTrue(titles.contains("qwen3.8-27b: \(cell.headlineText) · Prompt · 1 queued · Context 61% · Today 20k in · 1200 out"), joined)
         XCTAssertTrue(titles.contains("flash-next-test: — tok/s"), joined)
-        XCTAssertTrue(titles.contains("Ollama — 1 model loaded"), joined)
+        XCTAssertTrue(titles.contains("Ollama: 1 model loaded"), joined)
         XCTAssertTrue(titles.contains("gemma4:e4b: \(expectedGigabytes(4.5)) · Thinking"), joined)
-        XCTAssertTrue(titles.contains { $0.hasPrefix("Claude — 73%") }, joined)
+        XCTAssertTrue(titles.contains { $0.hasPrefix("Claude: 73%") }, joined)
         // The runtime's row refreshes the runtime; a model's line is not a button.
         let header = try XCTUnwrap(menu.items.first { $0.title.hasPrefix("LM Studio") })
         XCTAssertEqual(header.representedObject as? String, "lmstudio")
@@ -68,7 +68,7 @@ final class StatusItemLocalRuntimeTests: XCTestCase {
         let menu = NSMenu()
         controller.snapshots = [LMStudioFixtures.snapshot(LocalRuntimeReading(models: [], measuresSpeed: true))]
         controller.rebuild(menu: menu, now: Date())
-        XCTAssertEqual(menu.items.map(\.title).first, "LM Studio — Server reachable · No models loaded")
+        XCTAssertEqual(menu.items.map(\.title).first, "LM Studio: Server reachable · No models loaded")
         XCTAssertEqual(menu.items[1].isSeparatorItem, true, "the summary is not repeated under the header")
 
         var down = LMStudioFixtures.snapshot(LocalRuntimeReading(models: [], measuresSpeed: true))
@@ -77,7 +77,7 @@ final class StatusItemLocalRuntimeTests: XCTestCase {
                                 kind: .localRuntime)
         controller.snapshots = [down]
         controller.rebuild(menu: menu, now: Date())
-        XCTAssertEqual(menu.items.map(\.title).first, "LM Studio — —")
+        XCTAssertEqual(menu.items.map(\.title).first, "LM Studio: —")
         XCTAssertTrue(menu.items[1].title.contains("API token"), menu.items[1].title)
         XCTAssertFalse(menu.items[1].isEnabled)
     }

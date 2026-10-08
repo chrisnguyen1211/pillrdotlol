@@ -56,7 +56,7 @@ private struct LidPaneContent: View {
                 } label: {
                     SettingLabel(title: L10n.t("Lid changes"),
                                  subtitle: lastChangeLine,
-                                 info: L10n.t("The session in view — a Terminal tab, the Claude app's session — or Codex in front; with none, the agent you changed last. Its own default changes, and its session in view gets it live. Every other agent keeps its level."))
+                                 info: L10n.t("The session in view (a Terminal tab, the Claude app's session) or Codex in front; with none, the agent you changed last. Its own default changes, and its session in view gets it live. Every other agent keeps its level."))
                 }
 
                 LabeledContent {
@@ -67,8 +67,8 @@ private struct LidPaneContent: View {
                     }
                 } label: {
                     SettingLabel(title: L10n.t("Lid gesture"),
-                                 subtitle: L10n.t("Hold ⌘, move the lid, let go. One level per 7° — open is up."),
-                                 info: L10n.t("Without ⌘ the lid is only ever the viewing angle: a stand, a sofa, glare — wherever it stops becomes the new neutral and nothing changes. Past halfway to the next level, it lands on that level when you let go; short of halfway, it falls back. Closing the laptop or sleeping is never read as a push."))
+                                 subtitle: L10n.t("Hold ⌘, move the lid, let go. One level per 7°. Open is up."),
+                                 info: L10n.t("Without ⌘ the lid is only ever the viewing angle: a stand, a sofa, glare. Wherever it stops becomes the new neutral and nothing changes. Past halfway to the next level, it lands on that level when you let go; short of halfway, it falls back. Closing the laptop or sleeping is never read as a push."))
                 }
 
                 LabeledContent(L10n.t("Lid angle")) {
@@ -80,7 +80,7 @@ private struct LidPaneContent: View {
                 Toggle(isOn: $autoEco) {
                     SettingLabel(title: L10n.t("Auto-eco"),
                                  subtitle: L10n.t("When an agent is about to run out, step effort down one level."),
-                                 info: L10n.t("Once an agent's limit is forecast to run out within 45 minutes, or is 90% used, the level goes down one step — once per reset of that limit, never below low. The effort card says why. The ring's tooltip shows the forecast either way."))
+                                 info: L10n.t("Once an agent's limit is forecast to run out within 45 minutes, or is 90% used, the level goes down one step (once per reset of that limit, never below low). The effort card says why. The ring's tooltip shows the forecast either way."))
                 }
             }
 
@@ -104,7 +104,7 @@ private struct LidPaneContent: View {
                 }
             } header: {
                 SectionHeader(title: L10n.t("Agents"),
-                              info: L10n.t("Each agent's own default config is rewritten — the one line holding the value, nothing else — so it applies to its next session. Each model has its own levels: a level it lacks lands on the nearest one below. The session in view also gets /effort typed in live where its agent takes it — Claude Code and Grok in a terminal, Claude Desktop with Accessibility."))
+                              info: L10n.t("Each agent's own default config is rewritten (the one line holding the value, nothing else) so it applies to its next session. Each model has its own levels: a level it lacks lands on the nearest one below. The session in view also gets /effort typed in live where its agent takes it: Claude Code and Grok in a terminal, Claude Desktop with Accessibility."))
             }
 
             Section {
@@ -145,7 +145,7 @@ private struct LidPaneContent: View {
     }
 
     private func detail(for target: EffortTarget) -> String {
-        guard target.enabled else { return L10n.t("Off — \(target.configPath) is left alone") }
+        guard target.enabled else { return L10n.t("Off, \(target.configPath) is left alone") }
         if let value = state.values[target.id] {
             if let model = state.models[target.id], !model.isEmpty { return L10n.t("\(value) for \(model)") }
             return value
@@ -342,7 +342,7 @@ struct NotchPane: View {
                     CardSizeControl(preferences: preferences)
                 } label: {
                     SettingLabel(title: L10n.t("Tooltip size"),
-                                 subtitle: L10n.t("Tooltips, questions and the done card — on their own, apart from the pill."))
+                                 subtitle: L10n.t("Tooltips, questions and the done card, on their own, apart from the pill."))
                 }
 
                 LabeledContent(L10n.t("Accent color")) {
@@ -418,7 +418,7 @@ struct SessionsPane: View {
                 Toggle(isOn: $preferences.answerPromptsFromNotch) {
                     SettingLabel(title: L10n.t("Answer Claude from the notch"),
                                  subtitle: preferences.answerPromptsFromNotch && !hookInstalled
-                                    ? L10n.t("Setting up — the hook goes in once pillr is in Applications.")
+                                    ? L10n.t("Setting up. The hook goes in once pillr is in Applications.")
                                     : L10n.t("Allow, deny and answer questions in the tooltip or beside the pill."),
                                  info: L10n.t("When a Claude Code session asks to run a tool or asks you a question, the prompt shows under that session in the Claude tooltip and beside the folded pill. It stays until you answer. If you are looking at that session, or switch to it, Claude asks in its own dialog instead. Turning this on adds one hook to ~/.claude/settings.json; turning it off removes it."))
                 }
@@ -487,7 +487,7 @@ struct NotificationsPane: View {
 
                 Toggle(isOn: $preferences.promptSystemNotification) {
                     SettingLabel(title: L10n.t("macOS notification"),
-                                 subtitle: L10n.t("Also in Notification Center — for when the notch is hidden or on another display."))
+                                 subtitle: L10n.t("Also in Notification Center, for when the notch is hidden or on another display."))
                 }
 
                 Picker(selection: $preferences.promptCardOverFullScreen) {
@@ -499,7 +499,7 @@ struct NotificationsPane: View {
                 }
             } header: {
                 SectionHeader(title: L10n.t("When Claude asks"),
-                              info: L10n.t("Approvals and questions answered from the notch — see Sessions & Approvals to switch them on. These say that one is waiting; the card itself stays until it is answered."))
+                              info: L10n.t("Approvals and questions answered from the notch. See Sessions & Approvals to switch them on. These say that one is waiting; the card itself stays until it is answered."))
             }
 
             Section {
@@ -522,7 +522,7 @@ struct NotificationsPane: View {
                          pickerEnabled: preferences.sessionEndSound)
             } header: {
                 SectionHeader(title: L10n.t("When a session ends"),
-                              info: L10n.t("The sound plays on the ordinary output, not the interface sound-effects channel — so it is still heard with \u{201C}Play user interface sound effects\u{201D} switched off in System Settings → Sound."))
+                              info: L10n.t("The sound plays on the ordinary output, not the interface sound-effects channel, so it is still heard with “Play user interface sound effects” switched off in System Settings → Sound."))
             }
 
             Section(L10n.t("When a limit is reached")) {
@@ -556,7 +556,7 @@ struct NotificationsPane: View {
                     set: { UserDefaults.standard.set($0, forKey: DailyRecapScheduler.enabledKey) }
                 )) {
                     SettingLabel(title: L10n.t("Daily recap"),
-                                 subtitle: L10n.t("At 6 pm: sessions, tool calls, tokens and the busiest agent — on days you used them."))
+                                 subtitle: L10n.t("At 6 pm: sessions, tool calls, tokens and the busiest agent (on days you used them)."))
                 }
             }
         }

@@ -40,11 +40,11 @@ struct CostSettingsPane: View {
             Section(L10n.t("Market data")) {
                 Toggle(isOn: $prices.marketDataEnabled) {
                     SettingLabel(title: L10n.t("Download exchange rate and token prices"),
-                                 subtitle: L10n.t("Once a day from open.er-api.com and OpenRouter — the only servers pillr reaches that are not an agent's own or GitHub."))
+                                 subtitle: L10n.t("Once a day from open.er-api.com and OpenRouter. These are the only servers pillr reaches that are not an agent's own or GitHub."))
                 }
                 LabeledContent(L10n.t("Exchange rate")) {
                     Text(prices.rateKnown ? L10n.t("1 USD = \(MoneyFormat.string(prices.rate, currency: prices.currency))")
-                         : prices.marketDataEnabled ? L10n.t("Not fetched yet") : L10n.t("Off — amounts stay in USD"))
+                         : prices.marketDataEnabled ? L10n.t("Not fetched yet") : L10n.t("Off, amounts stay in USD"))
                         .foregroundStyle(.secondary)
                 }
                 LabeledContent(L10n.t("Per-token prices")) {
@@ -106,7 +106,7 @@ private struct CostAccountRows: View {
             Text(spentLine).foregroundStyle(.secondary).multilineTextAlignment(.trailing)
         }
         if account.billing == .api {
-            Text(L10n.t("Priced per token: each project's input, output and cache tokens at the model's list price — \(prices.prices.count) models bundled. Turn on Market data below for today's prices."))
+            Text(L10n.t("Priced per token: each project's input, output and cache tokens at the model's list price, with \(prices.prices.count) models bundled. Turn on Market data below for today's prices."))
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

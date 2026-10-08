@@ -194,7 +194,7 @@ final class ClaudeTokenRefresher: ObservableObject {
         // prompt is a *non-zero* exit and a successful renewal at the same time.
         let after = await reload()
         guard let after, after > current else {
-            fail("Claude usage needs its sign-in renewed — run `claude` once in a terminal.")
+            fail("Claude usage needs its sign-in renewed. Run `claude` once in a terminal.")
             Log.usage.error("token renewal ran (exit \(status ?? -1)) but the expiry did not move; still \(String(describing: after), privacy: .public)")
             return
         }

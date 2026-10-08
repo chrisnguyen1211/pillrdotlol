@@ -35,7 +35,7 @@ actor CommandCodeProvider: UsageProvider {
     nonisolated var signInCommand: String? { "cmd login" }
 
     nonisolated var signInRoute: SignInRoute {
-        .guidance(L10n.t("Sign in with the Command Code app — it writes ~/.commandcode/auth.json and the notch reads it."))
+        .guidance(L10n.t("Sign in with the Command Code app. It writes ~/.commandcode/auth.json and the notch reads it."))
     }
 
     nonisolated func forgetCachedCredential() {

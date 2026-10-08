@@ -111,7 +111,7 @@ final class AgentMenuTests: XCTestCase {
         XCTAssertEqual(set?.1, 3)
 
         let sessions = try XCTUnwrap(menu.items.first { $0.title == "Sessions (2)" }?.submenu)
-        XCTAssertEqual(sessions.items.map(\.title), ["docs — waiting on you", "api-server — working"], "the one waiting on you first")
+        XCTAssertEqual(sessions.items.map(\.title), ["docs · waiting on you", "api-server · working"], "the one waiting on you first")
         try XCTUnwrap(sessions.items[0] as? ActionMenuItem).performForTesting()
         XCTAssertEqual(focused, 42)
     }

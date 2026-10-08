@@ -999,7 +999,7 @@ final class UsageStore: ObservableObject {
             // Nothing is known about the account, so a remembered reading stays
             // and simply ages. `degraded` handles that; this is only what a
             // provider with nothing to show says.
-            return .error(L10n.t("no reply — check your connection; pillr will try again"))
+            return .error(L10n.t("no reply. Check your connection; pillr will try again"))
         case UsageProviderError.nothingMetered(let why):
             return .unsupported(why)
         case UsageProviderError.apiError(let message):
