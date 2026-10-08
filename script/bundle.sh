@@ -46,6 +46,13 @@ install_name_tool -add_rpath "@executable_path/../Frameworks" "$APP/Contents/Mac
 # SwiftPM's Bundle.module looks for this beside the executable or in the
 # app's Resources; the latter is where a bundle keeps it.
 cp -R "$PRODUCTS/LidEffort_LidEffort.bundle" "$APP/Contents/Resources/"
+# Command-line SwiftPM copies the string catalog as is instead of compiling
+# it, which leaves every language reading as English. Compile it here.
+RESOURCES="$APP/Contents/Resources/LidEffort_LidEffort.bundle"
+if [ -f "$RESOURCES/Localizable.xcstrings" ]; then
+  xcrun xcstringstool compile "$RESOURCES/Localizable.xcstrings" --output-directory "$RESOURCES"
+  rm "$RESOURCES/Localizable.xcstrings"
+fi
 # The open-source notices the licenses require to ship with the app.
 cp THIRD_PARTY_NOTICES.md "$APP/Contents/Resources/"
 [ -d "$PRODUCTS/swift-nio_NIOPosix.bundle" ] && cp -R "$PRODUCTS/swift-nio_NIOPosix.bundle" "$APP/Contents/Resources/"
