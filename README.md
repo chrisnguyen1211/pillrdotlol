@@ -24,7 +24,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/media/meme.gif" alt="When you have 6 coding agents running and no idea who's done — a storm, terminals shaking, alerts piling up. Me with pillr: noon and a rainbow over the meadow, one pill on the screen's edge, a done card, and pixel sunglasses landing on it. One pill. Zero panic." width="800">
+  <img src="docs/media/meme.gif" alt="When you have 6 coding agents running and no idea who's done: a storm, terminals shaking, alerts piling up. Me with pillr: noon and a rainbow over the meadow, one pill on the screen's edge, a done card, and pixel sunglasses landing on it. One pill. Zero panic." width="800">
 </p>
 
 <table>
@@ -42,35 +42,35 @@
 
 ### Every limit and every session, one hover away
 
-A ring for each agent shows how much of its limit is left, with a forecast when you'll run out before it resets — and a card when it comes back. Hover for the details: every window and when it resets, then each running session with its model, effort and tokens. Click one to jump straight to its terminal tab or app window.
+A ring for each agent shows how much of its limit is left, with a forecast when you'll run out before it resets, and a card when it comes back. Hover for the details: every window and when it resets, then each running session with its model, effort and tokens. Click one to jump straight to its terminal tab or app window.
 
 <p align="center"><img src="docs/media/shots/sessions.png" alt="The pill on the right edge of the screen, with Claude's usage card: the current session and three running sessions" width="800"></p>
 
-### Finished? You'll know — and you can answer
+### Finished? You'll know, and you can answer
 
-Ten agents tell pillr the moment a turn ends: Claude Code, Codex, Grok, Cursor, Kimi Code, Gemini CLI, OpenCode, Copilot CLI, Droid and Antigravity. The card says what changed. Press **Reply** to write back to that session — pillr types it in only when the agent is waiting, never over a draft.
+Ten agents tell pillr the moment a turn ends: Claude Code, Codex, Grok, Cursor, Kimi Code, Gemini CLI, OpenCode, Copilot CLI, Droid and Antigravity. The card says what changed. Press **Reply** to write back to that session. pillr types it in only when the agent is waiting, never over a draft.
 
-<p align="center"><img src="docs/media/shots/done.png" alt="A done card: Task done. Nice — 3 files, +42 −7 — with the Reply button under it" width="800"></p>
+<p align="center"><img src="docs/media/shots/done.png" alt="A done card: Task done. Nice. 3 files, +42 −7, with the Reply button under it" width="800"></p>
 
 ### Approve and answer without leaving your flow
 
-Allow or deny Claude Code's permission prompts, and answer its questions — one choice, several, or your own words — right from the notch. Your answer goes straight back to the session that asked.
+Allow or deny Claude Code's permission prompts, and answer its questions (one choice, several, or your own words) right from the notch. Your answer goes straight back to the session that asked.
 
 <p align="center"><img src="docs/media/shots/questions.png" alt="Two questions from Claude Code: platforms to ship first, with macOS and CLI ticked, and a database question answered in its own words" width="800"></p>
 
 ### No more keys burning in the dark
 
-Add the API keys you pay for — pick the provider as you type, paste the key. pillr reads **credit left**, **spent this month** and **spent in total** from each provider's own API, and keeps every key in one **API keys** cell whose ring follows the key closest to running out. Providers that need a special key, like xAI's management key, say so before you paste.
+Add the API keys you pay for: pick the provider as you type, paste the key. pillr reads **credit left**, **spent this month** and **spent in total** from each provider's own API, and keeps every key in one **API keys** cell whose ring follows the key closest to running out. Providers that need a special key, like xAI's management key, say so before you paste.
 
 <p align="center"><img src="docs/media/shots/api-keys.png" alt="Settings › API Keys listing eight keys, with the Add an API key sheet suggesting voice providers as you type" width="800"></p>
 
 ### Hold ⌘. Tilt the lid.
 
-Open the lid a little to raise reasoning effort, close it to lower it — one level per 7°, applied when you let go of ⌘, to the agent you're working with and on its model's own scale. Without ⌘, the lid is just the lid.
+Open the lid a little to raise reasoning effort, close it to lower it. One level per 7°, applied when you let go of ⌘, to the agent you're working with and on its model's own scale. Without ⌘, the lid is just the lid.
 
 <p align="center"><img src="docs/media/shots/effort.png" alt="The effort bar from low to ultra, its last stretch in a shifting rainbow" width="800"></p>
 
-**And everywhere else:** any edge of the screen — top, right, bottom or left — and it follows the display you're working on. Light, dark, or matching your Mac.
+**And everywhere else:** any edge of the screen (top, right, bottom or left), and it follows the display you're working on. Light, dark, or matching your Mac.
 
 ## 🤖 Supported agents
 
@@ -79,31 +79,31 @@ Open the lid a little to raise reasoning effort, close it to lower it — one le
 | Claude Code | ✓ | ✓ | ✓ + approvals | ✓ |
 | Codex | ✓ | ✓ | ✓ | ✓ |
 | Grok | ✓ | ✓ | ✓ | ✓ |
-| Cursor | ✓ | ✓ | ✓ | — |
+| Cursor | ✓ | ✓ | ✓ |   |
 | Kimi Code | ✓ | ✓ | ✓ | ✓ |
-| GitHub Copilot (Copilot CLI) | ✓ | — | ✓ | ✓ |
-| Antigravity | ✓ | ✓ | ✓ | — |
-| Gemini API key (Gemini CLI, OpenCode, Hermes) | ✓ | ✓ | ✓ Gemini CLI | — |
-| OpenCode | ✓ | — | ✓ | — |
-| Droid | — | — | ✓ | ✓ |
-| Hermes | — | — | — | ✓ |
-| Devin | ✓ | — | — | — |
-| GLM | ✓ | — | — | — |
-| Command Code | ✓ | — | — | — |
-| DeepSeek | ✓ | — | — | — |
-| Ollama (local and cloud) | ✓ | model activity | — | — |
-| LM Studio | ✓ | model activity | — | — |
+| GitHub Copilot (Copilot CLI) | ✓ |   | ✓ | ✓ |
+| Antigravity | ✓ | ✓ | ✓ |   |
+| Gemini API key (Gemini CLI, OpenCode, Hermes) | ✓ | ✓ | ✓ Gemini CLI |   |
+| OpenCode | ✓ |   | ✓ |   |
+| Droid |   |   | ✓ | ✓ |
+| Hermes |   |   |   | ✓ |
+| Devin | ✓ |   |   |   |
+| GLM | ✓ |   |   |   |
+| Command Code | ✓ |   |   |   |
+| DeepSeek | ✓ |   |   |   |
+| Ollama (local and cloud) | ✓ | model activity |   |   |
+| LM Studio | ✓ | model activity |   |   |
 
 Usage is read with the login each agent already has on your Mac; DeepSeek is
-signed in once inside pillr. Only agents you have connected — and that have
-something to show — take a place in the pill. Per-model effort scales are in
+signed in once inside pillr. Only agents you have connected, and that have
+something to show, take a place in the pill. Per-model effort scales are in
 [How it works](docs/HOW-IT-WORKS.md#where-the-level-goes).
 
 <details>
 <summary><b>🔑 API key providers (70)</b></summary>
 <br>
 
-Where a provider reports credit or spend, pillr shows it; where it doesn't, pillr still checks the key works. Providers that need a special key — such as xAI's management key — say so before you paste.
+Where a provider reports credit or spend, pillr shows it; where it doesn't, pillr still checks the key works. Providers that need a special key, such as xAI's management key, say so before you paste.
 
 | | |
 |---|---|
@@ -120,16 +120,16 @@ Where a provider reports credit or spend, pillr shows it; where it doesn't, pill
 
 1. Download `pillr-<version>.dmg` from the [latest release](https://github.com/chrisnguyen1211/pillrdotlol/releases/latest).
 2. Open it and drag **pillr** onto **Applications**.
-3. Open pillr from Applications — it's signed with a Developer ID and notarized by Apple, so it opens with a double-click. Updates install themselves.
+3. Open pillr from Applications. It's signed with a Developer ID and notarized by Apple, so it opens with a double-click. Updates install themselves.
 
 ## 🚀 First run
 
-A short tour shows what pillr does, then a setup assistant walks through what it needs — one page each, every status read live from macOS, every optional step skippable.
+A short tour shows what pillr does, then a setup assistant walks through what it needs: one page each, every status read live from macOS, every optional step skippable.
 
-- **Agents** — every supported agent with a **Connect** button. Connected agents say so; one that needs something says what (sign in, open the app, allow access). One that isn't on your Mac yet shows how to install it.
-- **Done & approvals** — adds pillr's turn-finished hook to each agent found on your Mac, and Claude Code's approvals hook.
-- **Terminals** — Automation for Terminal, iTerm2 and cmux, so pillr can type `/effort` or a reply into an idle tab and bring a session's tab forward. Superset, Ghostty, Warp, VS Code, Cursor, Zed, kitty and WezTerm need nothing.
-- **Desktop apps** — Accessibility, shown only if the Claude or Codex app is installed, so pillr can set effort and reply in the Claude app session on screen.
+- **Agents:** every supported agent with a **Connect** button. Connected agents say so; one that needs something says what (sign in, open the app, allow access). One that isn't on your Mac yet shows how to install it.
+- **Done & approvals:** adds pillr's turn-finished hook to each agent found on your Mac, and Claude Code's approvals hook.
+- **Terminals:** Automation for Terminal, iTerm2 and cmux, so pillr can type `/effort` or a reply into an idle tab and bring a session's tab forward. Superset, Ghostty, Warp, VS Code, Cursor, Zed, kitty and WezTerm need nothing.
+- **Desktop apps:** Accessibility, shown only if the Claude or Codex app is installed, so pillr can set effort and reply in the Claude app session on screen.
 
 Both are in the menu bar later: **Set Up pillr…** and **Take the Tour**. API keys are added in **Settings → API Keys**, or from the API keys cell's menu.
 
@@ -148,7 +148,7 @@ Each agent's own logins (its keychain item or auth file, such as `~/.codex/auth.
 <summary><b>What it writes</b></summary>
 <br>
 
-When you move the lid, the one line holding each agent's default effort (see [How it works](docs/HOW-IT-WORKS.md)). And, once you have seen what they are in setup, its own turn-finished hook in these files — for agents present on your Mac, with pillr in Applications — and nothing else in them:
+When you move the lid, the one line holding each agent's default effort (see [How it works](docs/HOW-IT-WORKS.md)). And, once you have seen what they are in setup, its own turn-finished hook in these files (for agents present on your Mac, with pillr in Applications) and nothing else in them:
 
 | File | Entry |
 |---|---|
@@ -174,12 +174,12 @@ The lid gesture rewrites the single line holding the reasoning effort in `~/.cla
 
 **Sends.** Requests go only to each agent's own servers, to each API key's own provider, and to GitHub for updates. Nothing else leaves your Mac. Logs stay on your Mac and contain no message text; crash reports are kept locally and never uploaded.
 
-**Types.** With your permission, `/effort` and your replies — only into the session you're looking at, only when it is idle, never into a draft.
+**Types.** With your permission, `/effort` and your replies, only into the session you're looking at, only when it is idle, never into a draft.
 </details>
 
 ## 🗑️ Uninstall
 
-1. Open **Settings → General** and click **Remove pillr from my agents…** — it takes pillr's entries out of every file above and leaves the rest as it was.
+1. Open **Settings → General** and click **Remove pillr from my agents…**. It takes pillr's entries out of every file above and leaves the rest as it was.
 2. Quit pillr and drag it from Applications to the Trash.
 
 Or, from Terminal, before deleting the app:
@@ -201,7 +201,7 @@ MacBooks have a hinge sensor that reports the lid's angle. pillr reads it, and o
 <details>
 <summary><b>Is it safe to open?</b></summary>
 <br>
-Every release is signed with a Developer ID and notarized by Apple, so macOS checks it before the first launch — no Open Anyway, no warning. Updates are signed too, and pillr only installs one whose signature matches.
+Every release is signed with a Developer ID and notarized by Apple, so macOS checks it before the first launch. No Open Anyway, no warning. Updates are signed too, and pillr only installs one whose signature matches.
 </details>
 
 <details>
@@ -235,6 +235,6 @@ The gesture mechanics, per-agent details, project layout and packaging are in [d
 
 ## 📄 License
 
-MIT — see [LICENSE](LICENSE). Third-party components and their licenses are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+MIT. See [LICENSE](LICENSE). Third-party components and their licenses are listed in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
 <p align="center"><sub>pillr is an independent project, not affiliated with Apple or any agent's maker.</sub></p>
