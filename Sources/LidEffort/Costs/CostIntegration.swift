@@ -8,6 +8,7 @@ import SwiftUI
 enum Costs {
     private static var subscriptions: [AnyCancellable] = []
     private static var activityWindow: NSWindow?
+    private static var dashboardWindow: NSWindow?
 
     static func attach(to store: UsageStore) {
         guard !Runtime.isUnderTest else { return }
@@ -29,6 +30,26 @@ enum Costs {
                 .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
                 .sink { CostModels.all.forEach { $0.reload() } },
         ]
+    }
+
+    /// The dashboard: what today, this week and this month cost, every API
+    /// key's spend beside the agents', and how the work went.
+    @MainActor
+    static func showDashboard(extraKeys: @escaping () -> [ExtraKey]) {
+        if dashboardWindow == nil {
+            let w = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 1100, height: 760),
+                             styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                             backing: .buffered, defer: false)
+            w.title = L10n.t("Dashboard")
+            w.minSize = NSSize(width: 960, height: 600)
+            let view = DashboardView(model: DashboardModel(extraKeys: extraKeys)).frame(minWidth: 960, minHeight: 600)
+            w.contentViewController = NSHostingController(rootView: view)
+            w.isReleasedWhenClosed = false
+            w.center()
+            dashboardWindow = w
+        }
+        NSApp.activate(ignoringOtherApps: true)
+        dashboardWindow?.makeKeyAndOrderFront(nil)
     }
 
     static func showActivity() {

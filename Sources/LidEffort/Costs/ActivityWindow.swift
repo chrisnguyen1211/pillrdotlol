@@ -376,18 +376,36 @@ struct TimelinePane: View {
 
     private func load() {
         loading = true
-        let from = Int(interval.start.timeIntervalSince1970)
-        let to = Int(interval.end.timeIntervalSince1970) - 1
+        let range = interval
         let pricer = prices.pricer
         let allAccounts = accounts.accounts
+        Task {
+            let done = await Self.sessions(in: range, pricer: pricer, accounts: allAccounts)
+            rows = done
+            loading = false
+        }
+    }
+
+    /// Every Claude and Codex session in a range, each priced the way its
+    /// login is paid. Shared with the dashboard.
+    @MainActor
+    static func sessions(in range: DateInterval, pricer: Pricer, accounts allAccounts: [CostAccount],
+                         titles: Bool = true, dollars: Bool = false) async -> [Row] {
+        let from = Int(range.start.timeIntervalSince1970)
+        let to = Int(range.end.timeIntervalSince1970) - 1
         let models = CostModels.all.compactMap { m -> (CostAccount, Double, Double?, Int, CostStore)? in
             guard let s = m.store_, let idx = allAccounts.firstIndex(where: { $0.id == m.account.id }) else { return nil }
             let creditPoint: Double? = (m.creditBacked && m.account.creditLimit != nil)
                 ? m.account.creditLocal(rate: pricer.rate).map { $0 * m.account.creditLimit! / 100 } : nil
-            return (m.account, m.account.monthlyLocal(rate: pricer.rate), creditPoint, idx, s)
+            // In dollars, a plan's price is its catalogue price in dollars; one
+            // typed in the Mac's currency can't be brought over without a rate.
+            let monthly = dollars
+                ? (m.account.monthlyPrice > 0 ? 0 : m.account.planTier.flatMap { PlanCatalog.shared.usd(for: $0) } ?? 0)
+                : m.account.monthlyLocal(rate: pricer.rate)
+            return (m.account, monthly, creditPoint, idx, s)
         }
         let now = Int(Date().timeIntervalSince1970)
-        Task.detached(priority: .userInitiated) {
+        return await Task.detached(priority: .userInitiated) { () -> [Row] in
             var out: [Row] = []
             for (account, monthly, creditPoint, idx, store) in models {
                 let window: CostWindow = creditPoint != nil ? .credits : .weekly
@@ -404,12 +422,11 @@ struct TimelinePane: View {
                                    model: a.model, first: Date(timeIntervalSince1970: TimeInterval(a.first)),
                                    last: Date(timeIntervalSince1970: TimeInterval(a.last)),
                                    turns: a.turns, tokens: a.tokens, cost: cost,
-                                   title: TranscriptTitles.title(sessionID: a.sessionID, cwd: a.cwd)))
+                                   title: titles ? TranscriptTitles.title(sessionID: a.sessionID, cwd: a.cwd) : nil))
                 }
             }
-            let done = out.sorted { $0.first < $1.first }
-            await MainActor.run { rows = done; loading = false }
-        }
+            return out.sorted { $0.first < $1.first }
+        }.value
     }
 
     static func time(_ d: Date) -> String {

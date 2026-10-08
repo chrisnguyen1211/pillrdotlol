@@ -377,7 +377,7 @@ struct SettingsView: View {
         case .api:
             APIKeysPane(preferences: preferences, usageStore: usageStore, addRequest: $apiAddRequest,
                         signOut: signOut, didAdd: { _ in keyAdded() })
-        case .costs:         CostSettingsPane()
+        case .costs:         CostSettingsPane(preferences: preferences)
         case .localModels:
             LocalModelsPane(preferences: preferences, usageStore: usageStore,
                             ollamaRelay: ollamaRelay, lmstudioMetrics: lmstudioMetrics)

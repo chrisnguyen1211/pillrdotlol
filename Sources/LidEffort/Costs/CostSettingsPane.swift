@@ -4,6 +4,8 @@ import SwiftUI
 /// Settings › Costs: how each login is paid, the plan detected for it, and
 /// the market data the money is worked out from.
 struct CostSettingsPane: View {
+    /// Where the API keys are, for the dashboard.
+    var preferences: Preferences? = nil
     @ObservedObject var accounts: CostAccountStore = .shared
     @ObservedObject var prices: PriceTable = .shared
     @ObservedObject var catalog: PlanCatalog = .shared
@@ -70,10 +72,13 @@ struct CostSettingsPane: View {
 
             Section {
                 LabeledContent {
-                    Button(L10n.t("Open Activity…")) { Costs.showActivity() }
+                    Button(L10n.t("Open Dashboard…")) {
+                        let preferences = preferences
+                        Costs.showDashboard { preferences?.extraKeys ?? [] }
+                    }
                 } label: {
-                    SettingLabel(title: L10n.t("Activity"),
-                                 subtitle: L10n.t("Day, week and month per login: sessions per project with what each cost."))
+                    SettingLabel(title: L10n.t("Dashboard"),
+                                 subtitle: L10n.t("Today, this week and this month: what the agents and every API key spent, and how the work went."))
                 }
             }
         }
