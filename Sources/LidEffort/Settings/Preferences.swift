@@ -679,12 +679,11 @@ final class Preferences: ObservableObject {
     /// at all.
     let isFirstLaunch: Bool
 
-    /// The bundle identifiers this app had before: spyx's, and the one
-    /// builds used before launch. A bundle id is the name of the defaults
-    /// domain, so each move left every setting behind in the old one — the
-    /// edge, the accounts switched off, the size. Copied across once, from
-    /// the newest that has any, before anything reads the new domain.
-    nonisolated static let previousDomains = [Rebrand.previousBundleID, "dev.lideffort"]
+    /// The bundle identifier builds used before launch. A bundle id is the
+    /// name of the defaults domain, so moving off it left every setting
+    /// behind in the old one — the edge, the accounts switched off, the
+    /// size. Copied across once, before anything reads the new domain.
+    nonisolated static let previousDomains = ["dev.lideffort"]
 
     static func migrateFromPreviousDomain(into defaults: UserDefaults, from domain: String) {
         migrateFromPreviousDomain(into: defaults, from: [domain])

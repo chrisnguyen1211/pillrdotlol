@@ -44,7 +44,6 @@ enum AgentHooks {
     }
 
     static func installAll(executable: String) {
-        removeLegacy()
         if claudePresent { try? ClaudeHookInstaller.installStop(executable: executable) }
         if FileManager.default.fileExists(atPath: home.appendingPathComponent(".grok").path) {
             try? installGrok(executable: executable)
@@ -146,7 +145,6 @@ enum AgentHooks {
     }
 
     static func removeAll() {
-        removeLegacy()
         if ClaudeHookInstaller.isStopInstalled() { try? ClaudeHookInstaller.removeStop() }
         try? removeGrok()
         try? removeCursor()
@@ -157,28 +155,6 @@ enum AgentHooks {
         try? removeKimi()
         try? removeClaudeStyle(at: geminiSettingsURL, event: "AfterAgent")
         try? removeOpenCode()
-    }
-
-    // MARK: Before the rename
-
-    /// What spyx — this app's name before 1.1 — wrote under its own name:
-    /// files called spyx in Grok's, Copilot's and OpenCode's folders, and
-    /// Antigravity's hook keyed `spyx`. Each only when it carries the done
-    /// hook's marker, so a file that merely shares the name stays. The
-    /// hooks that sit in a shared file (Claude Code, Cursor, Codex…) are
-    /// found by that marker, not by name, and are replaced in place.
-    static func removeLegacy() {
-        let old = Rebrand.previousName
-        for url in [home.appendingPathComponent(".grok/hooks/\(old).json"),
-                    home.appendingPathComponent(".copilot/hooks/\(old).json"),
-                    home.appendingPathComponent(".config/opencode/plugins/\(old).js")] {
-            try? removeOpenCode(at: url)
-        }
-        if var json = read(antigravityHooksURL), let entry = json[old],
-           String(describing: entry).contains(ClaudeHookInstaller.stopMarker) {
-            json.removeValue(forKey: old)
-            try? write(json, to: antigravityHooksURL)
-        }
     }
 
     // MARK: Grok

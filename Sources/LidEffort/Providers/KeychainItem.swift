@@ -35,7 +35,6 @@ enum KeychainItem {
         /// The service name it was filed under — needed to reach the same item
         /// by name when a direct read of it is refused.
         let service: String
-        var account: String? = nil
     }
 
     /// The most recently modified item under a service, or nil if there is
@@ -43,14 +42,6 @@ enum KeychainItem {
     /// `kSecAttrModificationDate` is a timestamp, not a version counter — and
     /// where they would, either duplicate is an equally good answer.
     static func newest(service: String, account: String? = nil) -> Match? {
-        if let match = newestFiled(service: service, account: account) { return match }
-        // Filed by spyx, before the rename, and not read since: see `read`.
-        guard let old = legacy(service: service, account: account), !Legacy.refused(old.service, old.account)
-        else { return nil }
-        return newestFiled(service: old.service, account: old.account)
-    }
-
-    private static func newestFiled(service: String, account: String?) -> Match? {
         var query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: service,
@@ -80,8 +71,7 @@ enum KeychainItem {
             .compactMap { item -> Match? in
                 guard let ref = item[kSecValuePersistentRef] as? Data else { return nil }
                 return Match(modifiedAt: item[kSecAttrModificationDate] as? Date, persistentRef: ref,
-                             service: item[kSecAttrService] as? String ?? "",
-                             account: item[kSecAttrAccount] as? String)
+                             service: item[kSecAttrService] as? String ?? "")
             }
             // A duplicate with no modification date is possible in principle
             // and worth keeping rather than discarding; `.distantPast` only
@@ -125,52 +115,10 @@ enum KeychainItem {
             kSecMatchLimit: kSecMatchLimitOne
         ]
         var result: CFTypeRef?
-        let status = SecItemCopyMatching(query as CFDictionary, &result)
-        let isLegacy = match.service != service
-        guard status == errSecSuccess, let data = result as? Data, let value = String(data: data, encoding: .utf8)
-        else {
-            // Refused: not asked again this run — a background refresh must
-            // not put the same dialogue up on every poll.
-            if isLegacy { Legacy.refuse(match.service, match.account) }
-            return nil
-        }
-        // spyx's item, read once: filed again under pillr's name, which this
-        // copy owns and reads without a word, and the old one taken out.
-        if isLegacy, let oldAccount = match.account {
-            let newAccount = account ?? renamed(oldAccount)
-            if store(service: service, account: newAccount, value: value) {
-                delete(service: match.service, account: oldAccount, includingLegacy: false)
-            }
-        }
-        return value
-    }
-
-    // MARK: Before the rename
-
-    /// Where spyx filed what pillr files under `service` and `account`:
-    /// the same names with spyx's in place of pillr's. Nil for a name that
-    /// is not pillr's own — another app's item never moved.
-    static func legacy(service: String, account: String?) -> (service: String, account: String?)? {
-        let old = Rebrand.previousName
-        let oldService = service.replacingOccurrences(of: "pillr", with: old)
-        let oldAccount = account?.replacingOccurrences(of: "pillr", with: old)
-        guard oldService != service || oldAccount != account else { return nil }
-        return (oldService, oldAccount)
-    }
-
-    private static func renamed(_ account: String) -> String {
-        account.replacingOccurrences(of: Rebrand.previousName, with: "pillr")
-    }
-
-    private enum Legacy {
-        private static let lock = NSLock()
-        nonisolated(unsafe) private static var refusedItems: Set<String> = []
-        static func refuse(_ service: String, _ account: String?) {
-            lock.withLock { _ = refusedItems.insert(service + "\u{1F}" + (account ?? "")) }
-        }
-        static func refused(_ service: String, _ account: String?) -> Bool {
-            lock.withLock { refusedItems.contains(service + "\u{1F}" + (account ?? "")) || refusedItems.contains(service + "\u{1F}") }
-        }
+        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
+              let data = result as? Data
+        else { return nil }
+        return String(data: data, encoding: .utf8)
     }
 
     /// Stores a string under a service+account, creating or updating the item.
@@ -198,11 +146,7 @@ enum KeychainItem {
 
     /// Deletes the item under a service+account, if one exists.
     @discardableResult
-    static func delete(service: String, account: String, includingLegacy: Bool = true) -> Bool {
-        // A key removed in pillr must not come back from spyx's copy of it.
-        if includingLegacy, let old = legacy(service: service, account: account), let oldAccount = old.account {
-            delete(service: old.service, account: oldAccount, includingLegacy: false)
-        }
+    static func delete(service: String, account: String) -> Bool {
         let query: [CFString: Any] = [
             kSecClass: kSecClassGenericPassword,
             kSecAttrService: service,

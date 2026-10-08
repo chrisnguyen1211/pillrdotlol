@@ -107,13 +107,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.regular)
         guard !isRunningTests else { return }
         Self.retireOlderInstances()
-        // Updated over a copy still named spyx.app: renamed, and relaunched
-        // from there — nothing below is worth starting twice.
-        if Rebrand.renameBundleIfNeeded() { return }
 
-        // Before Preferences reads anything: the settings and the files from
-        // before the bundle id changed.
-        Rebrand.carryOver()
+        // Before Preferences reads anything: the settings from before the
+        // bundle id changed.
         Preferences.migrateFromPreviousDomain()
         let preferences = Preferences()
         self.preferences = preferences

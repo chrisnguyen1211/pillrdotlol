@@ -70,19 +70,15 @@ else
   echo "note: no $NOTES_MD — the update window will show no notes." >&2
 fi
 
-# The update itself is a zip, not the DMG, holding the app as spyx.app.
-# Sparkle takes from an archive the app named like the one installed or with
-# its bundle id: a copy still called spyx.app (lol.spyx.app) finds it by the
-# name, a pillr.app (lol.pillr.app) by the id, and either installs it where
-# it already is — pillr then gives the bundle its own name
-# (`Rebrand.renameBundleIfNeeded`). The DMG people download says pillr.app.
+# The update itself is a zip of pillr.app, not the DMG: Sparkle takes the
+# app from the archive and installs it where the old one is.
 SPARKLE="$OUT/sparkle"
 mkdir -p "$SPARKLE"
 # Notarized with the DMG: the app carries its own ticket into the zip too.
 [ -n "${DEVELOPER_ID:-}" ] && xcrun stapler staple build/pillr.app
 STAGE=$(mktemp -d)
-ditto build/pillr.app "$STAGE/spyx.app"
-ditto -c -k --sequesterRsrc --keepParent "$STAGE/spyx.app" "$SPARKLE/pillr-$VERSION.zip"
+ditto build/pillr.app "$STAGE/pillr.app"
+ditto -c -k --sequesterRsrc --keepParent "$STAGE/pillr.app" "$SPARKLE/pillr-$VERSION.zip"
 rm -rf "$STAGE"
 [ -f "$OUT/pillr-$VERSION.html" ] && mv "$OUT/pillr-$VERSION.html" "$SPARKLE/"
 
@@ -92,8 +88,6 @@ TOOLS=.build/artifacts/sparkle/Sparkle/bin
   --link "https://github.com/$REPO" \
   --maximum-versions 1 --maximum-deltas 0 \
   "$SPARKLE/"
-# The feed's title comes from the app's file name in the zip; it is pillr.
-sed -i '' 's#<title>spyx</title>#<title>pillr</title>#' "$SPARKLE/appcast.xml"
 mv "$SPARKLE/appcast.xml" "$OUT/appcast.xml"
 mv "$SPARKLE/pillr-$VERSION.zip" "$OUT/"
 echo "release: $OUT/pillr-$VERSION.dmg + $OUT/pillr-$VERSION.zip + $OUT/appcast.xml"
