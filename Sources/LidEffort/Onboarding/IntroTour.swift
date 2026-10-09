@@ -777,7 +777,10 @@ final class IntroTour: ObservableObject {
 
     /// The badge step's card: the coach's own, for the demo's badges.
     static func demoBadgeCard() -> UsageResetEvent {
-        var event = UsageAlertEvent(kind: .recap, providerID: "coach", providerName: "", windowLabel: "",
+        // Each one its own, so the timer of a card from an earlier visit to
+        // this step can never take down the one showing now: cards compare
+        // by what they hold, and a recap card shows no window label.
+        var event = UsageAlertEvent(kind: .recap, providerID: "coach", providerName: "", windowLabel: "tour-\(UUID().uuidString)",
                                     glyph: .third, previousFraction: 0, currentFraction: 0, resetsAt: nil)
         event.note = Achievements.note(demoBadges)
         return event

@@ -457,7 +457,9 @@ final class IntroTourTests: XCTestCase {
         XCTAssertEqual(tour.step, .badge)
         XCTAssertNil(tour.badgeCard, "up before the note is in place")
         try await Task.sleep(for: .seconds(IntroTour.badgeDelay + 0.3))
-        XCTAssertEqual(tour.badgeCard, card)
+        XCTAssertEqual(tour.badgeCard?.note, card.note, "the tour's badge card")
+        XCTAssertNotEqual(IntroTour.demoBadgeCard(), IntroTour.demoBadgeCard(),
+                          "each visit's card is its own, so an earlier one's timer can't take it down")
         XCTAssertEqual(tour.badgeCard?.note?.badges.isEmpty, false, "the card shows badges")
         tour.next()
         XCTAssertEqual(tour.step, .dashboard)
