@@ -44,9 +44,11 @@ final class CardLegibilityRenderTests: XCTestCase {
 
     private func cards() throws -> some View {
         let bash = try XCTUnwrap(PendingPrompt(hookInput: Data(PendingPromptTests.bash.utf8), now: now))
-        let sessions: [AgentSession] = (0..<3).map { i in
-            AgentSession(id: "s\(i)", name: i == 0 ? "effort-lid-3c" : "session-\(i)", detail: "Terminal · project",
-                         state: i == 0 ? .busy : .idle, waitingFor: nil, since: now.addingTimeInterval(-Double(i) * 900))
+        let sessions: [AgentSession] = (0..<3).map { (i: Int) -> AgentSession in
+            let name: String = i == 0 ? "effort-lid-3c" : "session-\(i)"
+            let state: AgentSession.State = i == 0 ? .busy : .idle
+            return AgentSession(id: "s\(i)", name: name, detail: "Terminal · project",
+                                state: state, waitingFor: nil, since: now.addingTimeInterval(-Double(i) * 900))
         }
         let snapshot = ProviderSnapshot(id: "claude", displayName: "Claude", glyph: .claude, fidelity: .official,
                                         status: .ok, windows: [LimitWindow(id: "s", label: "Current session", usedFraction: 0.29)])

@@ -18,6 +18,21 @@ final class DashboardRenderTests: XCTestCase {
         activity.finished = 14; activity.sessions = 19; activity.added = 1840; activity.removed = 420
         activity.answered = 23; activity.medianAnswer = 18
         activity.busyByAgent = ["claude": 6 * 3600, "codex": 2 * 3600, "grok": 3600]
+        let today = Calendar.current.startOfDay(for: Date())
+        let commits: [Date: Int] = Dictionary(uniqueKeysWithValues: (0..<110).compactMap { (back: Int) -> (Date, Int)? in
+            let day = Calendar.current.date(byAdding: .day, value: -back, to: today)!
+            let n = (back * 7 + 3) % 11
+            return n > 3 ? (day, n - 3) : nil
+        })
+        let paidAmounts: [Double] = [3, 8, 2, 12, 6, 9, 4]
+        let paidByDay: [(day: Date, amount: Double)] = (0..<7).map { (i: Int) -> (day: Date, amount: Double) in
+            (day: Calendar.current.date(byAdding: .day, value: i - 6, to: today)!, amount: paidAmounts[i])
+        }
+        let paidByHour: [Double] = (0..<24).map { (h: Int) -> Double in h >= 9 && h <= 18 ? Double((h * 5) % 7) : 0 }
+        let commitTimes: [Date] = (0..<9).map { (i: Int) -> Date in today.addingTimeInterval(Double(9 + i % 5) * 3600) }
+        let busyDays: [Date: TimeInterval] = Dictionary(uniqueKeysWithValues: (0..<14).map { (back: Int) -> (Date, TimeInterval) in
+            (Calendar.current.date(byAdding: .day, value: -back, to: today)!, Double((back * 5 + 2) % 9) * 3600)
+        })
         let model = DashboardModel.forRender(
             range: .week,
             sessions: [row(0, "claude-opus-5-5", 12), row(1, "claude-opus-5-5", 18), row(2, "claude-sonnet-5-5", 4), row(2, "gpt-5.6", 7)],
@@ -36,26 +51,18 @@ final class DashboardRenderTests: XCTestCase {
                       currency: "USD", source: nil),
             ],
             activity: activity, streak: 6,
-            commits: Dictionary(uniqueKeysWithValues: (0..<110).compactMap { back -> (Date, Int)? in
-                let day = Calendar.current.date(byAdding: .day, value: -back, to: Calendar.current.startOfDay(for: Date()))!
-                let n = (back * 7 + 3) % 11
-                return n > 3 ? (day, n - 3) : nil
-            }),
+            commits: commits,
             coach: [.init(at: Date(), kind: .record, metric: "busy", timeframe: "week", period: start, value: 9 * 3600,
                           previous: 7 * 3600, shown: true),
                     .init(at: Date().addingTimeInterval(-86_400 * 3), kind: .record, metric: "commits", timeframe: "day",
                           period: start, value: 14, previous: 11, shown: false)],
-            paidByDay: (0..<7).map { (Calendar.current.date(byAdding: .day, value: $0 - 6, to: Calendar.current.startOfDay(for: Date()))!,
-                                      Double([3, 8, 2, 12, 6, 9, 4][$0])) },
-            paidByHour: (0..<24).map { $0 >= 9 && $0 <= 18 ? Double(($0 * 5) % 7) : 0 },
-            commitTimes: (0..<9).map { Calendar.current.startOfDay(for: Date()).addingTimeInterval(Double(9 + $0 % 5) * 3600) },
+            paidByDay: paidByDay,
+            paidByHour: paidByHour,
+            commitTimes: commitTimes,
             earned: ["hours.1": Date(), "hours.2": Date(), "commits.1": Date(), "streak.1": Date(), "tokenMaxxer.1": Date(),
                      "tokenMaxxer.2": Date(), "tokenMaxxer.3": Date(), "dayHours.1": Date(), "keys.1": Date(), "late.1": Date()],
             bestStreak: 11,
-            busyDays: Dictionary(uniqueKeysWithValues: (0..<14).map { back in
-                (Calendar.current.date(byAdding: .day, value: -back, to: Calendar.current.startOfDay(for: Date()))!,
-                 Double((back * 5 + 2) % 9) * 3600)
-            }))
+            busyDays: busyDays)
         let view = VStack(spacing: 16) {
             DashboardFolded(model: model).frame(height: WidgetSize.rowHeight)
             CommitsWidget(model: DashboardModel.forRender(range: .today, sessions: [], keys: [], activity: .init(), streak: 0,

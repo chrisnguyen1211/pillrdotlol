@@ -304,7 +304,10 @@ final class ReleaseRoundTests: XCTestCase {
     /// Pixels in the fire's colours, over black: red well above blue.
     private static func warmPixels(_ image: CGImage) -> Int {
         let data = pixels(image)
-        return stride(from: 0, to: data.count, by: 4).filter { Int(data[$0]) > 120 && Int(data[$0]) - Int(data[$0 + 2]) > 60 }.count
+        return stride(from: 0, to: data.count, by: 4).filter { (i: Int) -> Bool in
+            let red = Int(data[i]), blue = Int(data[i + 2])
+            return red > 120 && red - blue > 60
+        }.count
     }
 
     private static func opaquePixels(_ image: CGImage) -> Int {
