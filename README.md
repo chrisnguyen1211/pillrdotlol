@@ -34,12 +34,6 @@
     <td align="center" width="25%"><b>🔑 API keys</b><br><sub>Credit left and spend for about 70 providers</sub></td>
     <td align="center" width="25%"><b>🎚️ The lid</b><br><sub>Hold ⌘ and tilt it to set reasoning effort</sub></td>
   </tr>
-  <tr>
-    <td align="center" width="25%"><b>📊 Dashboard</b><br><sub>Agent time, commits shipped and API spend, in Settings</sub></td>
-    <td align="center" width="25%"><b>🌅 A real sky</b><br><sub>The sun and moon at your Mac's own hour and place</sub></td>
-    <td align="center" width="25%"><b>🏅 Badges</b><br><sub>48 to earn, and records against your own best</sub></td>
-    <td align="center" width="25%"><b>✅ Answered anywhere</b><br><sub>Answer in the terminal and the card leaves the notch</sub></td>
-  </tr>
 </table>
 
 ## ✨ What it does
