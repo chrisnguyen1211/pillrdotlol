@@ -2,8 +2,8 @@ import SwiftUI
 
 /// The sky behind the dashboard, at this Mac's own hour, in the landing
 /// page's pixels: a blue noon, a golden afternoon, a pink sunset, a starry
-/// night with the moon up and fireflies over the meadow. The sun and the
-/// moon cross it as the day goes; clouds drift, stars twinkle, grass sways.
+/// night with the moon up and fireflies low down. The sun and the moon cross
+/// it as the day goes; clouds drift, stars twinkle.
 ///
 /// With Reduce Motion it holds still and is only redrawn once a minute, so
 /// the hour still shows.
@@ -65,7 +65,7 @@ struct SkyLight {
     var bottom: SIMD3<Double>
     var cloud: SIMD3<Double>
     var cloudAlpha: Double
-    /// 0 at night, 1 at noon: dims the meadow, brings out the stars.
+    /// 0 at night, 1 at noon: brings out the stars.
     var day: Double
 
     static func rgb(_ hex: UInt32) -> SIMD3<Double> {
@@ -122,7 +122,7 @@ struct SkyPainter {
 
     func paint(_ context: inout GraphicsContext, size: CGSize) {
         let light = SkyLight.at(hour)
-        let ground = size.height - 4 * cell
+        let ground = size.height
         let rect = CGRect(origin: .zero, size: size)
         context.fill(Path(rect), with: .linearGradient(
             Gradient(stops: [.init(color: Self.color(light.top), location: 0),
@@ -136,7 +136,6 @@ struct SkyPainter {
         sun(&context, size: size, horizon: ground)
         moon(&context, size: size, horizon: ground, alpha: night)
         clouds(&context, size: size, light: light)
-        meadow(&context, size: size, ground: ground, day: light.day)
         if night > 0.5 { fireflies(&context, size: size, ground: ground, alpha: night) }
     }
 
@@ -250,44 +249,6 @@ struct SkyPainter {
                     pixel(&context, x + CGFloat(col) * cell * 2, y + CGFloat(row) * cell * 2, fill.opacity(alpha), w: 2, h: 2)
                 }
             }
-        }
-    }
-
-    private static let grass: [SIMD3<Double>] = [0x1F6B3A, 0x2B8A47, 0x36A254, 0x45B862, 0x5BCB74].map(SkyLight.rgb)
-    private static let flowers: [(SIMD3<Double>, SIMD3<Double>)] = [
-        (0xFF5D73, 0xFFD23F), (0xFFFFFF, 0xFFD23F), (0xFF9F45, 0x7A3A12), (0x8A7BFF, 0xFFF2B0), (0xFF7AC6, 0xFFFFFF),
-    ].map { (SkyLight.rgb($0.0), SkyLight.rgb($0.1)) }
-
-    /// Grass along the foot, swaying, with a flower here and there; darker
-    /// as the light goes.
-    private func meadow(_ context: inout GraphicsContext, size: CGSize, ground: CGFloat, day: Double) {
-        let dim = 0.32 + 0.68 * day
-        func lit(_ rgb: SIMD3<Double>) -> Color { Self.color(rgb * dim) }
-        let columns = Int(size.width / cell) + 1
-        context.fill(Path(CGRect(x: 0, y: ground, width: size.width, height: size.height - ground)), with: .color(lit(Self.grass[1])))
-        context.fill(Path(CGRect(x: 0, y: ground, width: size.width, height: cell)), with: .color(lit(Self.grass[3])))
-        context.fill(Path(CGRect(x: 0, y: size.height - cell, width: size.width, height: cell)),
-                     with: .color(lit(SkyLight.rgb(0x4A3120))))
-        for column in 0..<columns {
-            let x = CGFloat(column) * cell
-            guard Self.noise(column + 500) < 0.65 else { continue }
-            let tall = 1 + Int(Self.noise(column + 900) * 3)
-            let lean = time == 0 ? 0 : (sin(time * 1.6 + Double(column) * 0.35) > 0.7 ? cell : 0)
-            let color = lit(Self.grass[2 + column % 3])
-            for k in 0..<tall {
-                pixel(&context, x + (k == tall - 1 ? lean : 0), ground - CGFloat(k + 1) * cell, color)
-            }
-        }
-        var column = 4
-        while column < columns - 3 {
-            let (petal, heart) = Self.flowers[Int(Self.noise(column + 300) * Double(Self.flowers.count))]
-            let x = CGFloat(column) * cell
-            let top = ground - CGFloat(5 + Int(Self.noise(column + 700) * 2)) * cell
-            context.fill(Path(CGRect(x: x, y: top + cell, width: cell, height: ground - top - cell)), with: .color(lit(Self.grass[0])))
-            pixel(&context, x - cell, top, lit(petal), w: 3)
-            pixel(&context, x, top - cell, lit(petal), h: 3)
-            pixel(&context, x, top, lit(heart))
-            column += 14 + Int(Self.noise(column + 100) * 18)
         }
     }
 
