@@ -13,15 +13,18 @@ enum DashboardMode: String {
     case expanded
 }
 
-/// The dashboard at the head of Settings, in widgets: a few that matter,
-/// folded; Productivity and API usage in full, unfolded from the bar at its
-/// foot; or hidden to a single line, to keep to the settings.
+/// The dashboard at the head of Settings, in widgets over a sky at this
+/// Mac's own hour: a few that matter, folded; Productivity and API usage in
+/// full, slid down from the bar at its foot; or slid up to a single line, to
+/// keep to the settings.
 struct DashboardPanel: View {
     @ObservedObject var preferences: Preferences
     @Binding var mode: DashboardMode
     @StateObject private var model: DashboardModel
     /// What the arrow under the pointer will do, said beside it.
     @State private var hint: String?
+    /// A fixed hour for the sky, for renders.
+    var skyDate: Date? = nil
 
     init(preferences: Preferences, mode: Binding<DashboardMode>) {
         self.preferences = preferences
@@ -31,36 +34,58 @@ struct DashboardPanel: View {
     }
 
     /// For renders: a model set by hand.
-    init(model: DashboardModel, preferences: Preferences, mode: Binding<DashboardMode>) {
+    init(model: DashboardModel, preferences: Preferences, mode: Binding<DashboardMode>, skyDate: Date? = nil) {
         self.preferences = preferences
         _mode = mode
         _model = StateObject(wrappedValue: model)
+        self.skyDate = skyDate
     }
 
     /// The panel's height when folded, and when hidden to one line.
-    static let foldedHeight: CGFloat = 200
-    static let hiddenHeight: CGFloat = 34
+    static let foldedHeight: CGFloat = headerHeight + WidgetSize.rowHeight + 6 + footerHeight
+    static let hiddenHeight: CGFloat = 36
+    static let headerHeight: CGFloat = 42
+    static let footerHeight: CGFloat = 32
+    /// How it slides between the three.
+    static let motion = Animation.spring(response: 0.5, dampingFraction: 0.88)
 
     var body: some View {
-        VStack(spacing: 0) {
-            header
-                .padding(.horizontal, 2)
-                .padding(.bottom, mode == .hidden ? 0 : 10)
-            switch mode {
-            case .hidden:
-                EmptyView()
-            case .folded:
-                DashboardFolded(model: model)
-                footer
-            case .expanded:
-                ScrollView {
-                    DashboardSections(model: model)
-                        .padding(.bottom, 12)
+        ZStack(alignment: .top) {
+            DashboardSky(date: skyDate)
+            VStack(spacing: 0) {
+                header
+                    .padding(.horizontal, 14)
+                    .frame(height: mode == .hidden ? Self.hiddenHeight : Self.headerHeight)
+                if mode != .hidden {
+                    ScrollViewReader { reader in
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 10) {
+                                DashboardFolded(model: model)
+                                    .frame(height: WidgetSize.rowHeight)
+                                    .id(Self.top)
+                                if mode == .expanded {
+                                    DashboardSections(model: model)
+                                        .transition(.asymmetric(insertion: .opacity.combined(with: .offset(y: -28)),
+                                                                removal: .opacity))
+                                }
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.bottom, mode == .expanded ? 12 : 6)
+                        }
+                        .scrollDisabled(mode != .expanded)
+                        .scrollIndicators(.hidden)
+                        .onChange(of: mode) { _, new in
+                            if new != .expanded { reader.scrollTo(Self.top, anchor: .top) }
+                        }
+                    }
+                    .transition(.opacity.combined(with: .offset(y: -24)))
+                    footer
+                        .transition(.opacity)
                 }
-                .scrollIndicators(.hidden)
-                footer
             }
         }
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).strokeBorder(Color.white.opacity(0.12), lineWidth: 1))
         .task {
             // While Settings is up, kept as fresh as the ledgers are.
             while !Task.isCancelled {
@@ -70,11 +95,15 @@ struct DashboardPanel: View {
         }
     }
 
+    private static let top = "dashboard.top"
+
     private var header: some View {
         HStack(spacing: 10) {
             Text(L10n.t("Dashboard")).font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.white)
+                .shadow(color: .black.opacity(0.35), radius: 2, y: 1)
             if model.loading && mode != .hidden {
-                ProgressView().controlSize(.mini)
+                ProgressView().controlSize(.mini).tint(.white)
             }
             Spacer()
             if mode == .hidden {
@@ -87,7 +116,6 @@ struct DashboardPanel: View {
                 .accessibilityLabel(L10n.t("Period"))
             }
         }
-        .frame(height: mode == .hidden ? Self.hiddenHeight : nil)
     }
 
     /// The bar at the foot: up hides, down shows everything; or, unfolded,
@@ -105,23 +133,26 @@ struct DashboardPanel: View {
         }
         .overlay(alignment: .center) {
             if let hint {
-                Text(hint).font(.system(size: 10.5, weight: .medium)).foregroundStyle(.secondary)
-                    .offset(x: mode == .folded ? 110 : 80)
-                    .transition(.opacity)
+                Text(hint).font(.system(size: 10.5, weight: .medium))
+                    .padding(.horizontal, 8).padding(.vertical, 3)
+                    .background(.regularMaterial, in: Capsule())
+                    .offset(x: mode == .folded ? 118 : 88)
+                    .transition(.opacity.combined(with: .offset(x: -6)))
             }
         }
-        .frame(height: 26)
-        .padding(.top, 6)
-        .animation(.easeOut(duration: 0.12), value: hint)
+        .frame(height: Self.footerHeight)
+        .animation(.easeOut(duration: 0.14), value: hint)
     }
 
     private func arrow(up: Bool, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: up ? "chevron.up" : "chevron.down")
                 .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(.secondary)
-                .frame(width: 30, height: 22)
-                .background(Capsule().fill(Color.primary.opacity(hint == label ? 0.1 : 0.05)))
+                .foregroundStyle(.primary)
+                .frame(width: 32, height: 22)
+                .background(.regularMaterial, in: Capsule())
+                .overlay(Capsule().fill(Color.primary.opacity(hint == label ? 0.1 : 0)))
+                .scaleEffect(hint == label ? 1.08 : 1)
                 .contentShape(Capsule())
         }
         .buttonStyle(.plain)
@@ -132,7 +163,7 @@ struct DashboardPanel: View {
 
     private func set(_ new: DashboardMode) {
         hint = nil
-        withAnimation(.snappy(duration: 0.25)) { mode = new }
+        withAnimation(Self.motion) { mode = new }
     }
 }
 
@@ -146,56 +177,58 @@ struct DashboardFolded: View {
             CommitsWidget(model: model, compact: true).widgetSize(.medium)
             APISpentWidget(model: model).widgetSize(.small)
         }
-        .frame(height: WidgetSize.rowHeight)
     }
 }
 
-/// Unfolded: Productivity, then API usage.
+/// Unfolded, under the folded row: Productivity, then API usage. Each card
+/// as tall as what it holds.
 struct DashboardSections: View {
     @ObservedObject var model: DashboardModel
+
+    /// A card listing rows: its head, then a row each.
+    static func listHeight(_ rows: Int, extra: CGFloat = 0) -> CGFloat {
+        max(96, 46 + CGFloat(max(1, rows)) * 23 + extra)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             WidgetSectionTitle(title: L10n.t("Productivity"), symbol: "bolt.fill")
+                .padding(.top, 6)
             if let latest = model.coach.first(where: { $0.kind != .badge }), latest.at > Date().addingTimeInterval(-7 * 86_400) {
                 CoachBanner(event: latest)
             }
             WidgetRow {
-                AgentsAtWorkWidget(model: model).widgetSize(.small)
                 WaitingWidget(model: model).widgetSize(.small)
                 LinesWidget(model: model).widgetSize(.small)
-                StreakWidget(model: model).widgetSize(.small)
+                StreakWidget(model: model).widgetSize(.medium)
             }
             .frame(height: WidgetSize.rowHeight)
-            CommitsWidget(model: model, compact: false)
-                .frame(height: 158)
             AchievementsWidget(model: model)
-                .frame(height: 168)
-            WidgetRow {
-                PlansWidget(model: model).widgetSize(.medium)
-                ModelsWidget(model: model).widgetSize(.medium)
-            }
-            .frame(height: 150)
             WidgetRow {
                 AgentTimeWidget(model: model).widgetSize(.medium)
                 HoursWidget(model: model).widgetSize(.medium)
             }
-            .frame(height: 142)
+            .frame(height: 150)
+            WidgetRow {
+                PlansWidget(model: model).widgetSize(.medium)
+                ModelsWidget(model: model).widgetSize(.medium)
+            }
+            .frame(height: Self.listHeight(max(min(model.plans.count, 4), min(model.models.count, 4)), extra: 16))
             RecentSessionsWidget(model: model)
-                .frame(height: 176)
+                .frame(height: Self.listHeight(min(model.sessions.count, 5)))
 
             WidgetSectionTitle(title: L10n.t("API usage"), symbol: "chart.bar.fill")
                 .padding(.top, 8)
             SpendChartWidget(model: model)
-                .frame(height: 190)
+                .frame(height: 180)
             WidgetRow {
-                KeysWidget(model: model).widgetSize(.medium)
-                APISpentWidget(model: model).widgetSize(.small)
+                KeysWidget(model: model).widgetSize(.large)
                 KeyCountWidget(model: model).widgetSize(.small)
             }
-            .frame(height: 150)
+            .frame(height: max(WidgetSize.rowHeight, Self.listHeight(min(model.keys.count, 5))))
             Text(L10n.t("Everything here is worked out on this Mac and stays on it."))
-                .font(.system(size: 10.5)).foregroundStyle(.tertiary)
+                .font(.system(size: 10.5)).foregroundStyle(.white.opacity(0.8))
+                .shadow(color: .black.opacity(0.4), radius: 2, y: 1)
                 .padding(.top, 2)
         }
     }
@@ -203,10 +236,17 @@ struct DashboardSections: View {
 
 // MARK: - Layout
 
-/// Widgets on a grid of four columns: small takes one, medium two.
+/// Widgets on a grid of four columns: small takes one, medium two, large
+/// three.
 enum WidgetSize {
-    case small, medium
-    var columns: CGFloat { self == .small ? 1 : 2 }
+    case small, medium, large
+    var columns: CGFloat {
+        switch self {
+        case .small: return 1
+        case .medium: return 2
+        case .large: return 3
+        }
+    }
     static let gap: CGFloat = 8
     static let rowHeight: CGFloat = 122
 }
@@ -268,14 +308,17 @@ struct WidgetCard<Content: View>: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        // Frosted over the sky, as widgets sit on a wallpaper.
         .background(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(scheme == .dark ? Color.white.opacity(0.07) : Color.white.opacity(0.85))
-                .shadow(color: .black.opacity(scheme == .dark ? 0 : 0.06), radius: 6, y: 2)
+                .fill(.regularMaterial)
+                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(scheme == .dark ? Color.black.opacity(0.22) : Color.white.opacity(0.5)))
+                .shadow(color: .black.opacity(0.12), radius: 8, y: 3)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(Color.primary.opacity(scheme == .dark ? 0.08 : 0.05), lineWidth: 1)
+                .strokeBorder(Color.white.opacity(scheme == .dark ? 0.1 : 0.4), lineWidth: 1)
         )
         .accessibilityElement(children: .combine)
     }
@@ -285,6 +328,7 @@ struct WidgetCard<Content: View>: View {
 struct WidgetFigure: View {
     let value: String
     var detail: String? = nil
+    var detailLines = 2
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
@@ -292,7 +336,7 @@ struct WidgetFigure: View {
                 .font(.system(size: 24, weight: .semibold, design: .rounded).monospacedDigit())
                 .lineLimit(1).minimumScaleFactor(0.5)
             if let detail {
-                Text(detail).font(.system(size: 10.5)).foregroundStyle(.secondary).lineLimit(2)
+                Text(detail).font(.system(size: 10.5)).foregroundStyle(.secondary).lineLimit(detailLines)
             }
         }
     }
@@ -305,11 +349,32 @@ struct AgentsAtWorkWidget: View {
     var body: some View {
         let a = model.activity
         WidgetCard(title: L10n.t("Agents at work"), symbol: "figure.run", tint: .green) {
-            Spacer(minLength: 0)
             WidgetFigure(value: TimelinePane.duration(a.busy),
                          detail: a.parallel >= 60 ? L10n.t("\(TimelinePane.duration(a.parallel)) with two or more at once")
-                                                  : L10n.t("\(model.streak)-day streak"))
+                                                  : L10n.t("\(model.streak)-day streak"),
+                         detailLines: 1)
+            WeekBars(values: model.lastDays(7) { model.busyDays[$0] ?? 0 }, tint: .green,
+                     tip: TimelinePane.duration)
         }
+    }
+}
+
+/// The last few days as small columns, today ringed; the pointer on one
+/// says what it holds.
+struct WeekBars: View {
+    let values: [(day: Date, value: Double)]
+    let tint: Color
+    let tip: (Double) -> String
+    var labels = false
+
+    var body: some View {
+        let formatter = DashboardWords.dayFormatter("EEE d")
+        let letter = DashboardWords.dayFormatter("EEEEE")
+        HoverBars(values: values.map(\.value), tint: tint,
+                  label: { labels ? letter.string(from: values[$0].day) : "" },
+                  tip: { L10n.t("\(tip(values[$0].value)) on \(formatter.string(from: values[$0].day))") },
+                  current: values.isEmpty ? nil : values.count - 1)
+            .frame(maxHeight: .infinity)
     }
 }
 
@@ -337,152 +402,94 @@ struct LinesWidget: View {
     }
 }
 
-/// Commits shipped, drawn for the range: today hour by hour, this week day
-/// by day, this month a square a day like GitHub's. The pointer on a square
-/// says how many.
+/// Commits shipped, drawn for the range: today an hour a column, this week
+/// a day a column, this month a square a day like GitHub's. The pointer on
+/// any says how many.
 struct CommitsWidget: View {
     @ObservedObject var model: DashboardModel
     let compact: Bool
 
     var body: some View {
         WidgetCard(title: L10n.t("Commits shipped"), symbol: "point.3.connected.trianglepath.dotted", tint: .green) {
-            HStack(alignment: .bottom, spacing: 14) {
-                VStack(alignment: .leading, spacing: 3) {
+            HStack(alignment: .bottom, spacing: compact ? 10 : 16) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Spacer(minLength: 0)
                     Text("\(model.commitsInRange)")
-                        .font(.system(size: compact ? 24 : 28, weight: .semibold, design: .rounded).monospacedDigit())
+                        .font(.system(size: compact ? 26 : 30, weight: .semibold, design: .rounded).monospacedDigit())
+                        .contentTransition(.numericText())
                     Text(model.range.title).font(.system(size: 10.5)).foregroundStyle(.secondary)
+                    if let detail {
+                        Text(detail).font(.system(size: 10)).foregroundStyle(.tertiary).lineLimit(2)
+                    }
                 }
-                .frame(width: compact ? 58 : 110, alignment: .leading)
-                Spacer(minLength: 0)
-                switch model.range {
-                case .today: CommitHours(times: model.commitTimes, compact: compact)
-                case .week: CommitWeek(days: model.commits, compact: compact)
-                case .month: CommitGrid(days: model.commits, weeks: compact ? 15 : 22, cell: compact ? 8 : 11)
+                .frame(width: compact ? 70 : 120, alignment: .leading)
+                Group {
+                    switch model.range {
+                    case .today: CommitHours(times: model.commitTimes)
+                    case .week: CommitWeek(days: model.commits)
+                    case .month: CommitCalendar(days: model.commits)
+                    }
                 }
-                Spacer(minLength: 0)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .frame(maxHeight: .infinity, alignment: .bottom)
+        }
+    }
+
+    /// One more thing worth knowing about the range.
+    private var detail: String? {
+        let calendar = Calendar.current
+        switch model.range {
+        case .today:
+            guard let last = model.commitTimes.last(where: { calendar.isDateInToday($0) }) else { return nil }
+            return L10n.t("Last at \(last.formatted(date: .omitted, time: .shortened))")
+        case .week:
+            let week = model.commits.filter { model.range.interval.contains($0.key) }
+            guard let best = week.max(by: { $0.value < $1.value }), best.value > 0 else { return nil }
+            return L10n.t("Busiest \(DashboardWords.dayFormatter("EEEE").string(from: best.key))")
+        case .month:
+            let active = model.commits.filter { model.range.interval.contains($0.key) && $0.value > 0 }.count
+            return active > 0 ? L10n.t("\(active) active days") : nil
         }
     }
 }
 
-/// Today, an hour a column: a dot for each commit, up to four, then a figure.
+/// Today, an hour a column.
 struct CommitHours: View {
     let times: [Date]
-    let compact: Bool
-    @State private var hovered: Int?
 
     var body: some View {
         let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        var counts = Array(repeating: 0, count: 24)
-        for time in times where calendar.isDate(time, inSameDayAs: today) { counts[calendar.component(.hour, from: time)] += 1 }
+        var counts = Array(repeating: 0.0, count: 24)
+        for time in times where calendar.isDateInToday(time) { counts[calendar.component(.hour, from: time)] += 1 }
         let now = calendar.component(.hour, from: Date())
-        let dot: CGFloat = compact ? 5 : 7
-        return HStack(alignment: .bottom, spacing: compact ? 2.5 : 4) {
-            ForEach(0..<24, id: \.self) { hour in
-                VStack(spacing: 2) {
-                    ForEach(0..<4, id: \.self) { level in
-                        Circle()
-                            .fill(counts[hour] > 3 - level ? Color.green : Color.primary.opacity(hour <= now ? 0.08 : 0.03))
-                            .frame(width: dot, height: dot)
-                    }
-                    Text(hour % 6 == 0 ? "\(hour)" : " ").font(.system(size: 8)).foregroundStyle(.secondary).fixedSize()
-                }
-                .contentShape(Rectangle())
-                .onHover { hovered = $0 ? hour : (hovered == hour ? nil : hovered) }
-                .overlay(alignment: .top) {
-                    if hovered == hour {
-                        TipBubble(text: L10n.t("\(counts[hour]) commits, \(hour):00 to \(hour + 1):00")).offset(y: -26)
-                    }
-                }
-                .zIndex(hovered == hour ? 1 : 0)
-            }
-        }
+        return HoverBars(values: counts, tint: .green,
+                         label: { $0 % 6 == 0 ? "\($0)" : "" },
+                         tip: { L10n.t("\(Int(counts[$0])) commits, \($0):00 to \($0 + 1):00") },
+                         future: { $0 > now }, current: now, spacing: 2.5)
     }
 }
 
-/// This week, a day a square, the count written in it.
+/// This week, a day a column.
 struct CommitWeek: View {
     let days: [Date: Int]
-    let compact: Bool
-    @State private var hovered: Int?
 
     var body: some View {
         let calendar = Calendar.current
         let start = calendar.dateInterval(of: .weekOfYear, for: Date())!.start
         let today = calendar.startOfDay(for: Date())
-        let top = max(1, (0..<7).map { days[calendar.date(byAdding: .day, value: $0, to: start)!] ?? 0 }.max() ?? 1)
-        let side: CGFloat = compact ? 22 : 34
-        let formatter = DashboardWords.dayFormatter("EEEEE")
-        return HStack(spacing: compact ? 4 : 7) {
-            ForEach(0..<7, id: \.self) { index in
-                let day = calendar.date(byAdding: .day, value: index, to: start)!
-                let count = days[day] ?? 0
-                VStack(spacing: 3) {
-                    RoundedRectangle(cornerRadius: side * 0.28, style: .continuous)
-                        .fill(day > today ? Color.primary.opacity(0.03) : CommitGrid.shade(count, top: top))
-                        .frame(width: side, height: side)
-                        .overlay {
-                            if count > 0 && !compact {
-                                Text("\(count)").font(.system(size: 11, weight: .semibold).monospacedDigit()).foregroundStyle(.white)
-                            }
-                        }
-                    Text(formatter.string(from: day)).font(.system(size: 9)).foregroundStyle(.secondary)
-                }
-                .onHover { hovered = $0 ? index : (hovered == index ? nil : hovered) }
-                .overlay(alignment: .top) {
-                    if hovered == index {
-                        TipBubble(text: L10n.t("\(count) commits on \(day.formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)))"))
-                            .offset(y: -26)
-                    }
-                }
-                .zIndex(hovered == index ? 1 : 0)
-            }
-        }
+        let week = (0..<7).map { calendar.date(byAdding: .day, value: $0, to: start)! }
+        let letter = DashboardWords.dayFormatter("EEE")
+        return HoverBars(values: week.map { Double(days[$0] ?? 0) }, tint: .green,
+                         label: { letter.string(from: week[$0]) },
+                         tip: { L10n.t("\(days[week[$0]] ?? 0) commits on \(week[$0].formatted(.dateTime.weekday(.abbreviated).day().month(.abbreviated)))") },
+                         future: { week[$0] > today }, current: week.firstIndex(of: today), spacing: 6)
     }
 }
 
-/// A square a day like GitHub's, darker for more.
-struct CommitGrid: View {
-    let days: [Date: Int]
-    let weeks: Int
-    let cell: CGFloat
-    @State private var hovered: Date?
-
-    var body: some View {
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
-        let thisWeek = calendar.dateInterval(of: .weekOfYear, for: today)!.start
-        let first = calendar.date(byAdding: .weekOfYear, value: -(weeks - 1), to: thisWeek)!
-        let top = max(1, days.values.max() ?? 1)
-        return HStack(spacing: cell * 0.28) {
-            ForEach(0..<weeks, id: \.self) { week in
-                VStack(spacing: cell * 0.28) {
-                    ForEach(0..<7, id: \.self) { weekday in
-                        let day = calendar.date(byAdding: .day, value: week * 7 + weekday, to: first)!
-                        let count = days[day] ?? 0
-                        RoundedRectangle(cornerRadius: cell * 0.25, style: .continuous)
-                            .fill(day > today ? Color.clear : Self.shade(count, top: top))
-                            .frame(width: cell, height: cell)
-                            .onHover { hovered = $0 ? day : (hovered == day ? nil : hovered) }
-                            .overlay(alignment: .top) {
-                                if hovered == day {
-                                    TipBubble(text: L10n.t("\(count) commits on \(day.formatted(.dateTime.day().month(.abbreviated)))"))
-                                        .offset(y: -24)
-                                }
-                            }
-                            .zIndex(hovered == day ? 1 : 0)
-                    }
-                }
-                .zIndex(hovered.map { calendar.dateInterval(of: .weekOfYear, for: $0)?.start == calendar.date(byAdding: .weekOfYear, value: week, to: first) } ?? false ? 1 : 0)
-            }
-        }
-        .accessibilityLabel(L10n.t("Commits per day"))
-    }
-
+/// The shade of a commit square, darker for more.
+enum CommitGrid {
     static func shade(_ count: Int, top: Int) -> Color {
-        guard count > 0 else { return Color.primary.opacity(0.07) }
+        guard count > 0 else { return Color.primary.opacity(0.08) }
         let level = min(1, Double(count) / Double(top))
         return Color.green.opacity(0.3 + 0.7 * level)
     }
@@ -509,7 +516,7 @@ struct PlansWidget: View {
             if model.plans.isEmpty {
                 Text(L10n.t("No agent reports a plan yet.")).font(.system(size: 11)).foregroundStyle(.secondary)
             } else {
-                VStack(alignment: .leading, spacing: 7) {
+                VStack(alignment: .leading, spacing: 4) {
                     ForEach(model.plans.prefix(4)) { plan in
                         HStack(spacing: 7) {
                             ProviderGlyphView(glyph: plan.glyph, size: 12)
@@ -519,6 +526,7 @@ struct PlansWidget: View {
                             Text(plan.monthly.map { MoneyFormat.string($0, currency: plan.currency) } ?? "—")
                                 .font(.system(size: 11.5).monospacedDigit())
                         }
+                        .hoverRow()
                     }
                 }
             }
@@ -554,7 +562,7 @@ struct AgentTimeWidget: View {
                 Text(L10n.t("No agent has worked in this period yet.")).font(.system(size: 11)).foregroundStyle(.secondary)
             } else {
                 let top = list.first!.value
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 4) {
                     ForEach(Array(list), id: \.key) { agent, seconds in
                         HStack(spacing: 8) {
                             Text(DashboardWords.agentName(agent)).font(.system(size: 11.5)).frame(width: 74, alignment: .leading)
@@ -563,6 +571,7 @@ struct AgentTimeWidget: View {
                             Text(TimelinePane.duration(seconds)).font(.system(size: 10.5).monospacedDigit())
                                 .foregroundStyle(.secondary).frame(width: 58, alignment: .trailing)
                         }
+                        .hoverRow()
                     }
                 }
             }
@@ -574,8 +583,9 @@ struct HoursWidget: View {
     @ObservedObject var model: DashboardModel
     var body: some View {
         WidgetCard(title: L10n.t("Work by hour"), symbol: "clock.fill", tint: .teal) {
-            Columns(values: model.activity.busyByHour, tint: .teal,
-                    label: { $0 % 6 == 0 ? "\($0)" : "" }, help: { TimelinePane.duration($0) })
+            let hours = model.activity.busyByHour
+            HoverBars(values: hours, tint: .teal, label: { $0 % 6 == 0 ? "\($0)" : "" },
+                      tip: { L10n.t("\(TimelinePane.duration(hours[$0])), \($0):00 to \($0 + 1):00") }, spacing: 2.5)
         }
     }
 }
@@ -601,13 +611,20 @@ struct SpendChartWidget: View {
                 .pickerStyle(.segmented).labelsHidden().controlSize(.mini).frame(width: 190)
                 .accessibilityLabel(L10n.t("Chart span"))
             }
+            .animation(.easeOut(duration: 0.2), value: span)
             if span == 1 {
-                Columns(values: model.paidByHour, tint: .orange, label: { $0 % 6 == 0 ? "\($0)" : "" }, help: money)
+                let hours = model.paidByHour
+                let now = Calendar.current.component(.hour, from: Date())
+                HoverBars(values: hours, tint: .orange, label: { $0 % 6 == 0 ? "\($0)" : "" },
+                          tip: { L10n.t("\(money(hours[$0])), \($0):00 to \($0 + 1):00") },
+                          future: { $0 > now }, current: now, spacing: 2.5)
             } else {
                 let days = Array(model.paidByDay.suffix(span))
                 let formatter = DashboardWords.dayFormatter(span == 7 ? "EEE" : "EEE d")
-                Columns(values: days.map(\.amount), tint: .orange,
-                        label: { formatter.string(from: days[$0].day) }, help: money)
+                let long = DashboardWords.dayFormatter("EEE d")
+                HoverBars(values: days.map(\.amount), tint: .orange, label: { formatter.string(from: days[$0].day) },
+                          tip: { L10n.t("\(money(days[$0].amount)) on \(long.string(from: days[$0].day))") },
+                          current: days.count - 1, spacing: span == 7 ? 8 : 14)
             }
         }
     }
@@ -625,7 +642,7 @@ struct KeysWidget: View {
                 Text(L10n.t("No API keys added. Add one in Settings → API.")).font(.system(size: 11)).foregroundStyle(.secondary)
             } else {
                 let rows = model.keys.sorted { (model.local($0.figure(model.range.keyPeriod)) ?? -1) > (model.local($1.figure(model.range.keyPeriod)) ?? -1) }
-                VStack(alignment: .leading, spacing: 7) {
+                VStack(alignment: .leading, spacing: 4) {
                     ForEach(rows.prefix(5)) { key in
                         HStack(spacing: 7) {
                             ProviderGlyphView(glyph: key.glyph, size: 12)
@@ -641,6 +658,7 @@ struct KeysWidget: View {
                                 Text("—").foregroundStyle(.secondary)
                             }
                         }
+                        .hoverRow()
                     }
                 }
             }
@@ -659,7 +677,7 @@ struct ModelsWidget: View {
                 Text(L10n.t("No Claude or Codex session in this period.")).font(.system(size: 11)).foregroundStyle(.secondary)
             } else {
                 let top = max(list.first!.cost, 0.0001)
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 4) {
                     ForEach(Array(list.enumerated()), id: \.offset) { _, item in
                         HStack(spacing: 8) {
                             Text(item.name).font(.system(size: 11.5)).frame(width: 92, alignment: .leading).lineLimit(1)
@@ -667,6 +685,7 @@ struct ModelsWidget: View {
                             Text(MoneyFormat.string(item.cost, currency: model.currency)).font(.system(size: 10.5).monospacedDigit())
                                 .foregroundStyle(.secondary).frame(width: 58, alignment: .trailing)
                         }
+                        .hoverRow()
                     }
                 }
             }
@@ -687,31 +706,6 @@ struct Bar: View {
             }
         }
         .frame(height: 7)
-    }
-}
-
-/// Columns over time, with a label under some.
-struct Columns: View {
-    let values: [Double]
-    let tint: Color
-    let label: (Int) -> String
-    let help: (Double) -> String
-
-    var body: some View {
-        let top = values.max() ?? 0
-        HStack(alignment: .bottom, spacing: 2) {
-            ForEach(Array(values.enumerated()), id: \.offset) { index, value in
-                VStack(spacing: 3) {
-                    RoundedRectangle(cornerRadius: 2.5, style: .continuous)
-                        .fill(tint.opacity(value > 0 ? 0.8 : 0.12))
-                        .frame(height: top > 0 ? max(2, 70 * value / top) : 2)
-                        .help(help(value))
-                    Text(label(index)).font(.system(size: 9)).foregroundStyle(.secondary).lineLimit(1).fixedSize()
-                }
-                .frame(maxWidth: .infinity)
-            }
-        }
-        .frame(maxHeight: .infinity, alignment: .bottom)
     }
 }
 
@@ -754,8 +748,15 @@ struct StreakWidget: View {
     @ObservedObject var model: DashboardModel
     var body: some View {
         WidgetCard(title: L10n.t("Streak"), symbol: "flame.fill", tint: .orange) {
-            Spacer(minLength: 0)
-            WidgetFigure(value: L10n.t("\(model.streak) days"), detail: L10n.t("Best: \(model.bestStreak) days"))
+            HStack(alignment: .bottom, spacing: 14) {
+                VStack(alignment: .leading) {
+                    Spacer(minLength: 0)
+                    WidgetFigure(value: L10n.t("\(model.streak) days"), detail: L10n.t("Best: \(model.bestStreak) days"))
+                }
+                .frame(width: 96, alignment: .leading)
+                WeekBars(values: model.lastDays(14) { model.busyDays[$0] ?? 0 }, tint: .orange,
+                         tip: TimelinePane.duration, labels: true)
+            }
         }
     }
 }
@@ -766,9 +767,10 @@ struct APISpentWidget: View {
     var body: some View {
         let money = { (v: Double) in MoneyFormat.string(v, currency: model.currency) }
         WidgetCard(title: L10n.t("API spent"), symbol: "dollarsign.circle.fill", tint: .orange) {
-            Spacer(minLength: 0)
             WidgetFigure(value: money(model.apiSpent),
-                         detail: L10n.t("Keys \(money(model.keySpend)) · tokens \(money(model.tokenSpend))"))
+                         detail: L10n.t("Keys \(money(model.keySpend)) · tokens \(money(model.tokenSpend))"),
+                         detailLines: 1)
+            WeekBars(values: model.paidByDay.map { (day: $0.day, value: $0.amount) }, tint: .orange, tip: money)
         }
     }
 }
@@ -793,7 +795,7 @@ struct RecentSessionsWidget: View {
             if rows.isEmpty {
                 Text(L10n.t("No Claude or Codex session in this period.")).font(.system(size: 11)).foregroundStyle(.secondary)
             } else {
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 4) {
                     ForEach(Array(rows)) { row in
                         HStack(spacing: 8) {
                             Text(ProjectCost(project: row.project, pct: 0).displayName)
@@ -808,6 +810,7 @@ struct RecentSessionsWidget: View {
                             Text(row.cost.map { MoneyFormat.string($0, currency: model.currency) } ?? "—")
                                 .font(.system(size: 11.5).monospacedDigit()).frame(width: 64, alignment: .trailing)
                         }
+                        .hoverRow()
                     }
                 }
             }
@@ -815,36 +818,64 @@ struct RecentSessionsWidget: View {
     }
 }
 
-/// Badges, bronze to gold: those held in colour, the rest waiting in grey.
-/// The pointer on one says what it is for.
+/// The badges earned, newest first, each with its name; the pointer on one
+/// says what it was for and when. Those still to come are not shown.
 struct AchievementsWidget: View {
     @ObservedObject var model: DashboardModel
     @State private var hovered: String?
 
-    var body: some View {
-        let held = model.earned
-        let all = Achievements.families.flatMap { family in
-            Achievements.Tier.allCases.map { Achievements.Badge(family: family.id, tier: $0) }
+    /// The badges held, newest first.
+    static func held(_ earned: [String: Date]) -> [Achievements.Badge] {
+        earned.sorted { $0.value > $1.value }.compactMap { id, _ in
+            guard let dot = id.lastIndex(of: "."), let raw = Int(id[id.index(after: dot)...]),
+                  let tier = Achievements.Tier(rawValue: raw) else { return nil }
+            let family = String(id[..<dot])
+            guard Achievements.family(family) != nil else { return nil }
+            return Achievements.Badge(family: family, tier: tier)
         }
+    }
+
+    var body: some View {
+        let badges = Self.held(model.earned)
+        let total = Achievements.families.count * Achievements.Tier.allCases.count
         WidgetCard(title: L10n.t("Achievements"), symbol: "medal.fill", tint: .yellow) {
             HStack(alignment: .firstTextBaseline) {
-                Text(L10n.t("\(held.count) of \(all.count) earned"))
+                Text(L10n.t("\(badges.count) of \(total) earned"))
                     .font(.system(size: 11)).foregroundStyle(.secondary)
                 Spacer()
-                if let hovered, let badge = all.first(where: { $0.id == hovered }) {
-                    Text(describe(badge, earned: held[badge.id]))
+                if let hovered, let badge = badges.first(where: { $0.id == hovered }) {
+                    Text(describe(badge, earned: model.earned[badge.id]))
                         .font(.system(size: 10.5)).foregroundStyle(.secondary).lineLimit(1)
+                        .transition(.opacity)
                 }
             }
-            LazyVGrid(columns: Array(repeating: GridItem(.fixed(30), spacing: 6), count: 18), spacing: 6) {
-                ForEach(all) { badge in
-                    Medal(badge: badge, earned: held[badge.id] != nil, size: 30)
+            if badges.isEmpty {
+                Text(L10n.t("No badges yet. The first comes with your first hour of agent work."))
+                    .font(.system(size: 11)).foregroundStyle(.secondary)
+                    .padding(.vertical, 6)
+            } else {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 78, maximum: 96), spacing: 6)], alignment: .leading, spacing: 8) {
+                    ForEach(badges) { badge in
+                        VStack(spacing: 4) {
+                            Medal(badge: badge, earned: true, size: 40)
+                                .scaleEffect(hovered == badge.id ? 1.14 : 1)
+                                .shadow(color: .yellow.opacity(hovered == badge.id ? 0.35 : 0), radius: 6)
+                            Text(Achievements.name(badge))
+                                .font(.system(size: 9.5, weight: .medium)).multilineTextAlignment(.center)
+                                .lineLimit(2).fixedSize(horizontal: false, vertical: true)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 4)
+                        .background(RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(Color.primary.opacity(hovered == badge.id ? 0.07 : 0)))
+                        .contentShape(Rectangle())
                         .onHover { hovered = $0 ? badge.id : (hovered == badge.id ? nil : hovered) }
-                        .help(describe(badge, earned: held[badge.id]))
+                        .help(describe(badge, earned: model.earned[badge.id]))
+                    }
                 }
             }
-            .frame(maxHeight: .infinity, alignment: .top)
         }
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: hovered)
     }
 
     private func describe(_ badge: Achievements.Badge, earned: Date?) -> String {

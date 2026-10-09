@@ -133,11 +133,19 @@ struct SettingsView: View {
     var startSection: SettingsSection = .lid
     @Environment(\.notchReduceTransparency) private var reduceTransparency
     /// How much of the dashboard shows at the head, kept between openings.
-    @AppStorage("dashboard.mode") private var dashboardModeRaw = DashboardMode.folded.rawValue
+    /// Held as state, not `@AppStorage`, so a change made inside an
+    /// animation slides rather than jumps: a defaults write comes back
+    /// outside the animation's transaction.
+    @State private var dashboardState = DashboardMode(rawValue: UserDefaults.standard.string(forKey: Self.dashboardModeKey) ?? "")
+        ?? .folded
+    static let dashboardModeKey = "dashboard.mode"
     private var dashboardMode: Binding<DashboardMode> {
-        Binding(get: { DashboardMode(rawValue: dashboardModeRaw) ?? .folded }, set: { dashboardModeRaw = $0.rawValue })
+        Binding(get: { dashboardState }, set: { new in
+            dashboardState = new
+            UserDefaults.standard.set(new.rawValue, forKey: Self.dashboardModeKey)
+        })
     }
-    private var dashboardExpanded: Bool { dashboardMode.wrappedValue == .expanded }
+    private var dashboardExpanded: Bool { dashboardState == .expanded }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -146,11 +154,12 @@ struct SettingsView: View {
                 .zIndex(1)
             DashboardPanel(preferences: preferences, mode: dashboardMode)
                 .frame(height: dashboardExpanded ? nil
-                       : (dashboardMode.wrappedValue == .hidden ? DashboardPanel.hiddenHeight : DashboardPanel.foldedHeight))
+                       : (dashboardState == .hidden ? DashboardPanel.hiddenHeight : DashboardPanel.foldedHeight))
                 .frame(maxHeight: dashboardExpanded ? .infinity : nil)
-                .clipped()
                 .padding(.horizontal, 18)
+                .padding(.bottom, dashboardExpanded ? 14 : 0)
             if !dashboardExpanded {
+            VStack(spacing: 0) {
             tabBar
                 .padding(.top, 8)
             Rectangle()
@@ -169,10 +178,14 @@ struct SettingsView: View {
             .scrollContentBackground(.hidden)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            // Pushed down and out as the dashboard slides over, back up as
+            // it folds.
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
         }
         // Typing a search is looking for a setting: the dashboard folds away.
         .onChange(of: query) { _, text in
-            if !text.isEmpty, dashboardExpanded { dashboardMode.wrappedValue = .folded }
+            if !text.isEmpty, dashboardExpanded { withAnimation(DashboardPanel.motion) { dashboardMode.wrappedValue = .folded } }
         }
         // Rebuild the whole pane when the language changes.
         //

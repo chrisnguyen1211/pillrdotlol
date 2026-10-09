@@ -51,7 +51,11 @@ final class DashboardRenderTests: XCTestCase {
             commitTimes: (0..<9).map { Calendar.current.startOfDay(for: Date()).addingTimeInterval(Double(9 + $0 % 5) * 3600) },
             earned: ["hours.1": Date(), "hours.2": Date(), "commits.1": Date(), "streak.1": Date(), "tokenMaxxer.1": Date(),
                      "tokenMaxxer.2": Date(), "tokenMaxxer.3": Date(), "dayHours.1": Date(), "keys.1": Date(), "late.1": Date()],
-            bestStreak: 11)
+            bestStreak: 11,
+            busyDays: Dictionary(uniqueKeysWithValues: (0..<14).map { back in
+                (Calendar.current.date(byAdding: .day, value: -back, to: Calendar.current.startOfDay(for: Date()))!,
+                 Double((back * 5 + 2) % 9) * 3600)
+            }))
         let view = VStack(spacing: 16) {
             DashboardFolded(model: model).frame(height: WidgetSize.rowHeight)
             CommitsWidget(model: DashboardModel.forRender(range: .today, sessions: [], keys: [], activity: .init(), streak: 0,
@@ -73,5 +77,32 @@ final class DashboardRenderTests: XCTestCase {
                 try png.write(to: URL(fileURLWithPath: dir).appendingPathComponent("dashboard-\(dark ? "dark" : "light").png"))
             }
         }
+    }
+
+    /// The sky at the hours that look most unlike: morning, noon, golden
+    /// afternoon, sunset, dusk and night.
+    func testTheSkyFollowsTheHour() throws {
+        let calendar = Calendar.current
+        let day = calendar.startOfDay(for: Date())
+        var dark: [Double] = []
+        for hour in [7.5, 12.0, 16.5, 18.0, 19.5, 23.0] {
+            let date = day.addingTimeInterval(hour * 3600)
+            let renderer = ImageRenderer(content: DashboardSky(date: date).frame(width: SettingsView.width - 36, height: DashboardPanel.foldedHeight))
+            renderer.scale = 1
+            let image = try XCTUnwrap(renderer.cgImage)
+            // The top row's brightness: night is darker than noon.
+            let rep = NSBitmapImageRep(cgImage: image)
+            let top = rep.colorAt(x: 4, y: 4)!.usingColorSpace(.sRGB)!
+            dark.append(top.brightnessComponent)
+            if let dir = ProcessInfo.processInfo.environment["EFFORT_RENDER_DIR"],
+               let png = rep.representation(using: .png, properties: [:]) {
+                try FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
+                try png.write(to: URL(fileURLWithPath: dir).appendingPathComponent("sky-\(hour).png"))
+            }
+        }
+        XCTAssertGreaterThan(dark[1], dark[5])
+        XCTAssertEqual(SkyClock.part(12), .noon)
+        XCTAssertEqual(SkyClock.part(23), .night)
+        XCTAssertEqual(SkyClock.part(18), .sunset)
     }
 }
