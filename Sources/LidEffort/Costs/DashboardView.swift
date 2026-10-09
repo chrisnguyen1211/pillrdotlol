@@ -16,6 +16,13 @@ final class DashboardModel: ObservableObject {
             case .month: return L10n.t("This month")
             }
         }
+        /// The range the dashboard opens on: the last one chosen, else this
+        /// month, so commits open on the GitHub-style grid.
+        static let rememberedKey = "dashboard.range"
+        static var remembered: Range {
+            UserDefaults.standard.string(forKey: rememberedKey).flatMap(Range.init(rawValue:)) ?? .month
+        }
+
         /// The local range, for the agents' own records.
         var interval: DateInterval {
             let calendar = Calendar.current
@@ -52,7 +59,12 @@ final class DashboardModel: ObservableObject {
         }
     }
 
-    @Published var range: Range = .week { didSet { load() } }
+    @Published var range: Range = .week {
+        didSet {
+            if !frozen { UserDefaults.standard.set(range.rawValue, forKey: Range.rememberedKey) }
+            load()
+        }
+    }
     @Published private(set) var sessions: [TimelinePane.Row] = []
     @Published private(set) var keys: [KeyRow] = []
     @Published private(set) var plans: [CodingPlans.Row] = []

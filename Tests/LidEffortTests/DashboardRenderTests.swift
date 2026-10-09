@@ -180,6 +180,19 @@ final class DashboardRenderTests: XCTestCase {
         }
     }
 
+    /// The dashboard opens on this month, so commits open on the GitHub
+    /// grid, and then on whatever was chosen last.
+    func testTheDashboardOpensOnThisMonthThenOnTheLastChoice() {
+        let key = DashboardModel.Range.rememberedKey
+        let before = UserDefaults.standard.object(forKey: key)
+        defer { UserDefaults.standard.set(before, forKey: key) }
+        UserDefaults.standard.removeObject(forKey: key)
+        XCTAssertEqual(DashboardModel.Range.remembered, .month)
+        UserDefaults.standard.set("week", forKey: key)
+        XCTAssertEqual(DashboardModel.Range.remembered, .week)
+        XCTAssertEqual(DashboardMode(rawValue: "") ?? .folded, .folded, "folded, the small view, unless chosen otherwise")
+    }
+
     /// The sky at the hours that look most unlike: morning, noon, golden
     /// afternoon, sunset, dusk and night.
     func testTheSkyFollowsTheHour() throws {

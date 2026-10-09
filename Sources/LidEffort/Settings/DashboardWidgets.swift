@@ -30,7 +30,7 @@ struct DashboardPanel: View {
         self.preferences = preferences
         _mode = mode
         _model = StateObject(wrappedValue: DashboardModel(extraKeys: { [weak preferences] in preferences?.extraKeys ?? [] },
-                                                          range: .today))
+                                                          range: DashboardModel.Range.remembered))
     }
 
     /// For renders: a model set by hand.
