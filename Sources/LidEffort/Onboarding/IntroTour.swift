@@ -7,19 +7,20 @@ import SwiftUI
 /// the pill does — by doing it. The notes point at the real notch with
 /// marker doodles drawn over the screen, and the demos are real too: a
 /// finished session slides out of the pill, a reply is typed out beside it,
-/// an approval and a question wait on it to be answered. Answering them
-/// sends nothing anywhere.
+/// an approval and a question wait on it to be answered, a badge flips onto
+/// it. Answering them sends nothing anywhere, and the badge is not kept.
 @MainActor
 final class IntroTour: ObservableObject {
     enum Step: Int, CaseIterable {
-        case hello, apiKeys, sessions, done, reply, approval, question, anywhere, lid, finish
+        case hello, apiKeys, sessions, done, reply, approval, question, anywhere, lid, badge, dashboard, finish
 
         /// The steps shown on a ring's tooltip, held open between them.
         var holdsTooltip: Bool { self == .hello || self == .apiKeys || self == .sessions }
 
         /// Whether the note sits in the middle of the screen rather than
         /// beside the part of the notch it is about.
-        var isCentred: Bool { self == .anywhere || self == .lid || self == .finish }
+        /// The dashboard is in Settings, not on the notch: nothing to point at.
+        var isCentred: Bool { self == .anywhere || self == .lid || self == .dashboard || self == .finish }
     }
 
     /// The Liquid Glass tour opens with a short film before its first step.
@@ -147,6 +148,9 @@ final class IntroTour: ObservableObject {
     private var levelAtLidStep: EffortLevel?
     private var advanceWork: DispatchWorkItem?
     private var replyWork: [DispatchWorkItem] = []
+    private var badgeWork: [DispatchWorkItem] = []
+    /// The badge step's card, while it is up on the notch.
+    private(set) var badgeCard: UsageResetEvent?
     private let samples = (approval: IntroTour.demoApproval(), question: IntroTour.demoQuestion())
     private let sound = MeditationRise()
     private let sounds = TourSounds()
@@ -341,6 +345,7 @@ final class IntroTour: ObservableObject {
         advanceWork?.cancel()
         stopFlying()
         stopReplying()
+        takeDownBadge()
         clearDemos()
         poll?.invalidate()
         poll = nil
@@ -368,6 +373,7 @@ final class IntroTour: ObservableObject {
         drawingSince = Date()
         stopFlying()
         stopReplying()
+        takeDownBadge()
         // Off "anywhere", wherever it was sent: home to the right, where the
         // rest of the tour — and the person, most days — expects it.
         if self.step == .anywhere, step != .anywhere, preferences.notchEdge != Self.homeEdge {
@@ -421,6 +427,15 @@ final class IntroTour: ObservableObject {
             nudge(L10n.t("Press Show me and watch it flow round the screen."))
         case .lid:
             levelAtLidStep = effort()?.state.level
+        case .badge:
+            fleet?.endPeek()
+            // A moment after the note, so the badge is seen flipping in.
+            let work = DispatchWorkItem { [weak self] in self?.showBadge() }
+            badgeWork.append(work)
+            DispatchQueue.main.asyncAfter(deadline: .now() + Self.badgeDelay, execute: work)
+        case .dashboard:
+            // In Settings, not on the notch: the pill folds out of the way.
+            fleet?.endPeek()
         case .finish:
             fleet?.peek(for: 2.5, focusing: nil)
         }
@@ -522,6 +537,35 @@ final class IntroTour: ObservableObject {
         let capsule = CGRect(origin: origin, size: stage)
             .insetBy(dx: (stage.width - field.width) / 2, dy: (stage.height - field.height) / 2)
         return (anchor, capsule)
+    }
+
+    /// The badge step: its card comes up this long after the step, so the
+    /// flip is seen; the badge lands this long after that, on a sparkle; and
+    /// the card stays as long as the done note, the length of the step.
+    static let badgeDelay: TimeInterval = 0.6
+    static let badgeLands: TimeInterval = 0.35
+    static let badgeHold: TimeInterval = 30
+
+    /// The badge step's card, put up on the notch the way the coach puts one
+    /// up: the real card, flipping in with its burst. Nothing is awarded or kept.
+    private func showBadge() {
+        guard step == .badge else { return }
+        let card = Self.demoBadgeCard()
+        badgeCard = card
+        fleet?.showResetAlert(card, duration: Self.badgeHold)
+        let landed = DispatchWorkItem { [weak self] in
+            guard self?.step == .badge else { return }
+            self?.play(.answer)
+        }
+        badgeWork.append(landed)
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.badgeLands, execute: landed)
+    }
+
+    private func takeDownBadge() {
+        badgeWork.forEach { $0.cancel() }
+        badgeWork.removeAll()
+        if let card = badgeCard { fleet?.dismissResetAlert(card) }
+        badgeCard = nil
     }
 
     /// Round the screen from home, clockwise, and home again.
@@ -627,6 +671,7 @@ final class IntroTour: ObservableObject {
         case .hello, .apiKeys, .sessions: wanted = .tooltip
         case .done: wanted = .toast
         case .approval, .question: wanted = .prompt
+        case .badge: wanted = .alert
         default: wanted = .notch
         }
         let found = fleet?.tourAnchor(wanted) ?? fleet?.tourAnchor(.notch)
@@ -724,6 +769,20 @@ final class IntroTour: ObservableObject {
         return SessionCompletionWatcher.Event(session: session, reason: .finished, providerID: ClaudeProfile.defaultID)
     }
 
+    /// Three badges earned together, as the coach would put them: they take
+    /// turns on the one card, each flipping in with its own burst.
+    static let demoBadges: [Achievements.Badge] = [
+        .init(family: "commits", tier: .gold), .init(family: "streak", tier: .silver), .init(family: "late", tier: .bronze),
+    ]
+
+    /// The badge step's card: the coach's own, for the demo's badges.
+    static func demoBadgeCard() -> UsageResetEvent {
+        var event = UsageAlertEvent(kind: .recap, providerID: "coach", providerName: "", windowLabel: "",
+                                    glyph: .third, previousFraction: 0, currentFraction: 0, resetsAt: nil)
+        event.note = Achievements.note(demoBadges)
+        return event
+    }
+
     static func demoApproval() -> PendingPrompt? {
         prompt([
             "tool_name": "Bash",
@@ -777,6 +836,8 @@ extension IntroTour {
         case .question: return L10n.t("Answer questions too")
         case .anywhere: return L10n.t("pillr can be anywhere!")
         case .lid: return L10n.t("Tilt the lid to think harder")
+        case .badge: return L10n.t("Badges, earned as you go")
+        case .dashboard: return L10n.t("A dashboard in Settings")
         case .finish: return leadsIntoSetup ? L10n.t("One more minute") : L10n.t("You're all set ✨")
         }
     }
@@ -796,7 +857,7 @@ extension IntroTour {
         case .approval:
             return result == nil
                 ? L10n.t("Claude wants to run something? Allow or deny it without leaving what you're doing. Try it now: press Allow on the card beside the pill. It's only a demo.")
-                : L10n.t("That's the whole of it: one click, and you're back to what you were doing.")
+                : L10n.t("That's the whole of it: one click, and you're back to what you were doing. Answer in the terminal or the Claude app instead, and the card leaves the notch on its own.")
         case .question:
             return result == nil
                 ? L10n.t("When Claude asks, answer from the card. Try it now: pick an option beside the pill and press Send. It's only a demo.")
@@ -808,6 +869,10 @@ extension IntroTour {
                 return L10n.t("This Mac has no lid sensor, so set the level from the dots on any ring's tooltip instead.")
             }
             return L10n.t("Hold ⌘ and tilt the lid: open it further for more effort, close it a little for less. Let go to set it. Every agent follows.")
+        case .badge:
+            return L10n.t("Reach a milestone, like a week-long streak or your 1,000th commit, and its badge flips onto the notch. 48 to earn in bronze, silver and gold, all from your own work on this Mac. A few at once take turns on one card.")
+        case .dashboard:
+            return L10n.t("Hover the pill and click the gear: Settings opens on a dashboard of your agents' time, commits shipped and API spend, for today, this week or this month, over a sky at your Mac's own hour. The down arrow at its foot shows every metric; up slides it away.")
         case .finish:
             if leadsIntoSetup {
                 return L10n.t("Next, a short setup: pick your agents and give macOS's permissions once, so nothing interrupts you later.")

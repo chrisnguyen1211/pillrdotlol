@@ -62696,6 +62696,142 @@
           }
         }
       }
+    },
+    "Badges, earned as you go" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Des badges, gagnés en chemin"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "進むにつれて、バッジを獲得"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medalhas, conquistadas pelo caminho"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Значки, заработанные по ходу дела"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "一路走来，赢得徽章"
+          }
+        }
+      }
+    },
+    "That's the whole of it: one click, and you're back to what you were doing. Answer in the terminal or the Claude app instead, and the card leaves the notch on its own." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "C'est tout : un clic, et vous revoilà à ce que vous faisiez. Répondez plutôt dans le terminal ou l'app Claude, et la carte quitte l'encoche d'elle-même."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "これで全部です。ワンクリックで、元の作業に戻れます。ターミナルや Claude アプリで答えた場合も、カードはノッチから自動で消えます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "É só isso: um clique, e você volta ao que estava fazendo. Se responder no terminal ou no app Claude, o cartão sai do notch sozinho."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вот и всё: один щелчок, и вы вернулись к своим делам. Ответите в терминале или в приложении Claude, и карточка сама уйдёт из выреза."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "就这么多：点一下，你就回到了手头的事。若改在终端或 Claude 应用里回答，卡片也会自己从刘海中离开。"
+          }
+        }
+      }
+    },
+    "Reach a milestone, like a week-long streak or your 1,000th commit, and its badge flips onto the notch. 48 to earn in bronze, silver and gold, all from your own work on this Mac. A few at once take turns on one card." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Atteignez un cap, comme une série d'une semaine ou votre 1 000e commit, et son badge se retourne sur l'encoche. 48 à gagner, en bronze, argent et or, tous tirés de votre propre travail sur ce Mac. Plusieurs à la fois passent à tour de rôle sur une même carte."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "1 週間の連続記録や 1,000 回目のコミットなどの節目に届くと、そのバッジがくるりと回ってノッチに現れます。銅・銀・金で全部で 48 個、すべてこの Mac でのあなた自身の作業から。いくつか同時に獲得すると、1 枚のカードで順番に表示されます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alcance um marco, como uma sequência de uma semana ou seu 1.000º commit, e a medalha dele gira até o notch. São 48 para conquistar, em bronze, prata e ouro, tudo a partir do seu próprio trabalho neste Mac. Várias de uma vez se revezam num só cartão."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Достигните рубежа, например недельной серии или 1000-го коммита, и его значок с переворотом появится на вырезе. 48 значков в бронзе, серебре и золоте, все за вашу собственную работу на этом Mac. Несколько сразу показываются по очереди на одной карточке."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "达到一个里程碑，比如连续一周或第 1,000 次 commit，对应的徽章就会翻转着出现在刘海上。共 48 枚，分铜、银、金，全部来自你在这台 Mac 上自己的工作。同时获得几枚时，会在同一张卡片上轮流登场。"
+          }
+        }
+      }
+    },
+    "Hover the pill and click the gear: Settings opens on a dashboard of your agents' time, commits shipped and API spend, for today, this week or this month, over a sky at your Mac's own hour. The down arrow at its foot shows every metric; up slides it away." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Survolez la pastille et cliquez sur l'engrenage : les Réglages s'ouvrent sur un tableau de bord du temps de vos agents, des commits livrés et des dépenses API, pour aujourd'hui, cette semaine ou ce mois, sur un ciel à l'heure de votre Mac. La flèche vers le bas, à son pied, affiche tous les indicateurs ; celle vers le haut le fait glisser hors de vue."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ピルにホバーして歯車をクリックすると、設定がダッシュボードとともに開きます。エージェントの作業時間、出荷したコミット、API の支出を、今日・今週・今月で、あなたの Mac の時刻どおりの空の上に表示します。下端の下向き矢印ですべての指標を表示し、上向き矢印でしまえます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passe o cursor sobre a cápsula e clique na engrenagem: os Ajustes abrem num painel com o tempo dos seus agentes, os commits entregues e o gasto em API, hoje, nesta semana ou neste mês, sobre um céu na hora do seu Mac. A seta para baixo, no pé dele, mostra todas as métricas; a para cima o esconde."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Наведите на пилюлю и нажмите шестерёнку: настройки откроются на панели со временем работы агентов, отправленными коммитами и расходами на API за сегодня, неделю или месяц, на фоне неба в час вашего Mac. Стрелка вниз у её нижнего края показывает все показатели; стрелка вверх убирает панель."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "悬停在胶囊上并点齿轮：设置会打开，顶部是一块仪表盘，显示智能体工作时长、已提交的代码和 API 花费，可按今天、本周或本月查看，背景是与你 Mac 时间一致的天空。底部的向下箭头展开全部指标，向上箭头将它收起。"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

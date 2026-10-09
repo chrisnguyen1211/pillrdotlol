@@ -631,6 +631,8 @@ struct GlassIllustration: View {
                 case .question: questionScene(t)
                 case .anywhere: anywhereScene(t)
                 case .lid: lidScene(t)
+                case .badge: badgeScene(t)
+                case .dashboard: dashboardScene(t)
                 case .finish: finishScene(t)
                 }
             }
@@ -834,6 +836,28 @@ struct GlassIllustration: View {
         }
     }
 
+    /// The badge card the notch is showing, beside the pill.
+    private func badgeScene(_ t: Double) -> some View {
+        let event = IntroTour.demoBadgeCard()
+        return HStack(spacing: 4) {
+            real(CGSize(width: cardSize.width, height: UsageResetCard.cardHeight(for: event)), scale: 0.62) {
+                UsageResetCard(event: event, direction: NotchEdge.right.tooltipDirection)
+            }
+            pill()
+        }
+    }
+
+    /// The dashboard as it heads Settings, folded, over the sky at this
+    /// Mac's own hour.
+    private func dashboardScene(_ t: Double) -> some View {
+        let size = TourDashboard.size
+        let scale = min(316 / size.width, 146 / size.height)
+        return TourDashboard(t: t)
+            .scaleEffect(scale)
+            .frame(width: size.width * scale, height: size.height * scale)
+            .allowsHitTesting(false)
+    }
+
     private func finishScene(_ t: Double) -> some View {
         HStack(spacing: 22) {
             Image(systemName: "checkmark.seal.fill")
@@ -848,6 +872,96 @@ struct GlassIllustration: View {
             Image(systemName: "sparkles").font(.system(size: 24)).foregroundStyle(GlassTour.accent)
                 .opacity(0.5 + 0.5 * sin(t * 3))
         }
+    }
+}
+
+/// The dashboard at the head of Settings, folded, for the tour's picture:
+/// its widgets — made-up figures — frosted over the real sky at this Mac's
+/// hour, and the arrows at its foot, the down one lit.
+struct TourDashboard: View {
+    let t: Double
+    static let size = CGSize(width: 560, height: DashboardPanel.foldedHeight)
+
+    /// A few months of commits, some days more than others, for the grid.
+    static func commits(now: Date = Date()) -> [Date: Int] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: now)
+        var days: [Date: Int] = [:]
+        for back in 0..<120 {
+            guard let day = calendar.date(byAdding: .day, value: -back, to: today) else { continue }
+            days[day] = [0, 3, 6, 1, 0, 9, 4, 2, 7, 0, 5, 12, 3][back % 13]
+        }
+        return days
+    }
+
+    var body: some View {
+        let shape = RoundedRectangle(cornerRadius: 20, style: .continuous)
+        let commits = Self.commits()
+        let month = Calendar.current.dateInterval(of: .month, for: Date())
+        let shipped = commits.filter { month?.contains($0.key) == true }.values.reduce(0, +)
+        ZStack(alignment: .top) {
+            DashboardSky()
+            VStack(spacing: 0) {
+                HStack {
+                    smoked(Text(L10n.t("Dashboard")).font(.system(size: 13, weight: .semibold)))
+                    Spacer()
+                    smoked(Text(L10n.t("This month")).font(.system(size: 11, weight: .medium)))
+                }
+                .padding(.horizontal, 10)
+                .frame(height: DashboardPanel.headerHeight)
+                WidgetRow {
+                    WidgetCard(title: L10n.t("Agents at work"), symbol: "figure.run", tint: .green) {
+                        WidgetFigure(value: TimelinePane.duration(38 * 3600 + 20 * 60))
+                    }
+                    .widgetSize(.small)
+                    WidgetCard(title: L10n.t("Commits shipped"), symbol: "point.3.connected.trianglepath.dotted", tint: .green) {
+                        HStack(alignment: .bottom, spacing: 10) {
+                            Text("\(shipped)")
+                                .font(.system(size: 26, weight: .semibold, design: .rounded).monospacedDigit())
+                                .frame(width: 60, alignment: .leading)
+                            CommitCalendar(days: commits)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        }
+                    }
+                    .widgetSize(.medium)
+                    WidgetCard(title: L10n.t("API spent"), symbol: "dollarsign.circle.fill", tint: .orange) {
+                        WidgetFigure(value: "$12.40")
+                    }
+                    .widgetSize(.small)
+                }
+                .frame(height: WidgetSize.rowHeight)
+                .padding(.horizontal, 12)
+                .padding(.bottom, 6)
+                HStack(spacing: 10) {
+                    arrow(up: true, lit: 0)
+                    // The one the step is about, breathing.
+                    arrow(up: false, lit: 0.5 + 0.5 * sin(t * 3))
+                }
+                .frame(height: DashboardPanel.footerHeight)
+            }
+        }
+        .frame(width: Self.size.width, height: Self.size.height)
+        .clipShape(shape)
+        .overlay(shape.strokeBorder(Color.white.opacity(0.12), lineWidth: 1))
+    }
+
+    /// On a smoked pill, as the dashboard writes over its sky.
+    private func smoked(_ text: some View) -> some View {
+        text.foregroundStyle(.white)
+            .padding(.horizontal, 10).padding(.vertical, 4)
+            .background(Capsule().fill(Color.black.opacity(0.28)))
+            .background(.ultraThinMaterial, in: Capsule())
+    }
+
+    private func arrow(up: Bool, lit: Double) -> some View {
+        Image(systemName: up ? "chevron.up" : "chevron.down")
+            .font(.system(size: 11, weight: .semibold))
+            .foregroundStyle(.primary)
+            .frame(width: 32, height: 22)
+            .background(.regularMaterial, in: Capsule())
+            .overlay(Capsule().strokeBorder(GlassTour.glow.opacity(0.9 * lit), lineWidth: 1.5))
+            .shadow(color: GlassTour.glow.opacity(0.8 * lit), radius: 6)
+            .scaleEffect(1 + 0.08 * lit)
     }
 }
 

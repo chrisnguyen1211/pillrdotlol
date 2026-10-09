@@ -289,7 +289,7 @@ final class IntroTourTests: XCTestCase {
                                 result: step == .approval ? TourResult(answer: .allow, question: false, at: promptCard) : nil,
                                 visited: step == .anywhere ? [.right, .bottom] : [])
             // The new steps, and the one whose words changed, in light as well.
-            let looks: [Bool] = [.apiKeys, .reply, .anywhere].contains(step) ? [true, false] : [true]
+            let looks: [Bool] = [.apiKeys, .reply, .anywhere, .badge, .dashboard].contains(step) ? [true, false] : [true]
             for dark in looks {
                 let scene = try render(ZStack(alignment: .topLeading) {
                     if dark { backdrop } else { light }
@@ -355,7 +355,8 @@ final class IntroTourTests: XCTestCase {
     /// limits, a reply straight after a session finishes.
     func testTheKeysAndTheReplyHaveTheirPlaces() {
         let order = IntroTour.Step.allCases
-        XCTAssertEqual(order, [.hello, .apiKeys, .sessions, .done, .reply, .approval, .question, .anywhere, .lid, .finish])
+        XCTAssertEqual(order, [.hello, .apiKeys, .sessions, .done, .reply, .approval, .question, .anywhere, .lid,
+                               .badge, .dashboard, .finish])
         XCTAssertTrue(IntroTour.Step.apiKeys.holdsTooltip, "the keys' card is a tooltip, held open")
         XCTAssertFalse(IntroTour.Step.reply.holdsTooltip, "the reply field takes the tooltip's place")
         XCTAssertFalse(IntroTour.Step.apiKeys.isCentred)
@@ -377,6 +378,189 @@ final class IntroTourTests: XCTestCase {
         XCTAssertEqual(tour.step, .sessions)
         tour.back()
         XCTAssertEqual(tour.step, .apiKeys)
+    }
+
+    /// 1.2.0's steps close the tour: a badge on the notch after the lid, then
+    /// the dashboard in Settings, then the end. Shown on every Mac; the badge
+    /// beside the pill, the dashboard, which is not on the notch, centred.
+    func testTheBadgeAndTheDashboardComeBeforeTheEnd() {
+        let order = IntroTour.Step.allCases
+        XCTAssertEqual(Array(order.suffix(4)), [.lid, .badge, .dashboard, .finish])
+        XCTAssertFalse(IntroTour.Step.badge.isCentred, "the badge's note points at its card")
+        XCTAssertTrue(IntroTour.Step.dashboard.isCentred, "nothing on the notch to point at")
+        XCTAssertFalse(IntroTour.Step.badge.holdsTooltip)
+        XCTAssertFalse(IntroTour.Step.dashboard.holdsTooltip)
+
+        let (tour, _) = tour(edge: .right)
+        XCTAssertTrue(tour.steps.contains(.badge) && tour.steps.contains(.dashboard), "shown on every Mac")
+        tour.showForTesting(.lid, anchor: nil, screen: screen, edge: .right)
+        tour.next()
+        XCTAssertEqual(tour.step, .badge)
+        XCTAssertEqual(tour.stepTitle, L10n.t("Badges, earned as you go"))
+        XCTAssertTrue(tour.stepText.contains("48"), tour.stepText)
+        tour.next()
+        XCTAssertEqual(tour.step, .dashboard)
+        XCTAssertEqual(tour.stepTitle, L10n.t("A dashboard in Settings"))
+        for words in ["gear", "today, this week or this month", "your Mac's own hour", "down arrow", "up slides it away"] {
+            XCTAssertTrue(tour.stepText.contains(words), "the dashboard step does not say \(words)")
+        }
+        tour.next()
+        XCTAssertEqual(tour.step, .finish)
+        tour.back()
+        XCTAssertEqual(tour.step, .dashboard)
+        tour.back()
+        XCTAssertEqual(tour.step, .badge)
+        tour.end()
+    }
+
+    /// Nothing anyone reads in the new steps, or in the approval's words
+    /// that now say a card answered elsewhere goes, has an em dash.
+    func testTheNewWordsHaveNoEmDash() {
+        let (tour, _) = tour(edge: .right)
+        for step in [IntroTour.Step.badge, .dashboard] {
+            tour.showForTesting(step, anchor: nil, screen: screen, edge: .right)
+            XCTAssertFalse(tour.stepTitle.contains("—") || tour.stepText.contains("—"), "\(step)")
+        }
+        let card = CGRect(x: 1150, y: 330, width: 250, height: 240)
+        tour.showForTesting(.approval, anchor: card, screen: screen, edge: .right,
+                            result: TourResult(answer: .allow, question: false, at: card))
+        XCTAssertTrue(tour.stepText.contains("the terminal or the Claude app"), tour.stepText)
+        XCTAssertTrue(tour.stepText.contains("leaves the notch"), tour.stepText)
+        XCTAssertFalse(tour.stepText.contains("—"))
+    }
+
+    /// The badge step puts the coach's own card up: badges, three of them
+    /// taking turns, on the taller badge card. Not at once, so the flip is
+    /// seen once the note is in place; down again when the step is left.
+    /// Nothing is awarded.
+    func testTheBadgeStepPutsUpTheRealBadgeCardThenTakesItDown() async throws {
+        let card = IntroTour.demoBadgeCard()
+        XCTAssertEqual(card.kind, .recap)
+        XCTAssertEqual(card.providerID, "coach", "the coach's card, as the notch shows a badge")
+        let note = try XCTUnwrap(card.note)
+        XCTAssertEqual(note.badges, IntroTour.demoBadges)
+        XCTAssertEqual(note.badges.count, 3, "several earned together take turns")
+        XCTAssertEqual(note, Achievements.note(IntroTour.demoBadges))
+        XCTAssertEqual(UsageResetCard.cardHeight(for: card), UsageResetCard.badgeCardHeight)
+        XCTAssertTrue(note.good)
+
+        // Timing: after the note, like the reply's field; up for the step.
+        XCTAssertGreaterThan(IntroTour.badgeDelay, 0.3)
+        XCTAssertLessThan(IntroTour.badgeDelay, 1.0)
+        XCTAssertLessThan(IntroTour.badgeLands, 0.7, "the sparkle comes before the flip is over")
+        XCTAssertGreaterThanOrEqual(IntroTour.badgeHold, 30, "as long as the done note")
+
+        let earned = Achievements.earned()
+        let (tour, _) = tour(edge: .right)
+        tour.showForTesting(.lid, anchor: nil, screen: screen, edge: .right)
+        tour.next()
+        XCTAssertEqual(tour.step, .badge)
+        XCTAssertNil(tour.badgeCard, "up before the note is in place")
+        try await Task.sleep(for: .seconds(IntroTour.badgeDelay + 0.3))
+        XCTAssertEqual(tour.badgeCard, card)
+        XCTAssertEqual(tour.badgeCard?.note?.badges.isEmpty, false, "the card shows badges")
+        tour.next()
+        XCTAssertEqual(tour.step, .dashboard)
+        XCTAssertNil(tour.badgeCard, "the card goes with its step")
+
+        // Left before it came up, it never comes.
+        tour.back()
+        XCTAssertEqual(tour.step, .badge)
+        tour.next()
+        try await Task.sleep(for: .seconds(IntroTour.badgeDelay + 0.3))
+        XCTAssertNil(tour.badgeCard)
+        XCTAssertEqual(Achievements.earned(), earned, "the tour awarded a badge")
+        tour.end()
+    }
+
+    /// On the notch: the card comes up beside the open pill where the tour
+    /// laid its note out before it was up, and only the tour's card is taken
+    /// down by the tour.
+    func testTheBadgeCardStandsWhereTheNoteExpectedIt() throws {
+        let controller = NotchWindowController()
+        controller.show()
+        defer { controller.stop() }
+        let card = IntroTour.demoBadgeCard()
+        let expected = try XCTUnwrap(controller.screenRect(of: .alert))
+        controller.showResetAlert(card, duration: IntroTour.badgeHold)
+        XCTAssertEqual(controller.model.activeResetAlert, card)
+        XCTAssertTrue(controller.model.isExpanded, "the card comes with the notch open")
+        let shown = try XCTUnwrap(controller.screenRect(of: .alert))
+        XCTAssertEqual(shown.minX, expected.minX, accuracy: 1)
+        XCTAssertEqual(shown.minY, expected.minY, accuracy: 1)
+        XCTAssertEqual(shown.width, expected.width, accuracy: 1)
+        XCTAssertEqual(shown.height, expected.height, accuracy: 1)
+        let notch = try XCTUnwrap(controller.screenRect(of: .notch))
+        XCTAssertTrue(shown.insetBy(dx: -1, dy: -1).contains(notch), "the halo goes round the pill and the card")
+        XCTAssertGreaterThan(shown.width * shown.height, notch.width * notch.height * 2, "no room for the card")
+
+        var other = card
+        other.note = Achievements.note([.init(family: "keys", tier: .bronze)])
+        controller.dismissResetAlert(other)
+        XCTAssertEqual(controller.model.activeResetAlert, card, "a card not the tour's stays")
+        controller.dismissResetAlert(card)
+        XCTAssertNil(controller.model.activeResetAlert)
+    }
+
+    /// The badge card the step shows is the badge card: the medal drawn
+    /// large in colour, where a card with no badges has none.
+    func testTheTourBadgeCardShowsItsBadges() throws {
+        let card = IntroTour.demoBadgeCard()
+        var plain = card
+        plain.note = CardNote(title: "Best week yet", subtitle: "12 h of agent work", status: "Record", good: true)
+        func colour(_ event: UsageResetEvent, name: String) throws -> Int {
+            let view = UsageResetCard(event: event, direction: NotchEdge.right.tooltipDirection)
+                .frame(width: NotchLayout.cardWidth + NotchLayout.tailLength, height: UsageResetCard.badgeCardHeight,
+                       alignment: .top)
+                .background(Color.black)
+                .environment(\.colorScheme, .dark)
+                .environment(\.notchSurfaceStyle, .solid)
+                .environment(\.badgeBurstFrozenAt, 2.4)
+            let renderer = ImageRenderer(content: view)
+            renderer.scale = 2
+            let rep = NSBitmapImageRep(cgImage: try XCTUnwrap(renderer.cgImage))
+            if let dir = ProcessInfo.processInfo.environment["EFFORT_RENDER_DIR"],
+               let png = rep.representation(using: .png, properties: [:]) {
+                try png.write(to: URL(fileURLWithPath: dir).appendingPathComponent(name))
+            }
+            var count = 0
+            for x in stride(from: 0, to: rep.pixelsWide, by: 2) {
+                for y in stride(from: 0, to: rep.pixelsHigh, by: 2) {
+                    guard let c = rep.colorAt(x: x, y: y)?.usingColorSpace(.deviceRGB) else { continue }
+                    if c.saturationComponent > 0.35, c.brightnessComponent > 0.35 { count += 1 }
+                }
+            }
+            return count
+        }
+        let badge = try colour(card, name: "tour-badge-card.png")
+        let none = try colour(plain, name: "tour-badge-card-plain.png")
+        XCTAssertGreaterThan(badge, 400, "no badge on the card")
+        XCTAssertGreaterThan(badge, none * 4, "the badge card is no more colourful than a card without one")
+    }
+
+    /// The dashboard step's picture is made of the dashboard's own pieces:
+    /// its folded height, its widgets, its sky, and a commit for most days.
+    func testTheDashboardPictureIsTheFoldedDashboard() throws {
+        XCTAssertEqual(TourDashboard.size.height, DashboardPanel.foldedHeight)
+        let now = Date()
+        let commits = TourDashboard.commits(now: now)
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: now)
+        XCTAssertNotNil(commits[today], "today is in the grid")
+        XCTAssertGreaterThan(commits.values.filter { $0 > 0 }.count, commits.count / 2, "a grid of mostly empty days")
+        XCTAssertNil(commits[calendar.date(byAdding: .day, value: 1, to: today)!], "a commit from tomorrow")
+
+        let renderer = ImageRenderer(content: TourDashboard(t: 0).environment(\.colorScheme, .dark))
+        renderer.scale = 1
+        let rep = NSBitmapImageRep(cgImage: try XCTUnwrap(renderer.cgImage))
+        XCTAssertEqual(CGFloat(rep.pixelsWide), TourDashboard.size.width)
+        // The sky shows in a corner, under no widget.
+        let corner = try XCTUnwrap(rep.colorAt(x: 30, y: 8)?.usingColorSpace(.deviceRGB))
+        XCTAssertGreaterThan(corner.alphaComponent, 0.9, "no sky behind the dashboard")
+        if let dir = ProcessInfo.processInfo.environment["EFFORT_RENDER_DIR"],
+           let png = rep.representation(using: .png, properties: [:]) {
+            try png.write(to: URL(fileURLWithPath: dir).appendingPathComponent("tour-dashboard.png"))
+        }
     }
 
     /// The keys step's demo is the real cell, built the way the notch builds
