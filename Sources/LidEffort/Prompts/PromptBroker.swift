@@ -154,10 +154,19 @@ final class PromptBroker: @unchecked Sendable {
         }
     }
 
-    private func withdraw(_ id: UUID) {
+    /// Lets go of a held prompt that was answered somewhere else — in the
+    /// terminal, in the Claude app — see `PromptSettlement`. The connection
+    /// is closed with nothing written: the hook hands back no decision, so
+    /// whatever was answered there stands, and if Claude's own dialog is
+    /// somehow still up it simply stays up.
+    func release(_ id: UUID) {
+        withdraw(id, because: "answered elsewhere")
+    }
+
+    private func withdraw(_ id: UUID, because reason: String = "its hook went away") {
         lock.lock(); let entry = held.removeValue(forKey: id); lock.unlock()
         guard let entry else { return }
-        log.notice("prompt withdrawn: its hook went away")
+        log.notice("prompt withdrawn: \(reason, privacy: .public)")
         entry.source.cancel()
         close(entry.fd)
         let gone = onGone

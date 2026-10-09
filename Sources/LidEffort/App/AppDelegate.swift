@@ -11,6 +11,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var effort: EffortController?
     /// When to sound again for a prompt nobody has answered.
     private var promptReminder = PromptReminder(minutes: 0)
+    /// Notices a held prompt that was answered in the terminal or the
+    /// Claude app instead — see `PromptSettlement`.
+    private var promptSettlement = PromptSettlement()
     /// Whether someone was at the Mac on the last prompt watch — to notice
     /// them coming back to questions that arrived while they were away.
     private var wasPresent = true
@@ -979,6 +982,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let watch = Timer(timeInterval: 1.5, repeats: true) { [weak self, weak fleet, weak broker] _ in
             MainActor.assumeIsolated {
                 guard let fleet, let broker else { return }
+                // Answered in the terminal or the Claude app: Claude Code
+                // keeps that answer but leaves the hook connected, so the
+                // card goes from here, before any reminder sounds for it.
+                // Whether or not anyone is at the Mac: the answer may have
+                // come from the Claude app on a phone.
+                if let self, !fleet.isTouring {
+                    for prompt in fleet.prompts {
+                        let seen = self.promptSettlement.observe(prompt)
+                        if self.promptSettlement.isSettled(prompt, seeing: seen) { broker.release(prompt.id) }
+                    }
+                    self.promptSettlement.keep(only: Set(fleet.prompts.map(\.id)))
+                }
                 // Again, every few minutes, for as long as one waits.
                 if let self {
                     self.promptReminder.minutes = preferences.promptReminderMinutes

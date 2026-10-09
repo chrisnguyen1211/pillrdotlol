@@ -118,6 +118,9 @@ Claude — đó là TC05). Ctrl-C giả lập session bị ngắt (TC33).
 | TC26 | Trả lời câu 1 trong tooltip | Tooltip ở lại cho câu 2, không nhảy sang terminal | Auto `testAClickInTheTooltipNeverFoldsTheNotchOrJumpsToTheTerminal` | Pass |
 | TC27 | Click vào card cạnh pill gập | Notch không mở, không nhảy session, không trả lời gì | Auto `testAClickOnTheFoldedCardNeitherOpensTheNotchNorTheSession` | Pass |
 | TC28 | Hover thật + chuột thật | Như TC21–24 | Thủ công | Chưa chạy |
+| TC28a | Trả lời/duyệt ngay trong terminal hoặc app Claude (không bấm trong pillr) | Card rút khỏi notch trong ~1,5 s, gỡ notification, không nhắc lại âm thanh; hook đóng im lặng, không gửi quyết định nào về Claude | Auto `PromptSettlementTests` (transcript có tool_result của đúng lệnh; registry `waiting` → `busy`), `PromptReleaseTests` · Thủ công: duyệt trong terminal | Pass (auto) |
+| TC28b | Session Claude thoát khi card đang chờ | Card rút | Auto `testASessionWhoseProcessIsGoneSettlesIt` | Pass |
+| TC28c | Hai prompt song song, chỉ một được trả lời ở terminal | Chỉ card đó rút, card kia ở lại | Auto `testParallelPromptsAreSettledEachOnTheirOwn` | Pass |
 
 ## E. Nhiều session hỏi cùng lúc
 
