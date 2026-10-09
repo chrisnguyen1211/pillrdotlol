@@ -78,4 +78,12 @@ final class DoneToastContextTests: XCTestCase {
             try png.write(to: URL(fileURLWithPath: dir).appendingPathComponent("done-card-context.png"))
         }
     }
+
+    /// An Antigravity session has no process of its own; its card opens
+    /// Antigravity. Others with no process open nothing.
+    func testAnAntigravityCardOpensAntigravity() {
+        XCTAssertEqual(DoneToast.app(forSessionID: "antigravity.abc123"), "com.google.antigravity")
+        XCTAssertNil(DoneToast.app(forSessionID: "claude.abc"))
+        XCTAssertNil(DoneToast.app(forSessionID: "codex.abc"))
+    }
 }

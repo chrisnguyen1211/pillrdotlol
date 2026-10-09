@@ -62,6 +62,10 @@ struct DoneToast: Equatable, Identifiable {
     let glyph: ProviderGlyph
     let isBlocked: Bool
     let pid: pid_t?
+    /// The app to bring forward when the session has no process of its
+    /// own: Antigravity's sessions are read from its files, so the card
+    /// opens Antigravity itself. Only ever brought forward, never written to.
+    let app: String?
     /// The session itself, for ⌥-click → reply.
     let session: AgentSession
 
@@ -87,8 +91,17 @@ struct DoneToast: Equatable, Identifiable {
         }
         self.glyph = glyph
         pid = session.processID
+        app = session.processID == nil ? Self.app(forSessionID: session.id) : nil
         self.session = session
     }
+
+    /// The app a session with no process lives in, by its id.
+    static func app(forSessionID id: String) -> String? {
+        id.hasPrefix("antigravity.") ? "com.google.antigravity" : nil
+    }
+
+    /// Whether a click on the card goes anywhere.
+    var opens: Bool { pid != nil || app != nil }
 
     static func == (lhs: DoneToast, rhs: DoneToast) -> Bool { lhs.id == rhs.id }
 
@@ -140,7 +153,7 @@ struct DoneToastView: View {
                 // "Click to open" only where a click opens something, and
                 // not over what the session changed, which matters more.
                 NotchCardStatus(tone: tone, text: toast.status,
-                                trailing: toast.pid != nil && toast.changes == nil ? L10n.t("Click to open") : nil)
+                                trailing: toast.opens && toast.changes == nil ? L10n.t("Click to open") : nil)
                     .padding(.top, NotchLayout.headerToBlock)
             }
         }

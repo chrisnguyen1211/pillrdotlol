@@ -832,6 +832,8 @@ final class NotchWindowController {
                     reply(.reply(toast.session))
                 } else if let pid = toast.pid {
                     focusSession(pid)
+                } else if let app = toast.app {
+                    Self.bringForward(bundleID: app)
                 }
                 return
             }
@@ -1607,6 +1609,16 @@ final class NotchWindowController {
         pendingFocus = nil
         focusSession(pending.pid)
         return true
+    }
+
+    /// An app brought to the front by the workspace, the route that is
+    /// honoured for an app that is not itself active.
+    static func bringForward(bundleID: String) {
+        guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleID) else { return }
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = true
+        Log.usage.notice("done card: bring \(bundleID, privacy: .public) forward")
+        NSWorkspace.shared.openApplication(at: url, configuration: configuration) { _, _ in }
     }
 
     /// The same exact-tab jump a session row gives, not just the app — by
