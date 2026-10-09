@@ -62832,6 +62832,176 @@
           }
         }
       }
+    },
+    "The intro tour shows what's new." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La visite guidée montre les nouveautés."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "紹介ツアーで新機能を案内します。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O tour de apresentação mostra as novidades."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вводный тур показывает новое."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "入门导览展示新功能。"
+          }
+        }
+      }
+    },
+    "Badges in the tour" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les badges dans la visite"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ツアーにバッジ"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medalhas no tour"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Значки в туре"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导览中的徽章"
+          }
+        }
+      }
+    },
+    "The tour now shows a badge arriving on the notch, and where the dashboard is in Settings." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La visite montre maintenant un badge qui arrive sur l’encoche, et où se trouve le tableau de bord dans les Réglages."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ツアーで、バッジがノッチに届く様子と、設定のどこにダッシュボードがあるかを見られるようになりました。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O tour agora mostra uma medalha chegando ao notch e onde fica o painel nos Ajustes."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Теперь тур показывает, как значок появляется в вырезе, и где в настройках находится панель."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "导览现在会展示徽章出现在刘海上的样子，以及仪表板在设置中的位置。"
+          }
+        }
+      }
+    },
+    "Answered anywhere, said in the tour" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Répondu ailleurs, dit dans la visite"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "他の場所での回答もツアーで案内"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Respondido em outro lugar, dito no tour"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ответ в другом месте, теперь в туре"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在别处回答，导览中也有说明"
+          }
+        }
+      }
+    },
+    "The approvals step says that answering in the terminal or the Claude app takes the card off the notch." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’étape des autorisations dit que répondre dans le terminal ou l’app Claude retire la carte de l’encoche."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "承認のステップで、ターミナルや Claude アプリで答えるとカードがノッチから消えることを説明します。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A etapa de aprovações diz que responder no terminal ou no app Claude tira o cartão do notch."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Шаг про разрешения говорит, что ответ в терминале или приложении Claude убирает карточку из выреза."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "批准步骤说明：在终端或 Claude 应用中回答，卡片就会从刘海上移除。"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

@@ -32,6 +32,20 @@ enum ReleaseNotes {
     static var all: [ReleaseNote] {
         [
             ReleaseNote(
+                version: "1.2.1",
+                headline: L10n.t("The intro tour shows what's new."),
+                changes: [
+                    ReleaseNote.Change(
+                        title: L10n.t("Badges in the tour"),
+                        detail: L10n.t("The tour now shows a badge arriving on the notch, and where the dashboard is in Settings.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("Answered anywhere, said in the tour"),
+                        detail: L10n.t("The approvals step says that answering in the terminal or the Claude app takes the card off the notch.")
+                    )
+                ]
+            ),
+            ReleaseNote(
                 version: "1.2.0",
                 headline: L10n.t("A dashboard for your agents, at the head of Settings."),
                 changes: [
