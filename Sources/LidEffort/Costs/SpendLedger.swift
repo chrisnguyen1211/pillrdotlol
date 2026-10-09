@@ -159,15 +159,27 @@ final class SpendLedger {
         }
     }
 
+    /// What a key used between any two moments, for the charts: whole days
+    /// the provider summed itself, else how its figure moved.
+    func used(provider: String, from: Date, to: Date) -> Figure? {
+        queue.sync { () -> Figure? in
+            let dayLong = to.timeIntervalSince(from) >= 86_399
+            if dayLong, let days = dayRows(provider: provider, from: from, to: to), !days.isEmpty {
+                return Figure(amount: days.reduce(0) { $0 + $1.amount }, unit: days[0].unit, since: nil)
+            }
+            return moved(provider: provider, from: from, to: to, monthIsExact: false)
+        }
+    }
+
     /// How far the figure moved: what was spent grows, and a fall in it is a
     /// new period starting from nothing; a balance falls as it is used, and
     /// a rise is money paid in, not spent.
-    private func moved(provider: String, from: Date, to: Date) -> Figure? {
+    private func moved(provider: String, from: Date, to: Date, monthIsExact: Bool = true) -> Figure? {
         for kind in ["spent:month", "spent:billing", "spent:total", "spent:last30", "balance"] {
             let rows = samples(provider: provider, kind: kind, from: from, to: to)
             guard let last = rows.last else { continue }
             // This month's spend, read this month, is the month's figure as it is.
-            if kind == "spent:month", from == Self.range(.month, containing: last.at).from {
+            if monthIsExact, kind == "spent:month", from == Self.range(.month, containing: last.at).from {
                 return Figure(amount: last.value, unit: last.unit, since: nil)
             }
             let before = sampleBefore(provider: provider, kind: kind, date: from)

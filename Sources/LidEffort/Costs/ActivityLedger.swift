@@ -36,6 +36,10 @@ final class ActivityLedger {
                   ts INTEGER NOT NULL, agent TEXT NOT NULL, session TEXT NOT NULL, reason TEXT NOT NULL,
                   folder TEXT, files INTEGER, added INTEGER, removed INTEGER);
                 CREATE INDEX IF NOT EXISTS ix_completion ON completion(ts);
+                CREATE TABLE IF NOT EXISTS coach_event(
+                  ts INTEGER NOT NULL, kind TEXT NOT NULL, metric TEXT NOT NULL, timeframe TEXT NOT NULL,
+                  period INTEGER NOT NULL, value REAL NOT NULL, previous REAL, shown INTEGER NOT NULL);
+                CREATE INDEX IF NOT EXISTS ix_coach ON coach_event(metric, timeframe, period);
                 CREATE TABLE IF NOT EXISTS prompt_wait(
                   asked INTEGER NOT NULL, answered INTEGER NOT NULL, agent TEXT NOT NULL, kind TEXT NOT NULL);
                 CREATE INDEX IF NOT EXISTS ix_wait ON prompt_wait(answered);
@@ -122,6 +126,8 @@ final class ActivityLedger {
         var busyByHour: [TimeInterval] = Array(repeating: 0, count: 24)
         /// Busy seconds per local day, by the day's start.
         var busyByDay: [Date: TimeInterval] = [:]
+        /// Sessions finished per local day.
+        var finishedByDay: [Date: Int] = [:]
         /// When the ledger's knowledge starts, where that is after the range does.
         var since: Date?
     }
@@ -172,6 +178,7 @@ final class ActivityLedger {
                 last = time
             }
             let (finished, added, removed) = completions(from: from, to: end)
+            summary.finishedByDay = finishesByDay(from: from, to: end, calendar: calendar)
             summary.finished = finished
             summary.added = added
             summary.removed = removed
@@ -271,6 +278,17 @@ final class ActivityLedger {
         return (finished, added, removed)
     }
 
+    private func finishesByDay(from: Date, to: Date, calendar: Calendar) -> [Date: Int] {
+        guard let st = prepare("SELECT ts FROM completion WHERE reason = 'finished' AND ts >= ?1 AND ts < ?2") else { return [:] }
+        defer { sqlite3_finalize(st) }
+        bind(st, [.int(Int(from.timeIntervalSince1970)), .int(Int(to.timeIntervalSince1970))])
+        var out: [Date: Int] = [:]
+        while sqlite3_step(st) == SQLITE_ROW {
+            out[calendar.startOfDay(for: Date(timeIntervalSince1970: TimeInterval(sqlite3_column_int64(st, 0)))), default: 0] += 1
+        }
+        return out
+    }
+
     private func answerTimes(from: Date, to: Date) -> [TimeInterval] {
         guard let st = prepare("SELECT answered - asked FROM prompt_wait WHERE answered >= ?1 AND answered < ?2") else { return [] }
         defer { sqlite3_finalize(st) }
@@ -288,6 +306,68 @@ final class ActivityLedger {
         return Date(timeIntervalSince1970: TimeInterval(sqlite3_column_int64(st, 0)))
     }
 
+    /// Every folder a finish was recorded in since a moment.
+    func folders(since: Date) -> [String] {
+        queue.sync {
+            guard let st = prepare("SELECT DISTINCT folder FROM completion WHERE folder IS NOT NULL AND ts >= ?1") else { return [] }
+            defer { sqlite3_finalize(st) }
+            bind(st, [.int(Int(since.timeIntervalSince1970))])
+            var out: [String] = []
+            while sqlite3_step(st) == SQLITE_ROW { out.append(column(st, 0)) }
+            return out
+        }
+    }
+
+    // MARK: The coach's log
+
+    /// A record broken, or a nudge given: kept so neither is said twice and
+    /// the dashboard can show them.
+    struct CoachEvent: Equatable {
+        enum Kind: String { case record, nudge }
+        let at: Date
+        let kind: Kind
+        let metric: String
+        let timeframe: String
+        let period: Date
+        let value: Double
+        let previous: Double?
+        let shown: Bool
+    }
+
+    func log(_ event: CoachEvent) {
+        queue.sync {
+            run("""
+                INSERT INTO coach_event(ts, kind, metric, timeframe, period, value, previous, shown)
+                VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)
+                """, [.int(Int(event.at.timeIntervalSince1970)), .text(event.kind.rawValue), .text(event.metric),
+                      .text(event.timeframe), .int(Int(event.period.timeIntervalSince1970)),
+                      .real(event.value), event.previous.map(Value.real) ?? .null, .int(event.shown ? 1 : 0)])
+        }
+    }
+
+    /// The coach's events, newest first.
+    func coachEvents(limit: Int = 50) -> [CoachEvent] {
+        queue.sync {
+            guard let st = prepare("""
+                SELECT ts, kind, metric, timeframe, period, value, previous, shown FROM coach_event
+                ORDER BY ts DESC LIMIT ?1
+                """) else { return [] }
+            defer { sqlite3_finalize(st) }
+            bind(st, [.int(limit)])
+            var out: [CoachEvent] = []
+            while sqlite3_step(st) == SQLITE_ROW {
+                out.append(CoachEvent(
+                    at: Date(timeIntervalSince1970: TimeInterval(sqlite3_column_int64(st, 0))),
+                    kind: CoachEvent.Kind(rawValue: column(st, 1)) ?? .record, metric: column(st, 2), timeframe: column(st, 3),
+                    period: Date(timeIntervalSince1970: TimeInterval(sqlite3_column_int64(st, 4))),
+                    value: sqlite3_column_double(st, 5),
+                    previous: sqlite3_column_type(st, 6) == SQLITE_NULL ? nil : sqlite3_column_double(st, 6),
+                    shown: sqlite3_column_int(st, 7) != 0))
+            }
+            return out
+        }
+    }
+
     static func name(_ state: AgentSession.State) -> String {
         switch state {
         case .busy: return "busy"
@@ -299,7 +379,7 @@ final class ActivityLedger {
 
     // MARK: SQLite
 
-    private enum Value { case int(Int), text(String), null }
+    private enum Value { case int(Int), real(Double), text(String), null }
 
     @discardableResult
     private func exec(_ sql: String) -> Bool { sqlite3_exec(db, sql, nil, nil, nil) == SQLITE_OK }
@@ -314,6 +394,7 @@ final class ActivityLedger {
             let i = Int32(index + 1)
             switch value {
             case .int(let v): sqlite3_bind_int64(st, i, Int64(v))
+            case .real(let v): sqlite3_bind_double(st, i, v)
             case .text(let v): sqlite3_bind_text(st, i, v, -1, Self.transient)
             case .null: sqlite3_bind_null(st, i)
             }

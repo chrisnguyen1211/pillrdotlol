@@ -382,6 +382,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
             recap.start()
             self.recapScheduler = recap
+            startCoach()
             fleet.onFocusSession = { [weak self] pid in
                 // The tour's demo sessions have no window; it answers for them.
                 if self?.tour?.handleSessionClick(pid) == true { return }
@@ -1227,6 +1228,48 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Task.detached(priority: .utility) {
             let tree = blocked ? nil : folder.flatMap { GitChanges.stats(cwd: $0) }
             ledger.completed(agent: event.providerID, session: session.id, blocked: blocked, folder: folder, tree: tree)
+        }
+        // A finish may have broken a record: looked at once things settle.
+        if !blocked {
+            coachSoon?.cancel()
+            coachSoon = Task { @MainActor [weak self] in
+                try? await Task.sleep(nanoseconds: 60_000_000_000)
+                guard !Task.isCancelled else { return }
+                self?.coachCheck()
+            }
+        }
+    }
+
+    // MARK: The productivity coach
+
+    static let coachEnabledKey = "coach.enabled"
+    private var coachTimer: Timer?
+    private var coachSoon: Task<Void, Never>?
+
+    /// Every hour, and a minute after each finish: a record broken, or a
+    /// nudge due, said on the notch at most once a day.
+    @MainActor
+    private func startCoach() {
+        let timer = Timer(timeInterval: 3600, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.coachCheck() }
+        }
+        RunLoop.main.add(timer, forMode: .common)
+        coachTimer = timer
+    }
+
+    @MainActor
+    private func coachCheck() {
+        guard UserDefaults.standard.object(forKey: Self.coachEnabledKey) as? Bool ?? true,
+              let ledger = ActivityLedger.shared, let fleet = notchFleet, !fleet.isTouring else { return }
+        let stores = CostModels.all.compactMap(\.store_)
+        Task.detached(priority: .utility) { [weak fleet] in
+            guard let finding = ProductivityCoach.check(ledger: ledger, stores: stores) else { return }
+            await MainActor.run {
+                var event = UsageAlertEvent(kind: .recap, providerID: "coach", providerName: "", windowLabel: "",
+                                            glyph: .third, previousFraction: 0, currentFraction: 0, resetsAt: nil)
+                event.note = ProductivityCoach.note(finding)
+                fleet?.showResetAlert(event, duration: 10)
+            }
         }
     }
 

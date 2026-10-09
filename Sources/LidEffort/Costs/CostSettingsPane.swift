@@ -71,18 +71,6 @@ struct CostSettingsPane: View {
             }
 
             CodingPlansSection()
-
-            Section {
-                LabeledContent {
-                    Button(L10n.t("Open Dashboard…")) {
-                        let preferences = preferences
-                        Costs.showDashboard { preferences?.extraKeys ?? [] }
-                    }
-                } label: {
-                    SettingLabel(title: L10n.t("Dashboard"),
-                                 subtitle: L10n.t("Today, this week and this month: what the agents and every API key spent, and how the work went."))
-                }
-            }
         }
         .formStyle(NotchFormStyle())
     }

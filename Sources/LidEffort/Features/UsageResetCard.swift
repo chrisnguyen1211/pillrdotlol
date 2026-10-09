@@ -40,7 +40,7 @@ struct UsageResetCard: View {
         case .weeklyLimitReached:
             return L10n.t("\(event.providerName) Weekly Limit")
         case .recap:
-            return event.recap?.title ?? ""
+            return event.note?.title ?? event.recap?.title ?? ""
         }
     }
 
@@ -51,7 +51,7 @@ struct UsageResetCard: View {
         case .sessionLimitReached, .weeklyLimitReached:
             return L10n.t("\(ResetCheer.limitPhrase(event.windowLabel)) is spent")
         case .recap:
-            return event.recap?.subtitle ?? ""
+            return event.note?.subtitle ?? event.recap?.subtitle ?? ""
         }
     }
 
@@ -62,7 +62,7 @@ struct UsageResetCard: View {
         case .sessionLimitReached, .weeklyLimitReached:
             return Palette.critical
         case .recap:
-            return Palette.ample
+            return event.note.map { $0.good ? Palette.ample : Palette.watch } ?? Palette.ample
         }
     }
 
@@ -75,7 +75,7 @@ struct UsageResetCard: View {
         case .weeklyLimitReached:
             return L10n.t("Weekly limit reached (100% used)")
         case .recap:
-            return event.recap?.status ?? ""
+            return event.note?.status ?? event.recap?.status ?? ""
         }
     }
 

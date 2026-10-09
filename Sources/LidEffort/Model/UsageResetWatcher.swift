@@ -21,6 +21,9 @@ struct UsageAlertEvent: Equatable {
     let resetsAt: Date?
     /// Set for `.recap`: what the card says.
     var recap: DailyRecap? = nil
+    /// Set for `.recap` instead of a recap: a few words of its own, from the
+    /// productivity coach — a record broken, or a nudge.
+    var note: CardNote? = nil
 
     init(
         kind: UsageAlertKind = .reset,
@@ -158,4 +161,13 @@ final class UsageResetWatcher {
         previous.observedAt = now
         states[snapshot.id] = previous
     }
+}
+
+/// Words for the shared alert card that are not a limit or a recap.
+struct CardNote: Equatable {
+    let title: String
+    let subtitle: String
+    let status: String
+    /// Good news is said in green; a nudge in amber.
+    let good: Bool
 }

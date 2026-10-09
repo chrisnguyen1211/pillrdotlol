@@ -56,6 +56,14 @@ final class DashboardModel: ObservableObject {
     @Published private(set) var sessions: [TimelinePane.Row] = []
     @Published private(set) var keys: [KeyRow] = []
     @Published private(set) var plans: [CodingPlans.Row] = []
+    /// Commits per local day, for the grid; the last 120 days.
+    @Published private(set) var commits: [Date: Int] = [:]
+    /// Records broken and nudges given, newest first.
+    @Published private(set) var coach: [ActivityLedger.CoachEvent] = []
+    /// What was paid by use (tokens and keys) on each of the last seven
+    /// local days, and in each hour of today.
+    @Published private(set) var paidByDay: [(day: Date, amount: Double)] = []
+    @Published private(set) var paidByHour: [Double] = Array(repeating: 0, count: 24)
     @Published private(set) var activity = ActivityLedger.Summary()
     @Published private(set) var streak = 0
     @Published private(set) var loading = false
@@ -71,7 +79,9 @@ final class DashboardModel: ObservableObject {
     private var frozen = false
 
     static func forRender(range: Range, sessions: [TimelinePane.Row], keys: [KeyRow], plans: [CodingPlans.Row] = [],
-                          activity: ActivityLedger.Summary, streak: Int) -> DashboardModel {
+                          activity: ActivityLedger.Summary, streak: Int, commits: [Date: Int] = [:],
+                          coach: [ActivityLedger.CoachEvent] = [], paidByDay: [(day: Date, amount: Double)] = [],
+                          paidByHour: [Double] = Array(repeating: 0, count: 24)) -> DashboardModel {
         let model = DashboardModel(extraKeys: { [] })
         model.frozen = true
         model.range = range
@@ -80,6 +90,10 @@ final class DashboardModel: ObservableObject {
         model.plans = plans
         model.activity = activity
         model.streak = streak
+        model.commits = commits
+        model.coach = coach
+        model.paidByDay = paidByDay
+        model.paidByHour = paidByHour
         return model
     }
 
@@ -91,10 +105,24 @@ final class DashboardModel: ObservableObject {
         let keys = extraKeys()
         plans = CodingPlans.rows(snapshots: Costs.latestSnapshots, accounts: CostAccountStore.shared.accounts,
                                  localCurrency: PriceTable.shared.currency)
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        let weekAgo = calendar.date(byAdding: .day, value: -6, to: today)!
+        // Sessions for the range, and for the last seven days the chart draws.
+        let span = DateInterval(start: min(interval.start, weekAgo), end: max(interval.end, Date()))
+        let perToken = Set(CostAccountStore.shared.accounts.filter { $0.billing == .api }.map(\.id))
+        let stores = CostModels.all.compactMap(\.store_)
+        let toLocal: @Sendable (SpendLedger.Figure?) -> Double? = { [currency = PriceTable.shared.currency,
+                                                                     rate = PriceTable.shared.effectiveRate] figure in
+            guard let figure, case .money(let code) = figure.unit else { return nil }
+            let from = code ?? "USD"
+            if from == currency { return figure.amount }
+            return from == "USD" && rate > 0 ? figure.amount * rate : nil
+        }
         Task {
-            let sessions = await TimelinePane.sessions(in: interval, pricer: Self.pricer,
-                                                       accounts: CostAccountStore.shared.accounts, titles: false)
-            let (rows, summary, streak) = await Task.detached(priority: .userInitiated) { () -> ([KeyRow], ActivityLedger.Summary, Int) in
+            let all = await TimelinePane.sessions(in: span, pricer: Self.pricer,
+                                                  accounts: CostAccountStore.shared.accounts, titles: false)
+            let result = await Task.detached(priority: .userInitiated) { () -> Loaded in
                 let ledger = SpendLedger.shared
                 let rows = keys.map { extra in
                     KeyRow(id: extra.id, name: extra.displayName,
@@ -103,16 +131,60 @@ final class DashboardModel: ObservableObject {
                            week: ledger?.used(provider: extra.id, in: .week),
                            month: ledger?.used(provider: extra.id, in: .month))
                 }
+                func keysPaid(_ from: Date, _ to: Date) -> Double {
+                    keys.compactMap { toLocal(ledger?.used(provider: $0.id, from: from, to: to)) }.reduce(0, +)
+                }
+                let paid = all.filter { perToken.contains($0.accountID) }
+                var byDay: [(Date, Double)] = []
+                for back in 0..<7 {
+                    let start = calendar.date(byAdding: .day, value: back, to: weekAgo)!
+                    let end = calendar.date(byAdding: .day, value: 1, to: start)!
+                    let tokens = paid.filter { $0.first >= start && $0.first < end }.compactMap(\.cost).reduce(0, +)
+                    byDay.append((start, tokens + keysPaid(start, end)))
+                }
+                var byHour = Array(repeating: 0.0, count: 24)
+                for hour in 0..<24 {
+                    let start = calendar.date(byAdding: .hour, value: hour, to: today)!
+                    let end = calendar.date(byAdding: .hour, value: 1, to: start)!
+                    guard start <= Date() else { break }
+                    let tokens = paid.filter { $0.first >= start && $0.first < end }.compactMap(\.cost).reduce(0, +)
+                    byHour[hour] = tokens + keysPaid(start, end)
+                }
                 let activity = ActivityLedger.shared
-                return (rows, activity?.summary(from: interval.start, to: interval.end) ?? .init(), activity?.streak() ?? 0)
+                let figures = activity.map { ProductivityCoach.gather(ledger: $0, stores: stores) }
+                return Loaded(keys: rows,
+                              activity: activity?.summary(from: interval.start, to: interval.end) ?? .init(),
+                              streak: activity?.streak() ?? 0,
+                              commits: figures?.commits.mapValues { Int($0) } ?? [:],
+                              coach: activity?.coachEvents(limit: 8) ?? [],
+                              paidByDay: byDay, paidByHour: byHour)
             }.value
             guard range == self.range else { return }
-            self.sessions = sessions
-            self.keys = rows
-            self.activity = summary
-            self.streak = streak
+            self.sessions = all.filter { interval.contains($0.first) }
+            self.keys = result.keys
+            self.activity = result.activity
+            self.streak = result.streak
+            self.commits = result.commits
+            self.coach = result.coach
+            self.paidByDay = result.paidByDay
+            self.paidByHour = result.paidByHour
             self.loading = false
         }
+    }
+
+    private struct Loaded: @unchecked Sendable {
+        let keys: [KeyRow]
+        let activity: ActivityLedger.Summary
+        let streak: Int
+        let commits: [Date: Int]
+        let coach: [ActivityLedger.CoachEvent]
+        let paidByDay: [(day: Date, amount: Double)]
+        let paidByHour: [Double]
+    }
+
+    /// Commits in the range.
+    var commitsInRange: Int {
+        commits.filter { range.interval.contains($0.key) }.values.reduce(0, +)
     }
 
     // MARK: Figures
@@ -196,421 +268,4 @@ final class DashboardModel: ObservableObject {
 
     /// Since when the activity ledger knows, if that is inside the range.
     var activitySince: Date? { activity.since }
-}
-
-struct DashboardView: View {
-    @StateObject var model: DashboardModel
-    @State private var tab = 0
-
-    var body: some View {
-        VStack(spacing: 0) {
-            Picker("", selection: $tab) {
-                Text(L10n.t("Overview")).tag(0)
-                Text(L10n.t("Sessions")).tag(1)
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            .frame(width: 260)
-            .padding(.top, 14)
-            .accessibilityLabel(L10n.t("Dashboard view"))
-            if tab == 0 {
-                DashboardOverview(model: model)
-            } else {
-                TimelinePane()
-            }
-        }
-    }
-}
-
-struct DashboardOverview: View {
-    @ObservedObject var model: DashboardModel
-
-    var body: some View {
-        ScrollView { DashboardContent(model: model) }
-            .onAppear { model.load() }
-    }
-}
-
-/// The dashboard itself, outside its scroll view so it can be drawn.
-struct DashboardContent: View {
-    @ObservedObject var model: DashboardModel
-
-    private var money: (Double) -> String { { MoneyFormat.string($0, currency: model.currency) } }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
-            header
-            cards
-            HStack(alignment: .top, spacing: 18) {
-                chart
-                agents
-            }
-            planTable
-            keyTable
-            modelTable
-            footnotes
-        }
-        .padding(.horizontal, 48).padding(.top, 22).padding(.bottom, 32)
-        .frame(maxWidth: .infinity, alignment: .leading)
-    }
-
-    // MARK: Header
-
-    private var header: some View {
-        HStack(alignment: .firstTextBaseline) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(L10n.t("Dashboard")).font(.system(size: 20, weight: .semibold))
-                Text(L10n.t("What your coding cost, and how the work went.")).font(.system(size: 13)).foregroundStyle(.secondary)
-            }
-            Spacer()
-            Picker("", selection: $model.range) {
-                ForEach(DashboardModel.Range.allCases) { Text($0.title).tag($0) }
-            }
-            .pickerStyle(.segmented).labelsHidden().frame(width: 300)
-            .accessibilityLabel(L10n.t("Period"))
-            Button { model.load() } label: { Image(systemName: "arrow.clockwise") }
-                .controlSize(.small)
-                .accessibilityLabel(L10n.t("Refresh"))
-        }
-    }
-
-    // MARK: Cards
-
-    private var cards: some View {
-        let a = model.activity
-        return LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 14), count: 3), spacing: 14) {
-            card(L10n.t("Spent"), money(model.totalSpend),
-                 L10n.t("Plans \(money(model.planSpend)) · pay as you go \(payAsYouGo)"), tint: .orange)
-            card(L10n.t("Agents at work"), TimelinePane.duration(a.busy),
-                 a.parallel >= 60 ? L10n.t("\(TimelinePane.duration(a.parallel)) with two or more at once") : L10n.t("One at a time"),
-                 tint: .green)
-            card(L10n.t("Waiting on you"), TimelinePane.duration(a.waiting),
-                 a.medianAnswer.map { L10n.t("\(a.answered) answered · usually in \(Self.seconds($0))") } ?? L10n.t("Nothing answered from the notch"),
-                 tint: .yellow)
-            card(L10n.t("Sessions finished"), "\(a.finished)",
-                 L10n.t("\(a.sessions) sessions · \(model.streak)-day streak"), tint: .blue)
-            card(L10n.t("Lines changed"), "+\(a.added) −\(a.removed)",
-                 L10n.t("Grown between finishes, from git"), tint: .purple)
-            card(L10n.t("Cost per finished session"), model.costPerFinish.map(money) ?? "—",
-                 model.costPerHundredLines.map { L10n.t("\(money($0)) per 100 lines") } ?? L10n.t("No lines counted yet"),
-                 tint: .pink)
-        }
-    }
-
-    /// The keys' spend in the Mac's currency, and in its own where there is
-    /// no rate to bring it over.
-    private var payAsYouGo: String {
-        let here = model.tokenSpend + model.keySpend
-        let elsewhere = model.keySpendElsewhere.map { MoneyFormat.string($0.amount, currency: $0.code) }
-        if elsewhere.isEmpty { return money(here) }
-        return ((here > 0 ? [money(here)] : []) + elsewhere).joined(separator: " + ")
-    }
-
-    private func card(_ title: String, _ value: String, _ detail: String, tint: Color) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 6) {
-                Circle().fill(tint).frame(width: 7, height: 7)
-                Text(title).font(.system(size: 12, weight: .medium)).foregroundStyle(.secondary)
-            }
-            Text(value).font(.system(size: 22, weight: .semibold).monospacedDigit()).lineLimit(1).minimumScaleFactor(0.6)
-            Text(detail).font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(2)
-        }
-        .padding(14)
-        .frame(maxWidth: .infinity, minHeight: 104, alignment: .topLeading)
-        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.primary.opacity(0.045)))
-        .accessibilityElement(children: .combine)
-    }
-
-    // MARK: Charts
-
-    @ViewBuilder
-    private var chart: some View {
-        if model.range == .today {
-            panel(L10n.t("Work by hour")) {
-                bars(model.activity.busyByHour.enumerated().map { (label: $0.offset % 3 == 0 ? "\($0.offset)" : "", value: $0.element) },
-                     tint: .green, format: { TimelinePane.duration($0) })
-            }
-        } else {
-            panel(L10n.t("Agent spend by day")) {
-                let formatter = Self.dayFormatter(model.range)
-                bars(model.spendByDay.map { (label: formatter.string(from: $0.day), value: $0.cost) }, tint: .orange, format: money)
-            }
-        }
-    }
-
-    private var agents: some View {
-        panel(L10n.t("Time at work by agent")) {
-            let list = model.activity.busyByAgent.sorted { $0.value > $1.value }
-            if list.isEmpty {
-                Text(L10n.t("No agent has worked in this period yet.")).font(.caption).foregroundStyle(.secondary)
-            } else {
-                let top = list.first!.value
-                VStack(alignment: .leading, spacing: 8) {
-                    ForEach(list, id: \.key) { agent, seconds in
-                        HStack(spacing: 8) {
-                            Text(Self.agentName(agent)).font(.system(size: 12)).frame(width: 110, alignment: .leading).lineLimit(1)
-                            GeometryReader { geo in
-                                Capsule().fill(Color.green.opacity(0.7))
-                                    .frame(width: max(4, geo.size.width * seconds / max(top, 1)), height: 8)
-                                    .frame(maxHeight: .infinity)
-                            }
-                            .frame(height: 14)
-                            Text(TimelinePane.duration(seconds)).font(.system(size: 11).monospacedDigit()).foregroundStyle(.secondary)
-                                .frame(width: 70, alignment: .trailing)
-                        }
-                    }
-                }
-            }
-        }
-        .frame(width: 360)
-    }
-
-    private func bars(_ items: [(label: String, value: Double)], tint: Color, format: @escaping (Double) -> String) -> some View {
-        let top = items.map(\.value).max() ?? 0
-        return HStack(alignment: .bottom, spacing: 3) {
-            ForEach(Array(items.enumerated()), id: \.offset) { _, item in
-                VStack(spacing: 4) {
-                    RoundedRectangle(cornerRadius: 3, style: .continuous)
-                        .fill(tint.opacity(item.value > 0 ? 0.8 : 0.15))
-                        .frame(height: top > 0 ? max(2, 110 * item.value / top) : 2)
-                        .help(format(item.value))
-                    Text(item.label).font(.system(size: 9)).foregroundStyle(.secondary).lineLimit(1).fixedSize()
-                }
-                .frame(maxWidth: .infinity)
-            }
-        }
-        .frame(height: 132, alignment: .bottom)
-    }
-
-    private func panel(_ title: String, @ViewBuilder content: () -> some View) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text(title).font(.system(size: 13, weight: .semibold))
-            content()
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity, alignment: .topLeading)
-        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.primary.opacity(0.045)))
-    }
-
-    // MARK: Tables
-
-    private var keyTable: some View {
-        panel(L10n.t("API keys")) {
-            if model.keys.isEmpty {
-                Text(L10n.t("No API keys added. Add one in Settings → API.")).font(.caption).foregroundStyle(.secondary)
-            } else {
-                Grid(alignment: .leading, horizontalSpacing: 18, verticalSpacing: 9) {
-                    GridRow {
-                        Text(L10n.t("Key")).gridColumnAlignment(.leading)
-                        Text(L10n.t("Today")).gridColumnAlignment(.trailing)
-                        Text(L10n.t("This week")).gridColumnAlignment(.trailing)
-                        Text(L10n.t("This month")).gridColumnAlignment(.trailing)
-                    }
-                    .font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
-                    Divider().gridCellUnsizedAxes(.horizontal)
-                    ForEach(model.keys) { key in
-                        GridRow {
-                            HStack(spacing: 7) {
-                                ProviderGlyphView(glyph: key.glyph, size: 13)
-                                Text(key.name).lineLimit(1)
-                            }
-                            figure(key.day)
-                            figure(key.week)
-                            figure(key.month)
-                        }
-                        .font(.system(size: 12))
-                    }
-                }
-            }
-        }
-    }
-
-    private var planTable: some View {
-        panel(L10n.t("Coding plans")) {
-            if model.plans.isEmpty {
-                Text(L10n.t("No agent reports a plan yet. Claude and Codex logins count here when set to Monthly plan in Settings → Costs."))
-                    .font(.caption).foregroundStyle(.secondary)
-            } else {
-                Grid(alignment: .leading, horizontalSpacing: 18, verticalSpacing: 9) {
-                    GridRow {
-                        Text(L10n.t("Agent"))
-                        Text(L10n.t("Plan"))
-                        Text(L10n.t("Per month")).gridColumnAlignment(.trailing)
-                        Text(model.range.title).gridColumnAlignment(.trailing)
-                    }
-                    .font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
-                    Divider().gridCellUnsizedAxes(.horizontal)
-                    ForEach(model.plans) { plan in
-                        GridRow {
-                            HStack(spacing: 7) {
-                                ProviderGlyphView(glyph: plan.glyph, size: 13)
-                                Text(plan.agentName).lineLimit(1)
-                            }
-                            Text(plan.name ?? plan.reported).lineLimit(1)
-                            if let monthly = plan.monthly {
-                                Text(MoneyFormat.string(monthly, currency: plan.currency)).monospacedDigit()
-                                Text(model.local(monthly, plan.currency).map { money($0 * CodingPlans.share(of: model.range)) } ?? "—")
-                                    .monospacedDigit()
-                            } else {
-                                Text(L10n.t("Price unknown")).foregroundStyle(.secondary)
-                                Text("—")
-                            }
-                        }
-                        .font(.system(size: 12))
-                    }
-                }
-            }
-        }
-    }
-
-    private func figure(_ figure: SpendLedger.Figure?) -> some View {
-        VStack(alignment: .trailing, spacing: 1) {
-            Text(figure.map { APIAmount.short($0.amount, $0.unit) } ?? "—").monospacedDigit()
-            if let since = figure?.since {
-                Text(L10n.t("since \(since.formatted(.dateTime.day().month(.abbreviated)))"))
-                    .font(.system(size: 9)).foregroundStyle(.tertiary)
-            }
-        }
-    }
-
-    private var modelTable: some View {
-        panel(L10n.t("What the agents' money went on")) {
-            let list = model.models.prefix(6)
-            if list.isEmpty {
-                Text(L10n.t("No Claude or Codex session in this period.")).font(.caption).foregroundStyle(.secondary)
-            } else {
-                let total = max(model.agentSpend, 0.0001)
-                VStack(alignment: .leading, spacing: 8) {
-                    ForEach(Array(list.enumerated()), id: \.offset) { _, item in
-                        HStack(spacing: 10) {
-                            Text(item.name).font(.system(size: 12)).frame(width: 180, alignment: .leading).lineLimit(1)
-                            GeometryReader { geo in
-                                Capsule().fill(Color.orange.opacity(0.7))
-                                    .frame(width: max(4, geo.size.width * item.cost / total), height: 8)
-                                    .frame(maxHeight: .infinity)
-                            }
-                            .frame(height: 14)
-                            Text(L10n.t("\(item.sessions) sessions")).font(.system(size: 11)).foregroundStyle(.secondary)
-                                .frame(width: 90, alignment: .trailing)
-                            Text(money(item.cost)).font(.system(size: 12).monospacedDigit()).frame(width: 90, alignment: .trailing)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private var footnotes: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(L10n.t("Plans count as a day's, a week's or the month's share of their list price. A login paid per token counts its tokens; API keys are what their providers report, by UTC day, week and month."))
-            Text(L10n.t("A key with only a balance or a monthly total is followed from when pillr first read it. Lines are counted from git as trees grow between finishes."))
-            if let since = model.activitySince {
-                Text(L10n.t("Time at work is known since \(since.formatted(date: .abbreviated, time: .shortened))."))
-            }
-            if DashboardModel.inDollars {
-                Text(L10n.t("Shown in US dollars: turn on Market data in Settings → Costs to see your own currency."))
-            }
-            if !model.keySpendElsewhere.isEmpty {
-                Text(L10n.t("Keys billed in another currency are not added to the total until Market data in Settings → Costs has an exchange rate."))
-            }
-            Text(L10n.t("Everything here is worked out on this Mac and stays on it."))
-        }
-        .font(.system(size: 11)).foregroundStyle(.tertiary)
-    }
-
-    // MARK: Words
-
-    static func seconds(_ value: TimeInterval) -> String {
-        value < 90 ? L10n.t("\(Int(value)) s") : TimelinePane.duration(value)
-    }
-
-    static func agentName(_ providerID: String) -> String {
-        ProviderGlyph.forProvider(providerID)?.agentName ?? providerID.capitalized
-    }
-
-    static func dayFormatter(_ range: DashboardModel.Range) -> DateFormatter {
-        let formatter = DateFormatter()
-        formatter.setLocalizedDateFormatFromTemplate(range == .week ? "EEE" : "d")
-        return formatter
-    }
-}
-
-/// The dashboard at the head of Settings, where the notch preview was: the
-/// six figures for today, this week or this month, and the way to the
-/// whole of it.
-struct DashboardStrip: View {
-    @ObservedObject var preferences: Preferences
-    @StateObject private var model: DashboardModel
-
-    init(preferences: Preferences) {
-        self.preferences = preferences
-        _model = StateObject(wrappedValue: DashboardModel(extraKeys: { [weak preferences] in preferences?.extraKeys ?? [] },
-                                                          range: .today))
-    }
-
-    private var money: (Double) -> String { { MoneyFormat.string($0, currency: model.currency) } }
-
-    var body: some View {
-        let a = model.activity
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 10) {
-                Text(L10n.t("Dashboard")).font(.system(size: 13, weight: .semibold))
-                Spacer()
-                Picker("", selection: $model.range) {
-                    ForEach(DashboardModel.Range.allCases) { Text($0.title).tag($0) }
-                }
-                .pickerStyle(.segmented).labelsHidden().controlSize(.small).frame(width: 250)
-                .accessibilityLabel(L10n.t("Period"))
-                Button { open() } label: { Image(systemName: "arrow.up.right.square") }
-                    .buttonStyle(.borderless)
-                    .help(L10n.t("Open Dashboard…"))
-                    .accessibilityLabel(L10n.t("Open Dashboard…"))
-            }
-            Grid(horizontalSpacing: 8, verticalSpacing: 8) {
-                GridRow {
-                    tile(L10n.t("Spent"), money(model.totalSpend), .orange)
-                    tile(L10n.t("Agents at work"), TimelinePane.duration(a.busy), .green)
-                    tile(L10n.t("Waiting on you"), TimelinePane.duration(a.waiting), .yellow)
-                }
-                GridRow {
-                    tile(L10n.t("Sessions finished"), "\(a.finished)", .blue)
-                    tile(L10n.t("Lines changed"), "+\(a.added) −\(a.removed)", .purple)
-                    tile(L10n.t("Cost per finished session"), model.costPerFinish.map(money) ?? "—", .pink)
-                }
-            }
-        }
-        .padding(.horizontal, 14).padding(.vertical, 12)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .background(RoundedRectangle(cornerRadius: 14, style: .continuous).fill(Color.primary.opacity(0.045)))
-        .task {
-            // While Settings is up, kept as fresh as the ledgers are.
-            while !Task.isCancelled {
-                model.load()
-                try? await Task.sleep(nanoseconds: 60_000_000_000)
-            }
-        }
-    }
-
-    private func tile(_ title: String, _ value: String, _ tint: Color) -> some View {
-        Button(action: open) {
-            VStack(alignment: .leading, spacing: 3) {
-                HStack(spacing: 5) {
-                    Circle().fill(tint).frame(width: 6, height: 6)
-                    Text(title).font(.system(size: 10.5, weight: .medium)).foregroundStyle(.secondary).lineLimit(1)
-                }
-                Text(value).font(.system(size: 17, weight: .semibold).monospacedDigit()).lineLimit(1).minimumScaleFactor(0.6)
-            }
-            .padding(.horizontal, 10).padding(.vertical, 8)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(Color.primary.opacity(0.05)))
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("\(title), \(value)")
-    }
-
-    private func open() {
-        let preferences = preferences
-        Costs.showDashboard { preferences.extraKeys }
-    }
 }

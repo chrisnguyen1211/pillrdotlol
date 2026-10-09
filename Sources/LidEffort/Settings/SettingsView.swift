@@ -132,18 +132,22 @@ struct SettingsView: View {
     /// The tab the window opens on; renders pick another.
     var startSection: SettingsSection = .lid
     @Environment(\.notchReduceTransparency) private var reduceTransparency
+    /// The dashboard at the head, unfolded over the panes.
+    @State private var dashboardExpanded = false
 
     var body: some View {
         VStack(spacing: 0) {
             // Kept above what follows, so nothing below can take its clicks.
             topBar
                 .zIndex(1)
-            DashboardStrip(preferences: preferences)
-                .frame(height: SettingsView.previewHeight)
+            DashboardPanel(preferences: preferences, expanded: $dashboardExpanded)
+                .frame(height: dashboardExpanded ? nil : DashboardPanel.foldedHeight)
+                .frame(maxHeight: dashboardExpanded ? .infinity : nil)
                 .clipped()
                 .padding(.horizontal, 18)
+            if !dashboardExpanded {
             tabBar
-                .padding(.top, 14)
+                .padding(.top, 8)
             Rectangle()
                 .fill(Color.primary.opacity(0.08))
                 .frame(height: 1)
@@ -159,6 +163,11 @@ struct SettingsView: View {
             // backing would paint a second surface over it.
             .scrollContentBackground(.hidden)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+        }
+        // Typing a search is looking for a setting: the dashboard folds away.
+        .onChange(of: query) { _, text in
+            if !text.isEmpty { dashboardExpanded = false }
         }
         // Rebuild the whole pane when the language changes.
         //

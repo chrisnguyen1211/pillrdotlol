@@ -215,6 +215,19 @@ final class CostStore {
         return String(cString: c)
     }
 
+    /// Every folder a session ran in since a moment, for the commit log.
+    func folders(since ts: Int) -> [String] {
+        queue.sync {
+            guard let st = prepare("SELECT DISTINCT cwd FROM usage_event WHERE ts >= ?1 AND cwd IS NOT NULL AND cwd != ''")
+            else { return [] }
+            defer { sqlite3_finalize(st) }
+            sqlite3_bind_int64(st, 1, Int64(ts))
+            var out: [String] = []
+            while sqlite3_step(st) == SQLITE_ROW { if let t = text(st, 0) { out.append(t) } }
+            return out
+        }
+    }
+
     // MARK: File cursors
 
     struct FileCursor {
