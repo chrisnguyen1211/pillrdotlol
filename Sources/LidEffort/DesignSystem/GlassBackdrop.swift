@@ -40,11 +40,18 @@ struct GlassBackdrop<S: Shape>: NSViewRepresentable {
         view.alphaValue = frost
         view.tint = Float(tint)
         view.path = { rect in shape.path(in: rect).cgPath }
+        view.appearance = Self.appearance(context.environment.cardTone)
         return view
+    }
+
+    /// A card in the wallpaper's tone frosts in that tone, not the Mac's.
+    static func appearance(_ tone: ColorScheme?) -> NSAppearance? {
+        tone.map { NSAppearance(named: $0 == .dark ? .darkAqua : .aqua) } ?? nil
     }
 
     func updateNSView(_ view: ShapedEffectView, context: Context) {
         view.material = material
+        view.appearance = Self.appearance(context.environment.cardTone)
         view.tint = Float(tint)
         if context.transaction.animation != nil, !context.transaction.disablesAnimations,
            abs(view.alphaValue - frost) > 0.001 {
@@ -170,8 +177,24 @@ struct CardGlass<S: Shape>: View {
 
     @Environment(\.pillFrost) private var frost
     @Environment(\.cardGlassSeesBehind) private var sees
+    @Environment(\.cardTone) private var tone
 
     var body: some View {
+        if let tone {
+            // Over the desktop, in the wallpaper's tone: the pill's own
+            // glass, so the two read as one surface, and the ink is already
+            // the one that wallpaper wants. A breath of the tone's ground
+            // for a wallpaper that is busy where the text sits.
+            AdaptiveGlass(shape: shape, glass: .clear, frost: frost, sees: sees,
+                          scrim: (tone == .dark ? Color.black : Color.white).opacity(CardGlass<S>.tonedScrim))
+        } else {
+            readable
+        }
+    }
+
+    static var tonedScrim: Double { 0.15 }
+
+    @ViewBuilder private var readable: some View {
         // Over the desktop the blur is of a wallpaper, often dark; a light
         // card at half tint came out mid-grey, and grey text on it could
         // not be read. Text first: nearly the whole tint, whatever the

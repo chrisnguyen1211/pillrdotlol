@@ -288,6 +288,8 @@ final class NotchViewModel: ObservableObject {
     @Published var glassSeesBehind = true
     /// The same for the card that is up, which can be somewhere else.
     @Published var cardGlassSeesBehind = true
+    /// The wallpaper's tone under the card, when it is over the desktop.
+    @Published var cardTone: ColorScheme?
 
     /// See `Preferences.promptCardOverFullScreen`.
     @Published var promptCardOverFullScreen = true

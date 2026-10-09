@@ -111,6 +111,7 @@ struct NotchRootView: View {
                         livePosition: model.effortPreview,
                         onSet: model.onSetLidLevel
                     )
+                    .cardTone(model.cardTone)
                     .scaleEffect(model.cardScale)
                     .position(resetCardCentre(place, index: index,
                                               height: EffortChangeCard.cardHeight(for: effortEvent)))
@@ -133,6 +134,7 @@ struct NotchRootView: View {
                             }
                         }
                     )
+                    .cardTone(model.cardTone)
                     .scaleEffect(model.cardScale)
                     .position(resetCardCentre(place, index: index, height: UsageResetCard.cardHeight(for: resetEvent)))
                     .transition(.opacity.combined(with: .offset(
@@ -173,6 +175,7 @@ struct NotchRootView: View {
                         // far better than one card leaving and another arriving.
                         // What must not interpolate is its contents — see
                         // `TooltipCard`.
+                        .cardTone(model.cardTone)
                         .scaleEffect(model.cardScale)
                         .position(tooltipCentre(place, index: index, snapshot: snapshot))
                         .transition(.opacity.combined(with: .offset(
@@ -197,6 +200,7 @@ struct NotchRootView: View {
                         // Its own identity per prompt, so the picks made on
                         // one are never the starting state of the next.
                         .id(prompt.id)
+                        .cardTone(model.cardTone)
                         .scaleEffect(model.cardScale)
                         .position(promptCardCentre(place, prompt: prompt))
                         .transition(.opacity.combined(with: .offset(
@@ -207,10 +211,12 @@ struct NotchRootView: View {
                     // The answer, said for a moment where the card was.
                     PromptEchoPill(echo: echo)
                         .id(echo.id)
+                        .cardTone(model.cardTone)
                         .scaleEffect(model.cardScale)
                         .position(echoCentre(place))
                 } else if let toast = model.activeDoneToast, !model.isExpanded, model.currentPrompt == nil {
                     DoneToastView(toast: toast, direction: model.edge.tooltipDirection)
+                        .cardTone(model.cardTone)
                         .scaleEffect(model.cardScale)
                         .position(doneToastCentre(place))
                         // Out of the pill and back into it.

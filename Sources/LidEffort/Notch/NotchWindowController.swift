@@ -603,6 +603,12 @@ final class NotchWindowController {
     /// under the pill or out from under it. Only while there is glass to ask
     /// about, so the solid style pays nothing.
     private func updateGlassSightline() {
+        // The wallpaper's tone is for glass only: a solid card keeps the
+        // Mac's appearance.
+        if model.cardTone != nil, model.surfaceStyle.effective != .glass
+            || NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency {
+            model.cardTone = nil
+        }
         guard let panel, !Runtime.isUnderTest, panel.isVisible,
               model.surfaceStyle.effective == .glass,
               !NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency
@@ -625,6 +631,10 @@ final class NotchWindowController {
                 Log.usage.debug("card glass \(cardSees ? "sees a window" : "over the desktop", privacy: .public)")
                 model.cardGlassSeesBehind = cardSees
             }
+            // Over the desktop, the card wears the pill's glass in the
+            // wallpaper's own tone.
+            let tone = cardSees ? nil : WallpaperTone.tone(under: global)
+            if model.cardTone != tone { model.cardTone = tone }
         }
     }
 
