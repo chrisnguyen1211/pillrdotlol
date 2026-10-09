@@ -633,7 +633,7 @@ final class NotchWindowController {
             }
             // Over the desktop, the card wears the pill's glass in the
             // wallpaper's own tone.
-            let tone = cardSees ? nil : WallpaperTone.tone(under: global)
+            let tone = cardSees ? nil : WallpaperTone.tone(under: global, frost: Double(model.pillFrost))
             if model.cardTone != tone { model.cardTone = tone }
         }
     }

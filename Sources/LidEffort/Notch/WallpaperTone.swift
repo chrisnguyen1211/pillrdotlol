@@ -10,13 +10,39 @@ import SwiftUI
 /// no permission is asked. Over a window there is no telling, and the
 /// cards keep their scrim there instead (`CardGlass.scrim`).
 enum WallpaperTone {
-    /// Below this the wallpaper counts as dark.
-    static let darkBelow = 0.45
+    /// The luminance where white and black ink read equally well (WCAG):
+    /// below it, white on the bare wallpaper is the stronger of the two.
+    static let darkBelow = 0.179
+
+    /// The card's ground in each tone: the wallpaper, then the frost's own
+    /// colour and the tone's breath of scrim over it. What the glass adds
+    /// is left out; it lifts both the same way.
+    static let darkFrost = 0.02, lightFrost = 0.82
+
+    /// Which tone gives the stronger contrast for a wallpaper of luminance
+    /// `wallpaper`, under a frost of strength `frost` (0…1): each tone's
+    /// ground worked out, its ink set against it, the better one taken.
+    static func tone(forWallpaper wallpaper: Double, frost: Double) -> (tone: ColorScheme, contrast: Double) {
+        let cover = min(1, max(0, frost) + tonedScrim)
+        let darkGround = wallpaper + (darkFrost - wallpaper) * cover
+        let lightGround = wallpaper + (lightFrost - wallpaper) * cover
+        let white = ratio(1, darkGround)
+        let black = ratio(0, lightGround)
+        return white >= black ? (.dark, white) : (.light, black)
+    }
+
+    /// The breath of the tone's own ground a toned card keeps under its glass.
+    static let tonedScrim = 0.15
+
+    /// WCAG contrast ratio of two relative luminances.
+    static func ratio(_ a: Double, _ b: Double) -> Double {
+        (max(a, b) + 0.05) / (min(a, b) + 0.05)
+    }
 
     /// The tone for a rect in CoreGraphics coordinates (top left of the
     /// primary display), or nil when the wallpaper can't be read.
     @MainActor
-    static func tone(under rect: CGRect) -> ColorScheme? {
+    static func tone(under rect: CGRect, frost: Double) -> ColorScheme? {
         guard let primary = NSScreen.screens.first else { return nil }
         let point = CGPoint(x: rect.midX, y: primary.frame.height - rect.midY)
         guard let screen = NSScreen.screens.first(where: { $0.frame.contains(point) }) ?? NSScreen.main,
@@ -28,7 +54,7 @@ enum WallpaperTone {
         let unit = CGRect(x: (rect.minX - frame.minX) / frame.width, y: (rect.minY - frame.minY) / frame.height,
                           width: rect.width / frame.width, height: rect.height / frame.height)
         guard let light = luminance(of: grid, in: unit, screenAspect: frame.width / frame.height) else { return nil }
-        return light < darkBelow ? .dark : .light
+        return tone(forWallpaper: light, frost: frost).tone
     }
 
     /// A small grid of the wallpaper's luminance, kept per file.

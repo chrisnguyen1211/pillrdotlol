@@ -192,7 +192,7 @@ struct CardGlass<S: Shape>: View {
         }
     }
 
-    static var tonedScrim: Double { 0.15 }
+    static var tonedScrim: Double { WallpaperTone.tonedScrim }
 
     @ViewBuilder private var readable: some View {
         // Over the desktop the blur is of a wallpaper, often dark; a light

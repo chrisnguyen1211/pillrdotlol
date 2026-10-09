@@ -35,4 +35,19 @@ final class WallpaperToneTests: XCTestCase {
         XCTAssertEqual(grid.values.count, 8)
         XCTAssertEqual(grid.values[0], 1, accuracy: 0.01)
     }
+
+    /// The tone is the one with the stronger contrast, not a guess at "dark".
+    func testTheToneIsTheOneThatReadsBetter() {
+        XCTAssertEqual(WallpaperTone.tone(forWallpaper: 0.01, frost: 0.5).tone, .dark, "a black wallpaper: white ink")
+        XCTAssertEqual(WallpaperTone.tone(forWallpaper: 0.9, frost: 0.5).tone, .light, "a white one: black ink")
+        // Mid grey (luminance 0.3) reads better in black, which a fixed
+        // "under half is dark" rule got wrong.
+        XCTAssertEqual(WallpaperTone.tone(forWallpaper: 0.3, frost: 0).tone, .light)
+        for wallpaper in stride(from: 0.0, through: 1.0, by: 0.05) {
+            for frost in [0.0, 0.5, 1.0] {
+                let pick = WallpaperTone.tone(forWallpaper: wallpaper, frost: frost)
+                XCTAssertGreaterThanOrEqual(pick.contrast, 4.5, "wallpaper \(wallpaper), frost \(frost): \(pick)")
+            }
+        }
+    }
 }
