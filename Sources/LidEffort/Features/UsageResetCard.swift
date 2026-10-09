@@ -12,6 +12,14 @@ struct UsageResetCard: View {
     @Environment(\.notchSurfaceStyle) private var surfaceStyle
 
     static let cardHeight: CGFloat = Design.px(210)
+    /// Taller for badges, so the badge has room to land.
+    static let badgeCardHeight: CGFloat = Design.px(490)
+
+    static func cardHeight(for event: UsageResetEvent) -> CGFloat {
+        (event.note?.badges.isEmpty ?? true) ? cardHeight : badgeCardHeight
+    }
+
+    private var height: CGFloat { Self.cardHeight(for: event) }
 
     private var glassy: Bool { surfaceStyle.effective == .glass && !reduceTransparency }
     private var surfaceFill: Color { glassy ? .clear : Palette.card }
@@ -83,7 +91,7 @@ struct UsageResetCard: View {
         ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: NotchLayout.cardCorner, style: .circular)
                 .fill(surfaceFill)
-                .frame(width: NotchLayout.cardWidth, height: Self.cardHeight)
+                .frame(width: NotchLayout.cardWidth, height: height)
 
             if let badges = event.note?.badges, !badges.isEmpty {
                 badgeContent(badges)
@@ -154,7 +162,7 @@ struct UsageResetCard: View {
             .frame(width: NotchLayout.cardWidth, height: Self.cardHeight, alignment: .topLeading)
             }
         }
-        .frame(width: NotchLayout.cardWidth, height: Self.cardHeight, alignment: .top)
+        .frame(width: NotchLayout.cardWidth, height: height, alignment: .top)
         .clipShape(RoundedRectangle(cornerRadius: NotchLayout.cardCorner, style: .circular))
         .overlay {
             if reduceTransparency {
@@ -164,44 +172,46 @@ struct UsageResetCard: View {
         }
     }
 
-    /// Badges just earned: the badge flipping in with its burst on the left,
-    /// what it is for on the right.
+    /// Badges just earned, as the Fitness awards arrive: the badge large in
+    /// the middle, flipping in with its burst, and under it what it is and
+    /// what it was for.
     private func badgeContent(_ badges: [Achievements.Badge]) -> some View {
-        HStack(alignment: .center, spacing: Design.px(6)) {
-            BadgeBurst(badges: badges, size: Self.cardHeight * 0.62)
-                .frame(width: Self.cardHeight * 0.92, height: Self.cardHeight)
-            VStack(alignment: .leading, spacing: Design.px(6)) {
-                HStack(spacing: Design.px(8)) {
-                    Circle().fill(Palette.ample).frame(width: Design.px(14), height: Design.px(14))
-                    Text(statusText)
-                        .font(Typography.cardBody.weight(.semibold))
-                        .foregroundStyle(Palette.ample)
-                        .lineLimit(1)
-                    Spacer(minLength: 0)
-                    if let onDismiss {
-                        Button(action: onDismiss) {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 11, weight: .bold))
-                                .foregroundStyle(Palette.textSecondary)
-                                .frame(width: 16, height: 16)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                Text(titleText)
-                    .font(Typography.cardTitle)
-                    .foregroundStyle(Palette.textPrimary)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
-                Text(subtitleText)
-                    .font(Typography.cardBody)
-                    .foregroundStyle(Palette.textSecondary)
-                    .lineLimit(2)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            .padding(.trailing, NotchLayout.cardPadding)
+        let height = Self.cardHeight(for: event)
+        return VStack(spacing: Design.px(6)) {
+            BadgeBurst(badges: badges, size: Design.px(210))
+                .frame(height: Design.px(300))
+            Text(statusText.uppercased())
+                .font(.system(size: 9.5, weight: .bold)).tracking(0.8)
+                .foregroundStyle(Palette.ample)
+                .lineLimit(1)
+            Text(titleText)
+                .font(Typography.cardTitle.weight(.semibold))
+                .foregroundStyle(Palette.textPrimary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+            Text(subtitleText)
+                .font(Typography.cardBody)
+                .foregroundStyle(Palette.textSecondary)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
         }
-        .frame(width: NotchLayout.cardWidth, height: Self.cardHeight, alignment: .leading)
+        .padding(.horizontal, NotchLayout.cardPadding)
+        .padding(.top, Design.px(10))
+        .frame(width: NotchLayout.cardWidth, height: height, alignment: .top)
+        .overlay(alignment: .topTrailing) {
+            if let onDismiss {
+                Button(action: onDismiss) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(Palette.textSecondary)
+                        .frame(width: 16, height: 16)
+                }
+                .buttonStyle(.plain)
+                .padding(Design.px(26))
+            }
+        }
     }
 
     private var tail: some View {

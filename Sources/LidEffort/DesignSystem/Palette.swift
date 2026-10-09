@@ -47,8 +47,8 @@ enum Palette {
     /// a greyer one. With `CardGlass.scrim` bounding the card, that keeps
     /// 4.5:1 over a white window or a black one (`CardLegibilityRenderTests`).
     static let textSecondary = Color(dark: secondaryInkDark, light: secondaryInkLight)
-    static let secondaryInkDark = NSColor.white.withAlphaComponent(0.502)
-    static let secondaryInkLight = NSColor.black.withAlphaComponent(0.667)
+    static let secondaryInkDark = NSColor.white.withAlphaComponent(0.72)
+    static let secondaryInkLight = NSColor.black.withAlphaComponent(0.72)
 }
 
 extension Color {

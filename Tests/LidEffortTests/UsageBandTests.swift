@@ -45,7 +45,7 @@ final class PaletteAppearanceTests: XCTestCase {
         assertOpaque(Palette.textPrimary, .darkAqua, is: 0xFFFFFF)
         // Half-white: #808080 over the solid style's black, and lighter with
         // whatever glass it sits on, keeping its distance from it.
-        assertTrack(Palette.textSecondary, .darkAqua, white: 1, alpha: 0.502)
+        assertTrack(Palette.textSecondary, .darkAqua, white: 1, alpha: 0.72)
         assertOpaque(Palette.ample, .darkAqua, is: 0x00FF88)
         assertOpaque(Palette.watch, .darkAqua, is: 0xF2FF00)
         assertOpaque(Palette.critical, .darkAqua, is: 0xFF3F00)
@@ -58,7 +58,7 @@ final class PaletteAppearanceTests: XCTestCase {
     func testTheLightAppearanceHasItsOwnInk() {
         assertOpaque(Palette.textPrimary, .aqua, is: 0x000000)
         // #555555 over white, darker over a greyer card.
-        assertTrack(Palette.textSecondary, .aqua, white: 0, alpha: 0.667)
+        assertTrack(Palette.textSecondary, .aqua, white: 0, alpha: 0.72)
         assertOpaque(Palette.ample, .aqua, is: 0x00A356)
         assertOpaque(Palette.watch, .aqua, is: 0xB08800)
         assertOpaque(Palette.critical, .aqua, is: 0xFF3F00)

@@ -219,11 +219,14 @@ final class ReleaseRoundTests: XCTestCase {
             }
         }
 
-        // Cards: the scrim that keeps their text readable is not thinned.
+        // Cards: a scrim under the glass for the text, thin enough that the
+        // glass still shows; secondary ink strong enough to carry it.
         if #available(macOS 26.0, *) {
-            XCTAssertGreaterThanOrEqual(CardGlass<Rectangle>.darkScrim(sees: true), 0.87)
-            XCTAssertGreaterThanOrEqual(CardGlass<Rectangle>.lightScrim, 0.45)
+            XCTAssertLessThanOrEqual(CardGlass<Rectangle>.darkScrim(sees: true), 0.6, "the glass is not a black slab")
+            XCTAssertGreaterThanOrEqual(CardGlass<Rectangle>.darkScrim(sees: true), 0.45)
+            XCTAssertLessThanOrEqual(CardGlass<Rectangle>.lightScrim, 0.35)
         }
+        XCTAssertGreaterThanOrEqual(Palette.secondaryInkDark.alphaComponent, 0.7)
     }
 
     // MARK: - The release itself

@@ -522,7 +522,7 @@ final class NotchWindowController {
     }
 
     private func resetCardRect(event: UsageResetEvent) -> CGRect? {
-        alertCardRect(index: model.resetAlertIndex(for: event) ?? 0, height: UsageResetCard.cardHeight)
+        alertCardRect(index: model.resetAlertIndex(for: event) ?? 0, height: UsageResetCard.cardHeight(for: event))
     }
 
     /// Where the reset and effort cards sit: the same place, by ring `index`.

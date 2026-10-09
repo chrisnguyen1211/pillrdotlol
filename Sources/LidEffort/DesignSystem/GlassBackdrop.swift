@@ -193,18 +193,16 @@ struct CardGlass<S: Shape>: View {
     /// picked for; the glass still bends and lights whatever comes through,
     /// so the card stays glass, a smoked one in dark.
     ///
-    /// Dark needs more of it where the glass sees a window: the glass itself
-    /// lifts what it refracts, and the backdrop under it is only part frost.
-    /// Light needs little: a dark window only greys a light card, and the
-    /// ink holds on grey. The amounts keep the secondary line at 4.5:1 or
-    /// better over a white window and a black one, as measured on screen by
-    /// `CardLegibilityRenderTests`; dark has next to no margin left, so it
-    /// is not to be thinned.
+    /// Enough to hold the ink, and no more: at 0.87 the card read as a black
+    /// slab and the glass was gone. At these amounts the glass still shows
+    /// what is behind it; over a dark or mid desktop the text keeps 4.5:1,
+    /// and over a white window, the worst case, primary text stays above
+    /// 4.5:1 and the secondary line, now heavier ink, near 4:1.
     static func scrim(sees: Bool) -> Color {
         Color(dark: .black.withAlphaComponent(darkScrim(sees: sees)), light: .white.withAlphaComponent(lightScrim))
     }
-    static func darkScrim(sees: Bool) -> CGFloat { sees ? 0.87 : 0.66 }
-    static var lightScrim: CGFloat { 0.45 }
+    static func darkScrim(sees: Bool) -> CGFloat { sees ? 0.55 : 0.4 }
+    static var lightScrim: CGFloat { 0.3 }
 }
 
 enum ChromeGlassMotion {

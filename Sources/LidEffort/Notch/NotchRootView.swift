@@ -134,7 +134,7 @@ struct NotchRootView: View {
                         }
                     )
                     .scaleEffect(model.cardScale)
-                    .position(resetCardCentre(place, index: index))
+                    .position(resetCardCentre(place, index: index, height: UsageResetCard.cardHeight(for: resetEvent)))
                     .transition(.opacity.combined(with: .offset(
                         x: model.edge.outward.x * Design.px(24),
                         y: model.edge.outward.y * Design.px(24)
