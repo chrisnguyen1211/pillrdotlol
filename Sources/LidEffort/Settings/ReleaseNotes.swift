@@ -32,6 +32,32 @@ enum ReleaseNotes {
     static var all: [ReleaseNote] {
         [
             ReleaseNote(
+                version: "1.2.0",
+                headline: L10n.t("A dashboard for your agents, at the head of Settings."),
+                changes: [
+                    ReleaseNote.Change(
+                        title: L10n.t("A dashboard in Settings"),
+                        detail: L10n.t("Agent time, commits shipped and what the API cost, for today, this week or this month, in widgets over a sky that follows your Mac's clock. Unfold it for everything, or slide it away.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("Records, nudges and badges"),
+                        detail: L10n.t("pillr cheers when you beat your own best day, week or month, nudges you on a slow week, and gives 48 bronze, silver and gold badges. Your streak catches fire at 10, 50, 100, 150 and 365 days.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("Coding plans priced for you"),
+                        detail: L10n.t("The plans your agents report are priced from each vendor's own list, so the dashboard counts them without you typing a price.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("Answered elsewhere, gone from the notch"),
+                        detail: L10n.t("A question or an approval you answer in the terminal or the Claude app now leaves the notch, and its reminder stops.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("Easier to read"),
+                        detail: L10n.t("Card text stays clear over whatever shows through the glass, in light and in dark.")
+                    )
+                ]
+            ),
+            ReleaseNote(
                 version: "1.1.3",
                 headline: L10n.t("Every done card says which session it means."),
                 changes: [

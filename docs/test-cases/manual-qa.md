@@ -219,11 +219,26 @@ Command Code, Ollama, LM Studio, app Claude desktop.
 | M2 | Gỡ tính năng trả lời từ notch | Chỉ dòng hook của pillr bị xoá khỏi `~/.claude/settings.json`, phần khác giữ nguyên | P0 |
 | M3 | Market data (giá token) | Mặc định tắt, chỉ gọi mạng khi bật | P1 |
 
+## N. Dashboard (từ 1.2.0)
+
+| ID | Bước | Kết quả mong đợi | Ưu tiên |
+|---|---|---|---|
+| N1 | Mở Settings | Dashboard ở đầu, nền trời đúng giờ máy (sáng / trưa / chiều / hoàng hôn / tối có trăng sao) | P0 |
+| N2 | Bấm mũi tên xuống | Dashboard trượt xuống mở hết metric, tab cài đặt trượt xuống khuất; mũi tên lên trượt về | P0 |
+| N3 | Bấm mũi tên lên khi đang thu gọn | Dashboard trượt lên còn một dòng; rê chuột vào mũi tên hiện chữ "Hide dashboard" / "Show all metrics" | P1 |
+| N4 | Đổi Today / This week / This month | Commits shipped đổi dạng: cột theo giờ / cột theo ngày / ô kiểu GitHub; rê chuột vào cột hoặc ô hiện số commit | P0 |
+| N5 | Rê chuột qua các biểu đồ (Work by hour, Pay-as-you-go spend, API spent) | Cột dưới chuột sáng lên, cột khác mờ, có tooltip giá trị | P1 |
+| N6 | Achievements | Chỉ hiện huy hiệu đã đạt; rê chuột: huy hiệu phóng to, có vệt sáng, dòng trên ghi lý do đạt | P1 |
+| N7 | Streak: `defaults write lol.pillr.app debug.streakPreview -int -1` | Thẻ Streak tự chạy qua 5 → 365 ngày, lửa to dần; xong thì `defaults delete lol.pillr.app debug.streakPreview` | P2 |
+| N8 | Trả lời một câu hỏi / approve của Claude Code ngay trong terminal khi notch đang giữ thẻ | Thẻ trên notch tự biến mất trong vài giây, không còn nhắc lại | P0 |
+| N9 | Bật Reduce Motion | Nền trời và lửa đứng yên, vẫn đúng giờ | P2 |
+
 ---
 
 ## Checklist trước mỗi release (người build)
 
-1. `swift test` không có lỗi thật (2 test đo thời gian có thể chập chờn khi máy bận, chạy lại riêng).
+0. `swift test --filter ReleaseRoundTests`: vòng end to end cuối (dashboard từ ledger + git thật, API key tới dashboard, prompt trả lời ở terminal rời notch, nền trời / lửa / huy hiệu vẽ được, release note khớp `version.env` và `release-notes/<version>.md`).
+1. `swift test` không có lỗi thật (các test đo thời gian và các test notch đi vào từ cạnh có thể lỗi khi máy bận hoặc màn hình đang khoá, chạy lại riêng khi đã mở khoá).
 2. Build release, rồi kiểm tra: `strings pillr.app/Contents/MacOS/pillr | grep "\.build/"` có thể vẫn có đường dẫn máy build, **nhưng app không được phụ thuộc vào nó**. Đã có `ResourceBundleTests` chặn việc gọi `Bundle.module`.
 3. Cài DMG thật lên **một máy khác máy build** (hoặc user macOS mới, hoặc máy ảo), chạy smoke test mục 1.
 4. Ít nhất một máy macOS 15.x và một máy 26.x chạy smoke test.

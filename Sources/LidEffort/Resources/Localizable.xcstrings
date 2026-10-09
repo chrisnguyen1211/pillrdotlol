@@ -62220,6 +62220,380 @@
           }
         }
       }
+    },
+    "A dashboard for your agents, at the head of Settings." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un tableau de bord pour vos agents, en tête des Réglages."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "エージェントのダッシュボードを設定の先頭に。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um painel para seus agentes, no topo dos Ajustes."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Панель для ваших агентов в начале настроек."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置顶部新增智能体仪表板。"
+          }
+        }
+      }
+    },
+    "A dashboard in Settings" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un tableau de bord dans les Réglages"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定にダッシュボード"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um painel nos Ajustes"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Панель в настройках"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置中的仪表板"
+          }
+        }
+      }
+    },
+    "Agent time, commits shipped and what the API cost, for today, this week or this month, in widgets over a sky that follows your Mac's clock. Unfold it for everything, or slide it away." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le temps de vos agents, les commits livrés et le coût de l’API, pour aujourd’hui, cette semaine ou ce mois, en widgets sur un ciel qui suit l’horloge de votre Mac. Dépliez-le pour tout voir, ou faites-le glisser hors de vue."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "エージェントの作業時間、出荷したコミット、API の費用を、今日・今週・今月で。Mac の時計に合わせて変わる空の上にウィジェットで表示します。広げてすべてを見ることも、スライドしてしまうこともできます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tempo dos agentes, commits entregues e quanto a API custou, hoje, nesta semana ou neste mês, em widgets sobre um céu que segue o relógio do seu Mac. Abra para ver tudo ou deslize para escondê-lo."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Время работы агентов, отправленные коммиты и расходы на API за сегодня, неделю или месяц, в виджетах на фоне неба, которое следует часам вашего Mac. Разверните, чтобы увидеть всё, или сдвиньте, чтобы скрыть."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "智能体工作时长、已提交的 commit 和 API 花费，按今天、本周或本月显示，小组件铺在随 Mac 时钟变化的天空上。展开查看全部，或滑动收起。"
+          }
+        }
+      }
+    },
+    "Records, nudges and badges" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Records, encouragements et badges"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "記録、励まし、バッジ"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recordes, incentivos e medalhas"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Рекорды, подбадривания и значки"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "纪录、鼓励与徽章"
+          }
+        }
+      }
+    },
+    "pillr cheers when you beat your own best day, week or month, nudges you on a slow week, and gives 48 bronze, silver and gold badges. Your streak catches fire at 10, 50, 100, 150 and 365 days." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pillr vous félicite quand vous battez votre meilleur jour, semaine ou mois, vous encourage lors d’une semaine calme et décerne 48 badges de bronze, d’argent et d’or. Votre série prend feu à 10, 50, 100, 150 et 365 jours."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自己ベストの日・週・月を更新すると pillr がお祝いし、ペースが落ちた週には励まします。銅・銀・金のバッジは全部で 48 個。連続記録は 10、50、100、150、365 日で炎が燃え上がります。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O pillr comemora quando você supera seu melhor dia, semana ou mês, dá um incentivo numa semana fraca e oferece 48 medalhas de bronze, prata e ouro. Sua sequência pega fogo aos 10, 50, 100, 150 e 365 dias."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pillr поздравляет, когда вы бьёте свой лучший день, неделю или месяц, подбадривает в медленную неделю и выдаёт 48 бронзовых, серебряных и золотых значков. Ваша серия загорается на 10, 50, 100, 150 и 365 днях."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刷新自己最好的一天、一周或一个月时，pillr 会为你庆祝；进度慢的一周会鼓励你；还有 48 枚铜、银、金徽章。连续天数到 10、50、100、150 和 365 天时会燃起火焰。"
+          }
+        }
+      }
+    },
+    "Coding plans priced for you" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Des forfaits de code chiffrés pour vous"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コーディングプランの料金を自動で"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Planos de código com preço automático"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Цены тарифов для кода сами по себе"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "编程套餐自动计价"
+          }
+        }
+      }
+    },
+    "The plans your agents report are priced from each vendor's own list, so the dashboard counts them without you typing a price." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les forfaits que vos agents indiquent sont chiffrés d’après la liste de chaque éditeur, le tableau de bord les compte donc sans que vous tapiez de prix."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "エージェントが報告するプランは各社の料金表から価格を付けるので、価格を入力しなくてもダッシュボードが計上します。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os planos que seus agentes informam recebem o preço da lista de cada fornecedor, então o painel os conta sem você digitar nenhum valor."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Тарифы, о которых сообщают агенты, оцениваются по прайс-листу каждого поставщика, так что панель учитывает их без ввода цены."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "智能体报告的套餐按各厂商自己的价目表计价，仪表板无需你手动输入价格即可统计。"
+          }
+        }
+      }
+    },
+    "Answered elsewhere, gone from the notch" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Répondu ailleurs, parti de l’encoche"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "他で回答したらノッチから消える"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Respondido em outro lugar, some do notch"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ответили в другом месте, исчезает из выреза"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在别处回答，刘海中随即消失"
+          }
+        }
+      }
+    },
+    "A question or an approval you answer in the terminal or the Claude app now leaves the notch, and its reminder stops." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une question ou une autorisation à laquelle vous répondez dans le terminal ou l’app Claude quitte maintenant l’encoche, et son rappel s’arrête."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ターミナルや Claude アプリで答えた質問や承認は、ノッチから消え、リマインダーも止まるようになりました。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma pergunta ou aprovação que você responde no terminal ou no app Claude agora sai do notch, e o lembrete para."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вопрос или разрешение, на которые вы ответили в терминале или приложении Claude, теперь уходят из выреза, и напоминание прекращается."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在终端或 Claude 应用中回答的问题或批准，现在会从刘海中移除，提醒也随之停止。"
+          }
+        }
+      }
+    },
+    "Easier to read" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus facile à lire"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "読みやすく"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mais fácil de ler"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Легче читать"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更易阅读"
+          }
+        }
+      }
+    },
+    "Card text stays clear over whatever shows through the glass, in light and in dark." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le texte des cartes reste net quoi qu’il y ait derrière le verre, en clair comme en sombre."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ガラス越しに何が見えていても、ライトでもダークでもカードの文字がはっきり読めます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O texto dos cartões fica nítido seja o que for que apareça pelo vidro, no claro e no escuro."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Текст карточек остаётся чётким, что бы ни просвечивало сквозь стекло, в светлом и тёмном оформлении."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无论玻璃后面透出什么，卡片文字在浅色和深色下都清晰可读。"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
