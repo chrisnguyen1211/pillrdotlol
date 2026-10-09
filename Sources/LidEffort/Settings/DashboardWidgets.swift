@@ -101,7 +101,10 @@ struct DashboardPanel: View {
         HStack(spacing: 10) {
             Text(L10n.t("Dashboard")).font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(.white)
-                .shadow(color: .black.opacity(0.35), radius: 2, y: 1)
+                .padding(.horizontal, 10).padding(.vertical, 4)
+                .background(Capsule().fill(Color.black.opacity(0.28)))
+                .background(.ultraThinMaterial, in: Capsule())
+                .padding(.leading, -4)
             if model.loading && mode != .hidden {
                 ProgressView().controlSize(.mini).tint(.white)
             }
@@ -282,10 +285,13 @@ struct WidgetSectionTitle: View {
     let symbol: String
 
     var body: some View {
+        // On a smoked pill, so a cloud drifting behind can't wash it out.
         Label(title, systemImage: symbol)
             .font(.system(size: 13, weight: .semibold))
-            .foregroundStyle(.primary)
-            .padding(.horizontal, 2)
+            .foregroundStyle(.white)
+            .padding(.horizontal, 10).padding(.vertical, 4)
+            .background(Capsule().fill(Color.black.opacity(0.28)))
+            .background(.ultraThinMaterial, in: Capsule())
     }
 }
 
@@ -752,20 +758,40 @@ enum DashboardWords {
 
 struct StreakWidget: View {
     @ObservedObject var model: DashboardModel
+    /// For trying the fire out: a number of days to show instead of the
+    /// streak, or -1 to go round the milestones; 0 is the real streak. Set
+    /// from the shell, never from the app:
+    /// `defaults write lol.pillr.app debug.streakPreview -int 150`.
+    @AppStorage(Self.previewKey) private var preview = 0
+    static let previewKey = "debug.streakPreview"
+    /// The round the preview goes, a few seconds each.
+    static let previewRound = [5, 10, 50, 100, 150, 365]
+
     var body: some View {
-        let level = StreakFire.level(model.streak)
+        if preview == -1 {
+            TimelineView(.periodic(from: .now, by: 4)) { context in
+                card(days: Self.previewRound[Int(context.date.timeIntervalSince1970 / 4) % Self.previewRound.count])
+            }
+        } else {
+            card(days: preview > 0 ? preview : model.streak)
+        }
+    }
+
+    private func card(days: Int) -> some View {
         WidgetCard(title: L10n.t("Streak"), symbol: "flame.fill", tint: .orange,
-                   backdrop: AnyView(StreakFire(level: level))) {
+                   backdrop: AnyView(StreakFire(level: StreakFire.level(days)))) {
             HStack(alignment: .top) {
-                WidgetFigure(value: L10n.t("\(model.streak) days"), detail: L10n.t("Best: \(model.bestStreak) days"))
+                WidgetFigure(value: L10n.t("\(days) days"), detail: L10n.t("Best: \(max(days, model.bestStreak)) days"))
+                    .contentTransition(.numericText())
                 Spacer(minLength: 8)
-                Text(StreakFire.next(model.streak).map { L10n.t("Bigger flame at \($0) days") } ?? L10n.t("Full blaze"))
+                Text(StreakFire.next(days).map { L10n.t("Bigger flame at \($0) days") } ?? L10n.t("Full blaze"))
                     .font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary)
                     .padding(.horizontal, 7).padding(.vertical, 3)
                     .background(.thinMaterial, in: Capsule())
             }
             .frame(maxHeight: .infinity, alignment: .top)
         }
+        .animation(.easeInOut(duration: 0.4), value: days)
     }
 }
 
