@@ -295,6 +295,8 @@ struct WidgetCard<Content: View>: View {
     let title: String
     let symbol: String
     let tint: Color
+    /// Drawn on the card, under what it says: the Streak card's fire.
+    var backdrop: AnyView? = nil
     @ViewBuilder let content: () -> Content
     @Environment(\.colorScheme) private var scheme
 
@@ -310,11 +312,16 @@ struct WidgetCard<Content: View>: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         // Frosted over the sky, as widgets sit on a wallpaper.
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .fill(.regularMaterial)
-                .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .fill(scheme == .dark ? Color.black.opacity(0.22) : Color.white.opacity(0.5)))
-                .shadow(color: .black.opacity(0.12), radius: 8, y: 3)
+            ZStack {
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(.regularMaterial)
+                    .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(scheme == .dark ? Color.black.opacity(0.22) : Color.white.opacity(0.5)))
+                    .shadow(color: .black.opacity(0.12), radius: 8, y: 3)
+                if let backdrop {
+                    backdrop.clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+                }
+            }
         )
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
@@ -353,8 +360,7 @@ struct AgentsAtWorkWidget: View {
                          detail: a.parallel >= 60 ? L10n.t("\(TimelinePane.duration(a.parallel)) with two or more at once")
                                                   : L10n.t("\(model.streak)-day streak"),
                          detailLines: 1)
-            WeekBars(values: model.lastDays(7) { model.busyDays[$0] ?? 0 }, tint: .green,
-                     tip: TimelinePane.duration)
+                .frame(maxHeight: .infinity, alignment: .bottomLeading)
         }
     }
 }
@@ -747,16 +753,18 @@ enum DashboardWords {
 struct StreakWidget: View {
     @ObservedObject var model: DashboardModel
     var body: some View {
-        WidgetCard(title: L10n.t("Streak"), symbol: "flame.fill", tint: .orange) {
-            HStack(alignment: .bottom, spacing: 14) {
-                VStack(alignment: .leading) {
-                    Spacer(minLength: 0)
-                    WidgetFigure(value: L10n.t("\(model.streak) days"), detail: L10n.t("Best: \(model.bestStreak) days"))
-                }
-                .frame(width: 96, alignment: .leading)
-                WeekBars(values: model.lastDays(14) { model.busyDays[$0] ?? 0 }, tint: .orange,
-                         tip: TimelinePane.duration, labels: true)
+        let level = StreakFire.level(model.streak)
+        WidgetCard(title: L10n.t("Streak"), symbol: "flame.fill", tint: .orange,
+                   backdrop: AnyView(StreakFire(level: level))) {
+            HStack(alignment: .top) {
+                WidgetFigure(value: L10n.t("\(model.streak) days"), detail: L10n.t("Best: \(model.bestStreak) days"))
+                Spacer(minLength: 8)
+                Text(StreakFire.next(model.streak).map { L10n.t("Bigger flame at \($0) days") } ?? L10n.t("Full blaze"))
+                    .font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary)
+                    .padding(.horizontal, 7).padding(.vertical, 3)
+                    .background(.thinMaterial, in: Capsule())
             }
+            .frame(maxHeight: .infinity, alignment: .top)
         }
     }
 }

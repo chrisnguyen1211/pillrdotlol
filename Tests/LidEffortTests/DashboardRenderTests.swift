@@ -79,6 +79,39 @@ final class DashboardRenderTests: XCTestCase {
         }
     }
 
+    /// The Streak card's fire at each milestone: none under ten days, a
+    /// blaze at a year.
+    func testTheStreakFireGrowsAtEachMilestone() throws {
+        XCTAssertEqual(StreakFire.level(9), 0)
+        XCTAssertEqual(StreakFire.level(10), 1)
+        XCTAssertEqual(StreakFire.level(50), 2)
+        XCTAssertEqual(StreakFire.level(149), 3)
+        XCTAssertEqual(StreakFire.level(150), 4)
+        XCTAssertEqual(StreakFire.level(400), 5)
+        XCTAssertEqual(StreakFire.next(12), 50)
+        XCTAssertNil(StreakFire.next(365))
+        for (lower, higher) in zip(0..<5, 1...5) { XCTAssertLessThan(StreakFire.reach(lower), StreakFire.reach(higher)) }
+        let date = Date(timeIntervalSinceReferenceDate: 812_345_678)
+        let cards = VStack(spacing: 10) {
+            ForEach([3, 10, 50, 100, 150, 365], id: \.self) { days in
+                WidgetCard(title: "Streak", symbol: "flame.fill", tint: .orange,
+                           backdrop: AnyView(StreakFire(level: StreakFire.level(days), date: date))) {
+                    WidgetFigure(value: "\(days) days", detail: "Best: \(days) days")
+                }
+                .frame(width: 330, height: WidgetSize.rowHeight)
+            }
+        }
+        .padding(12)
+        let renderer = ImageRenderer(content: cards.background(Color(white: 0.92)))
+        renderer.scale = 1
+        let image = try XCTUnwrap(renderer.nsImage)
+        if let dir = ProcessInfo.processInfo.environment["EFFORT_RENDER_DIR"], let tiff = image.tiffRepresentation,
+           let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) {
+            try FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
+            try png.write(to: URL(fileURLWithPath: dir).appendingPathComponent("streak-fire.png"))
+        }
+    }
+
     /// The sky at the hours that look most unlike: morning, noon, golden
     /// afternoon, sunset, dusk and night.
     func testTheSkyFollowsTheHour() throws {
