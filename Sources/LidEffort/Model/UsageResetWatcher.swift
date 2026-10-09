@@ -170,4 +170,6 @@ struct CardNote: Equatable {
     let status: String
     /// Good news is said in green; a nudge in amber.
     let good: Bool
+    /// Badges just earned: the card shows them struck, with a burst.
+    var badges: [Achievements.Badge] = []
 }

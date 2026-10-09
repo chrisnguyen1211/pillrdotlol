@@ -109,6 +109,44 @@ final class DashboardRenderTests: XCTestCase {
         }
     }
 
+    /// The notch card for badges just earned, one and several, and the
+    /// burst at a few moments.
+    func testTheBadgeCardRenders() throws {
+        let one = Achievements.note([.init(family: "tokenMaxxer", tier: .gold)])
+        let three = Achievements.note([.init(family: "streak", tier: .silver), .init(family: "commits", tier: .bronze),
+                                       .init(family: "late", tier: .gold)])
+        XCTAssertEqual(one.badges.count, 1)
+        XCTAssertEqual(three.badges.count, 3)
+        func event(_ note: CardNote) -> UsageAlertEvent {
+            var event = UsageAlertEvent(kind: .recap, providerID: "coach", providerName: "", windowLabel: "",
+                                        glyph: .third, previousFraction: 0, currentFraction: 0, resetsAt: nil)
+            event.note = note
+            return event
+        }
+        let sheet = VStack(spacing: 14) {
+            UsageResetCard(event: event(one), direction: .leading, onDismiss: {})
+            UsageResetCard(event: event(three), direction: .leading, onDismiss: {})
+            HStack(spacing: 6) {
+                ForEach([0.15, 0.4, 0.8, 1.3, 2.4], id: \.self) { moment in
+                    BadgeBurst(badges: [.init(family: "streak", tier: .gold)], size: 50, frozenAt: moment)
+                }
+            }
+        }
+        .padding(16)
+        .environment(\.badgeBurstFrozenAt, 2.4)
+        for dark in [false, true] {
+            let renderer = ImageRenderer(content: sheet.background(dark ? Color(white: 0.1) : Color(white: 0.93))
+                .environment(\.colorScheme, dark ? .dark : .light))
+            renderer.scale = 2
+            let image = try XCTUnwrap(renderer.nsImage)
+            if let dir = ProcessInfo.processInfo.environment["EFFORT_RENDER_DIR"], let tiff = image.tiffRepresentation,
+               let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) {
+                try FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
+                try png.write(to: URL(fileURLWithPath: dir).appendingPathComponent("badge-card-\(dark ? "dark" : "light").png"))
+            }
+        }
+    }
+
     /// The Streak card's fire at each milestone: none under ten days, a
     /// blaze at a year.
     func testTheStreakFireGrowsAtEachMilestone() throws {

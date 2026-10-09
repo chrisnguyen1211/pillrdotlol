@@ -57,4 +57,24 @@ final class AchievementsTests: XCTestCase {
         }
         XCTAssertGreaterThanOrEqual(Achievements.families.count * 3, 45)
     }
+
+    /// Each badge earned gets its card once; those held before the update
+    /// don't all arrive at once.
+    func testEveryNewBadgeIsAnnouncedOnce() throws {
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: "announce-\(UUID().uuidString)"))
+        var stats = Achievements.Stats()
+        stats.hoursTotal = 12
+        _ = Achievements.award(stats, defaults: defaults)
+        XCTAssertEqual(Achievements.unannounced(defaults), [], "held before: already told")
+        stats.hoursTotal = 120
+        stats.bestStreak = 8
+        let new = Achievements.award(stats, defaults: defaults)
+        XCTAssertEqual(Set(Achievements.unannounced(defaults).map(\.id)), Set(new.map(\.id)))
+        XCTAssertTrue(new.map(\.id).contains("hours.2"))
+        Achievements.markAnnounced(new, defaults)
+        XCTAssertEqual(Achievements.unannounced(defaults), [], "told once")
+        let note = Achievements.note(new)
+        XCTAssertEqual(note.badges, new)
+        XCTAssertTrue(note.good)
+    }
 }

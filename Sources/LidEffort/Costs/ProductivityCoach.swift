@@ -191,33 +191,39 @@ extension ProductivityCoach {
 }
 
 extension ProductivityCoach {
-    /// What the notch says after a check: a record or a nudge, or a badge.
+    /// What the notch says after a check: a record or a nudge, or badges.
     enum Card: Equatable {
         case finding(Finding)
-        case badge(Achievements.Badge)
+        case badges([Achievements.Badge])
 
         var note: CardNote {
             switch self {
             case .finding(let finding): return ProductivityCoach.note(finding)
-            case .badge(let badge): return Achievements.note(badge)
+            case .badges(let badges): return Achievements.note(badges)
             }
         }
     }
 
-    /// Records and nudges as `check`, then badges: every one reached is
-    /// given and logged, and one is said when nothing else has been today.
+    /// Records and nudges as `check`, at most one a day; then badges, every
+    /// one reached given and logged, and every one not yet told said on one
+    /// card, whatever else was said today: a badge comes once.
     static func checkAll(ledger: ActivityLedger, stores: [CostStore], keyIDs: [String], plans: Int,
-                         now: Date = Date(), calendar: Calendar = .current, defaults: UserDefaults = .standard) -> Card? {
-        let shownBefore = ledger.coachEvents(limit: 50).contains { $0.shown && calendar.isDate($0.at, inSameDayAs: now) }
-        if let finding = check(ledger: ledger, stores: stores, now: now, calendar: calendar) { return .finding(finding) }
+                         now: Date = Date(), calendar: Calendar = .current, defaults: UserDefaults = .standard) -> [Card] {
+        var cards: [Card] = []
+        if let finding = check(ledger: ledger, stores: stores, now: now, calendar: calendar) { cards.append(.finding(finding)) }
+        // Settles what counts as already told before anything new is given.
+        _ = Achievements.unannounced(defaults)
         let stats = badgeStats(ledger: ledger, stores: stores, keyIDs: keyIDs, plans: plans, now: now, calendar: calendar)
-        let new = Achievements.award(stats, now: now, defaults: defaults)
-        let pick = shownBefore ? nil : new.first
-        for badge in new {
+        for badge in Achievements.award(stats, now: now, defaults: defaults) {
             ledger.log(.init(at: now, kind: .badge, metric: badge.id, timeframe: "", period: now,
-                             value: Double(badge.tier.rawValue), previous: nil, shown: badge == pick))
+                             value: Double(badge.tier.rawValue), previous: nil, shown: true))
         }
-        return pick.map(Card.badge)
+        let untold = Achievements.unannounced(defaults)
+        if !untold.isEmpty {
+            Achievements.markAnnounced(untold, defaults)
+            cards.append(.badges(untold))
+        }
+        return cards
     }
 
     /// The figures badges are measured on: the whole activity ledger, a year

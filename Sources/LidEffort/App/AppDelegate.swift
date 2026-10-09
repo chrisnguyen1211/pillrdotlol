@@ -1270,6 +1270,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         RunLoop.main.add(timer, forMode: .common)
         coachTimer = timer
+        previewBadgeCardIfAsked()
         // Once soon after launch, so badges already reached are given.
         coachSoon = Task { @MainActor [weak self] in
             try? await Task.sleep(nanoseconds: 120_000_000_000)
@@ -1286,14 +1287,42 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let keyIDs = preferences?.extraKeys.map(\.id) ?? []
         let plans = CodingPlans.rows(snapshots: Costs.latestSnapshots, accounts: CostAccountStore.shared.accounts,
                                      localCurrency: PriceTable.shared.currency).filter { ($0.monthly ?? 0) > 0 }.count
-        Task.detached(priority: .utility) { [weak fleet] in
-            guard let card = ProductivityCoach.checkAll(ledger: ledger, stores: stores, keyIDs: keyIDs, plans: plans) else { return }
-            await MainActor.run {
-                var event = UsageAlertEvent(kind: .recap, providerID: "coach", providerName: "", windowLabel: "",
-                                            glyph: .third, previousFraction: 0, currentFraction: 0, resetsAt: nil)
-                event.note = card.note
-                fleet?.showResetAlert(event, duration: 10)
-            }
+        Task.detached(priority: .utility) { [weak self] in
+            let cards = ProductivityCoach.checkAll(ledger: ledger, stores: stores, keyIDs: keyIDs, plans: plans)
+            await self?.showCoachCards(cards.map(\.note))
+        }
+    }
+
+    /// One card after another, each on the notch for ten seconds.
+    @MainActor
+    private func showCoachCards(_ notes: [CardNote]) async {
+        for (index, note) in notes.enumerated() {
+            if index > 0 { try? await Task.sleep(nanoseconds: 11_000_000_000) }
+            var event = UsageAlertEvent(kind: .recap, providerID: "coach", providerName: "", windowLabel: "",
+                                        glyph: .third, previousFraction: 0, currentFraction: 0, resetsAt: nil)
+            event.note = note
+            notchFleet?.showResetAlert(event, duration: note.badges.isEmpty ? 10 : 12)
+        }
+    }
+
+    /// For trying the badge card out, from the shell only:
+    /// `defaults write lol.pillr.app debug.previewBadgeCard "streak.3,commits.2"`
+    /// shows those badges' card a few seconds after launch, once.
+    @MainActor
+    private func previewBadgeCardIfAsked() {
+        let key = "debug.previewBadgeCard"
+        guard let ids = UserDefaults.standard.string(forKey: key) else { return }
+        UserDefaults.standard.removeObject(forKey: key)
+        let badges = ids.split(separator: ",").compactMap { id -> Achievements.Badge? in
+            let parts = id.trimmingCharacters(in: .whitespaces).split(separator: ".")
+            guard parts.count == 2, Achievements.family(String(parts[0])) != nil,
+                  let raw = Int(parts[1]), let tier = Achievements.Tier(rawValue: raw) else { return nil }
+            return Achievements.Badge(family: String(parts[0]), tier: tier)
+        }
+        guard !badges.isEmpty else { return }
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 6_000_000_000)
+            await self?.showCoachCards([Achievements.note(badges)])
         }
     }
 

@@ -859,15 +859,7 @@ struct AchievementsWidget: View {
     @State private var hovered: String?
 
     /// The badges held, newest first.
-    static func held(_ earned: [String: Date]) -> [Achievements.Badge] {
-        earned.sorted { $0.value > $1.value }.compactMap { id, _ in
-            guard let dot = id.lastIndex(of: "."), let raw = Int(id[id.index(after: dot)...]),
-                  let tier = Achievements.Tier(rawValue: raw) else { return nil }
-            let family = String(id[..<dot])
-            guard Achievements.family(family) != nil else { return nil }
-            return Achievements.Badge(family: family, tier: tier)
-        }
-    }
+    static func held(_ earned: [String: Date]) -> [Achievements.Badge] { Achievements.badges(earned) }
 
     var body: some View {
         let badges = Self.held(model.earned)

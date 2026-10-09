@@ -180,10 +180,47 @@ enum Achievements {
         return family.requirement(bar)
     }
 
-    static func note(_ badge: Badge) -> CardNote {
-        CardNote(title: L10n.t("Badge unlocked: \(name(badge))"),
-                 subtitle: "\(badge.tier.name) · \(requirement(badge))",
-                 status: L10n.t("See it in Settings → Dashboard"), good: true)
+    /// The notch card for badges just earned: the badge, or how many.
+    static func note(_ badges: [Badge]) -> CardNote {
+        guard let first = badges.first else { return CardNote(title: "", subtitle: "", status: "", good: true) }
+        if badges.count == 1 {
+            return CardNote(title: name(first), subtitle: "\(first.tier.name) · \(requirement(first))",
+                            status: L10n.t("Badge unlocked"), good: true, badges: badges)
+        }
+        return CardNote(title: L10n.t("\(badges.count) new badges"),
+                        subtitle: badges.map(name).joined(separator: ", "),
+                        status: L10n.t("Badges unlocked"), good: true, badges: badges)
+    }
+
+    /// The badges held, newest first.
+    static func badges(_ earned: [String: Date]) -> [Badge] {
+        earned.sorted { $0.value > $1.value }.compactMap { id, _ in
+            guard let dot = id.lastIndex(of: "."), let raw = Int(id[id.index(after: dot)...]),
+                  let tier = Tier(rawValue: raw) else { return nil }
+            let family = String(id[..<dot])
+            guard self.family(family) != nil else { return nil }
+            return Badge(family: family, tier: tier)
+        }
+    }
+
+    /// Which badges have had their card on the notch.
+    static let announcedKey = "achievements.announced"
+
+    /// Badges held that have not had their card yet, newest first. The first
+    /// time it is asked, everything already held counts as told: an update
+    /// does not bring a card for every badge earned before it.
+    static func unannounced(_ defaults: UserDefaults = .standard) -> [Badge] {
+        let held = earned(defaults)
+        guard let told = defaults.array(forKey: announcedKey) as? [String] else {
+            defaults.set(Array(held.keys), forKey: announcedKey)
+            return []
+        }
+        return badges(held).filter { !told.contains($0.id) }
+    }
+
+    static func markAnnounced(_ badges: [Badge], _ defaults: UserDefaults = .standard) {
+        let told = (defaults.array(forKey: announcedKey) as? [String]) ?? []
+        defaults.set(Array(Set(told + badges.map(\.id))), forKey: announcedKey)
     }
 }
 

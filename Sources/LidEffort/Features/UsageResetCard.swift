@@ -85,6 +85,9 @@ struct UsageResetCard: View {
                 .fill(surfaceFill)
                 .frame(width: NotchLayout.cardWidth, height: Self.cardHeight)
 
+            if let badges = event.note?.badges, !badges.isEmpty {
+                badgeContent(badges)
+            } else {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(alignment: .center, spacing: NotchLayout.headerGap) {
                     ProviderGlyphView(glyph: event.glyph)
@@ -149,6 +152,7 @@ struct UsageResetCard: View {
             }
             .padding(NotchLayout.cardPadding)
             .frame(width: NotchLayout.cardWidth, height: Self.cardHeight, alignment: .topLeading)
+            }
         }
         .frame(width: NotchLayout.cardWidth, height: Self.cardHeight, alignment: .top)
         .clipShape(RoundedRectangle(cornerRadius: NotchLayout.cardCorner, style: .circular))
@@ -158,6 +162,46 @@ struct UsageResetCard: View {
                     .strokeBorder(Palette.ringTrack, lineWidth: 1)
             }
         }
+    }
+
+    /// Badges just earned: the badge flipping in with its burst on the left,
+    /// what it is for on the right.
+    private func badgeContent(_ badges: [Achievements.Badge]) -> some View {
+        HStack(alignment: .center, spacing: Design.px(6)) {
+            BadgeBurst(badges: badges, size: Self.cardHeight * 0.62)
+                .frame(width: Self.cardHeight * 0.92, height: Self.cardHeight)
+            VStack(alignment: .leading, spacing: Design.px(6)) {
+                HStack(spacing: Design.px(8)) {
+                    Circle().fill(Palette.ample).frame(width: Design.px(14), height: Design.px(14))
+                    Text(statusText)
+                        .font(Typography.cardBody.weight(.semibold))
+                        .foregroundStyle(Palette.ample)
+                        .lineLimit(1)
+                    Spacer(minLength: 0)
+                    if let onDismiss {
+                        Button(action: onDismiss) {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundStyle(Palette.textSecondary)
+                                .frame(width: 16, height: 16)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                Text(titleText)
+                    .font(Typography.cardTitle)
+                    .foregroundStyle(Palette.textPrimary)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+                Text(subtitleText)
+                    .font(Typography.cardBody)
+                    .foregroundStyle(Palette.textSecondary)
+                    .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .padding(.trailing, NotchLayout.cardPadding)
+        }
+        .frame(width: NotchLayout.cardWidth, height: Self.cardHeight, alignment: .leading)
     }
 
     private var tail: some View {

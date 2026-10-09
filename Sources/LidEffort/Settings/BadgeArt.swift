@@ -262,3 +262,158 @@ struct Rays: Shape {
         return path
     }
 }
+
+/// A badge arriving on the notch: it flips in and lands with a bounce,
+/// rays turn behind it, confetti bursts out and sparkles stay on, and a
+/// shine crosses it once it has landed. Several take turns, each flipping
+/// in with its own burst. Still, with Reduce Motion: the badge and its glow.
+struct BadgeBurst: View {
+    let badges: [Achievements.Badge]
+    var size: CGFloat = 50
+    /// A fixed moment into the burst, for renders.
+    var frozenAt: Double? = nil
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.badgeBurstFrozenAt) private var frozenByRender
+    private var frozen: Double? { frozenAt ?? frozenByRender }
+    @State private var landed = false
+    @State private var flip: Double = -180
+    @State private var shown = 0
+    @State private var burstStart = Date()
+
+    private var badge: Achievements.Badge { badges[shown % max(1, badges.count)] }
+
+    var body: some View {
+        let metal = BadgeMetal(tier: badge.tier, earned: true)
+        let style = BadgeStyle.of(badge.family)
+        let still = reduceMotion || frozen != nil
+        ZStack {
+            if still {
+                glow(metal: metal, style: style, elapsed: frozen ?? 2.4)
+            } else {
+                TimelineView(.animation) { context in
+                    glow(metal: metal, style: style, elapsed: context.date.timeIntervalSince(burstStart))
+                }
+            }
+            Medal(badge: badge, earned: true, size: size, shine: landed)
+                .scaleEffect(landed || still ? 1 : 0.3)
+                .rotation3DEffect(.degrees(still ? 0 : flip), axis: (x: 0, y: 1, z: 0), perspective: 0.5)
+                .shadow(color: metal.light.opacity(0.6), radius: landed || still ? 8 : 0)
+            if badges.count > 1 {
+                Text("\(shown % badges.count + 1)/\(badges.count)")
+                    .font(.system(size: 9, weight: .bold).monospacedDigit())
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 5).padding(.vertical, 1.5)
+                    .background(Capsule().fill(Color.black.opacity(0.55)))
+                    .offset(x: size * 0.48, y: -size * 0.48)
+            }
+        }
+        .frame(width: size * 1.5, height: size * 1.5)
+        .onAppear {
+            guard !still else { landed = true; flip = 0; return }
+            arrive()
+        }
+        .task {
+            guard !still, badges.count > 1 else { return }
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 2_600_000_000)
+                guard !Task.isCancelled else { return }
+                withAnimation(.easeIn(duration: 0.18)) { flip = 90; landed = false }
+                try? await Task.sleep(nanoseconds: 180_000_000)
+                shown += 1
+                flip = -90
+                arrive()
+            }
+        }
+        .accessibilityElement()
+        .accessibilityLabel(badges.map { "\(Achievements.name($0)), \($0.tier.name)" }.joined(separator: "; "))
+    }
+
+    private func arrive() {
+        burstStart = Date()
+        withAnimation(.spring(response: 0.55, dampingFraction: 0.55)) { landed = true }
+        withAnimation(.easeOut(duration: 0.7)) { flip = 0 }
+    }
+
+    /// Rays, confetti and sparkles, `elapsed` seconds into the burst.
+    private func glow(metal: BadgeMetal, style: BadgeStyle, elapsed: Double) -> some View {
+        ZStack {
+            Rays(count: 14)
+                .fill(RadialGradient(colors: [metal.light.opacity(0.85), metal.light.opacity(0)],
+                                     center: .center, startRadius: size * 0.15, endRadius: size * 0.75))
+                .frame(width: size * 1.5, height: size * 1.5)
+                .rotationEffect(.degrees(elapsed * 22))
+                .opacity(min(1, elapsed * 3))
+            Canvas { context, canvas in
+                BurstPainter(elapsed: elapsed, colors: [metal.light, metal.mid, style.light, .white, Color(red: 1, green: 0.45, blue: 0.6)])
+                    .paint(&context, size: canvas)
+            }
+            .frame(width: size * 2.2, height: size * 2.2)
+        }
+        .allowsHitTesting(false)
+    }
+}
+
+/// Confetti thrown out from the middle and falling away, then sparkles
+/// that come and go around the badge.
+struct BurstPainter {
+    let elapsed: Double
+    let colors: [Color]
+
+    private static func noise(_ seed: Int) -> Double {
+        var x = UInt64(bitPattern: Int64(seed)) &* 0x9E3779B97F4A7C15 &+ 0x6D2B79F5
+        x ^= x >> 33; x = x &* 0xFF51AFD7ED558CCD; x ^= x >> 33
+        return Double(x % 10_000) / 10_000
+    }
+
+    func paint(_ context: inout GraphicsContext, size: CGSize) {
+        let center = CGPoint(x: size.width / 2, y: size.height / 2)
+        let reach = Double(min(size.width, size.height)) / 2
+        // Confetti: the first second and a half.
+        let life = 1.5
+        if elapsed < life {
+            let t = elapsed
+            for i in 0..<34 {
+                let angle = Double(i) / 34 * 2 * .pi + Self.noise(i) * 0.4
+                let speed = reach * (0.9 + Self.noise(i + 40) * 0.9)
+                let x = center.x + CGFloat(cos(angle) * speed * t)
+                let y = center.y + CGFloat(sin(angle) * speed * t + 0.5 * reach * 1.6 * t * t)
+                let alpha = max(0, 1 - t / life)
+                let side = 2.5 + CGFloat(Self.noise(i + 80)) * 2
+                var piece = context
+                piece.translateBy(x: x, y: y)
+                piece.rotate(by: .radians(t * (4 + Self.noise(i + 7) * 8)))
+                piece.fill(Path(CGRect(x: -side / 2, y: -side * 0.35, width: side, height: side * 0.7)),
+                           with: .color(colors[i % colors.count].opacity(alpha)))
+            }
+        }
+        // Sparkles: four-pointed stars that twinkle on around it.
+        for i in 0..<7 {
+            let angle = Self.noise(i + 300) * 2 * .pi
+            let distance = reach * (0.55 + Self.noise(i + 310) * 0.35)
+            let point = CGPoint(x: center.x + CGFloat(cos(angle) * distance), y: center.y + CGFloat(sin(angle) * distance))
+            let beat = sin(elapsed * (2.2 + Self.noise(i + 320) * 2) + Double(i) * 1.3)
+            let fade = min(1, max(0, elapsed - 0.3) * 2)
+            guard beat > 0 else { continue }
+            let r = CGFloat(2 + 3 * beat)
+            var star = Path()
+            star.move(to: CGPoint(x: point.x, y: point.y - r))
+            star.addQuadCurve(to: CGPoint(x: point.x + r, y: point.y), control: point)
+            star.addQuadCurve(to: CGPoint(x: point.x, y: point.y + r), control: point)
+            star.addQuadCurve(to: CGPoint(x: point.x - r, y: point.y), control: point)
+            star.addQuadCurve(to: CGPoint(x: point.x, y: point.y - r), control: point)
+            context.fill(star, with: .color(.white.opacity(0.9 * beat * fade)))
+        }
+    }
+}
+
+private struct BadgeBurstFrozenKey: EnvironmentKey {
+    static let defaultValue: Double? = nil
+}
+
+extension EnvironmentValues {
+    /// Holds every badge burst at a moment, for renders.
+    var badgeBurstFrozenAt: Double? {
+        get { self[BadgeBurstFrozenKey.self] }
+        set { self[BadgeBurstFrozenKey.self] = newValue }
+    }
+}
