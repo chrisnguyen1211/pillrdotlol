@@ -363,7 +363,7 @@ enum ClaudeDesktopComposer {
             clear(composer, ifItHolds: line)
             return .notSent
         }
-        guard let send = button(near: composer, matching: ["send"]) else {
+        guard let send = button(near: composer, matching: Self.sendWords) else {
             log.notice("composer (background): no Send button")
             clear(composer, ifItHolds: line)
             return .notSent
@@ -389,7 +389,7 @@ enum ClaudeDesktopComposer {
     static func stopInBackground(hostSession id: String) -> Bool {
         guard let app = runningApp, AXIsProcessTrusted(), view(of: app) == .session(id),
               let composer = composer(of: app),
-              let stop = button(near: composer, matching: ["stop"]) else { return false }
+              let stop = button(near: composer, matching: Self.stopWords) else { return false }
         let pressed = AXUIElementPerformAction(stop, kAXPressAction as CFString) == .success
         log.notice("composer: Stop pressed \(pressed, privacy: .public)")
         return pressed
@@ -401,6 +401,13 @@ enum ClaudeDesktopComposer {
         guard let window = element(axApp, kAXMainWindowAttribute) ?? element(axApp, kAXFocusedWindowAttribute) else { return nil }
         return findComposer(in: window)
     }
+
+    /// Send and Stop as the Claude app labels them in its languages: the
+    /// labels follow the app's language, not the Mac's.
+    static let sendWords = ["send", "gửi", "envoyer", "senden", "enviar", "invia", "verzenden", "wyślij", "отправить",
+                            "送信", "보내기", "发送", "發送", "kirim", "भेजें", "gönder"]
+    static let stopWords = ["stop", "dừng", "arrêter", "stopp", "anhalten", "detener", "parar", "interrompi", "ferma",
+                            "zatrzymaj", "остановить", "停止", "중지", "berhenti", "रोकें", "durdur"]
 
     /// A button in the message box's neighbourhood whose label contains one
     /// of `words` — "Send message", "Stop".
@@ -445,19 +452,45 @@ enum ClaudeDesktopComposer {
     static let returnAttempts = 3
 
     /// The message box, and only it. Claude Desktop's window has other
-    /// inputs — the browser pane's URL field, the terminal pane's input,
-    /// both text *fields* — and a Return in the terminal one would run the
-    /// command as shell. The composer is the text *area* described "Prompt".
+    /// inputs — the browser pane's URL field, the terminal pane's input —
+    /// and a Return in the terminal one would run the command as shell.
+    /// The composer is the text *area* described "Prompt" in English; in
+    /// another language the description is translated ("Câu lệnh" in
+    /// Vietnamese), so it is known by its editor instead, ProseMirror,
+    /// which no other input in the window is. Anything of xterm's is never
+    /// the composer, whatever it is called.
     static let composerDescription = "Prompt"
+    static let composerEditorClass = "ProseMirror"
 
-    private static func isComposer(_ element: AXUIElement) -> Bool {
-        guard string(element, kAXRoleAttribute) == kAXTextAreaRole else { return false }
-        let description = string(element, kAXDescriptionAttribute) ?? ""
-        return description.isEmpty || description == composerDescription
+    /// Whether a text input, by what it says of itself, is the composer:
+    /// the strict match, or, with nothing said at all, the old fallback.
+    static func isComposer(role: String?, description: String?, classes: [String]) -> Bool {
+        guard role == kAXTextAreaRole else { return false }
+        guard !classes.contains(where: { $0.lowercased().contains("xterm") }) else { return false }
+        if isComposerExactly(role: role, description: description, classes: classes) { return true }
+        return (description ?? "").isEmpty && classes.isEmpty
     }
 
-    /// The composer, breadth-first: the text area described "Prompt" if
-    /// there is one, else the only kind of text area Claude Desktop has.
+    /// The composer for certain: "Prompt", or the ProseMirror editor.
+    static func isComposerExactly(role: String?, description: String?, classes: [String]) -> Bool {
+        guard role == kAXTextAreaRole, !classes.contains(where: { $0.lowercased().contains("xterm") }) else { return false }
+        return description == composerDescription || classes.contains(composerEditorClass)
+    }
+
+    private static func classes(_ element: AXUIElement) -> [String] {
+        var value: CFTypeRef?
+        guard AXUIElementCopyAttributeValue(element, "AXDOMClassList" as CFString, &value) == .success else { return [] }
+        return value as? [String] ?? []
+    }
+
+    private static func isComposer(_ element: AXUIElement) -> Bool {
+        isComposer(role: string(element, kAXRoleAttribute), description: string(element, kAXDescriptionAttribute),
+                   classes: classes(element))
+    }
+
+    /// The composer, breadth-first: the text area described "Prompt" or
+    /// made by ProseMirror if there is one, else a text area that says
+    /// nothing of itself.
     private static func findComposer(in root: AXUIElement) -> AXUIElement? {
         var queue = [root]
         var fallback: AXUIElement?
@@ -465,9 +498,12 @@ enum ClaudeDesktopComposer {
         while !queue.isEmpty, visited < 6000 {
             let node = queue.removeFirst()
             visited += 1
-            if string(node, kAXRoleAttribute) == kAXTextAreaRole {
-                if string(node, kAXDescriptionAttribute) == composerDescription { return node }
-                if isComposer(node) { fallback = node }
+            let role = string(node, kAXRoleAttribute)
+            if role == kAXTextAreaRole {
+                let description = string(node, kAXDescriptionAttribute)
+                let classList = classes(node)
+                if isComposerExactly(role: role, description: description, classes: classList) { return node }
+                if isComposer(role: role, description: description, classes: classList) { fallback = node }
                 continue
             }
             var children: CFTypeRef?

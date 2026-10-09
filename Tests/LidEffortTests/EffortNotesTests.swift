@@ -112,4 +112,23 @@ final class ClaudeAppViewTests: XCTestCase {
         XCTAssertEqual(session.title, "Fix the card")
         XCTAssertNil(SessionModels.desktop(hostSessionID: "local_other", home: home))
     }
+
+    /// The Claude app's message box in any language, and never the terminal's.
+    func testTheComposerIsFoundInEveryLanguageAndNeverInTheTerminal() {
+        let area = "AXTextArea"
+        XCTAssertTrue(ClaudeDesktopComposer.isComposerExactly(role: area, description: "Prompt", classes: []))
+        XCTAssertTrue(ClaudeDesktopComposer.isComposerExactly(role: area, description: "Câu lệnh", classes: ["tiptap", "ProseMirror"]),
+                      "the Claude app in Vietnamese")
+        XCTAssertTrue(ClaudeDesktopComposer.isComposerExactly(role: area, description: "プロンプト", classes: ["tiptap", "ProseMirror"]))
+        XCTAssertFalse(ClaudeDesktopComposer.isComposer(role: area, description: "Terminal input", classes: ["xterm-helper-textarea"]),
+                       "the terminal pane's input runs what is typed as shell")
+        XCTAssertFalse(ClaudeDesktopComposer.isComposer(role: area, description: "Prompt", classes: ["xterm-helper-textarea"]))
+        XCTAssertFalse(ClaudeDesktopComposer.isComposer(role: "AXTextField", description: "Prompt", classes: ["ProseMirror"]),
+                       "a text field is the browser's address bar, not the composer")
+        XCTAssertFalse(ClaudeDesktopComposer.isComposer(role: area, description: "Câu lệnh", classes: []),
+                       "a named area that isn't the editor is not guessed at")
+        XCTAssertTrue(ClaudeDesktopComposer.isComposer(role: area, description: "", classes: []), "the old fallback stays")
+        XCTAssertTrue(ClaudeDesktopComposer.sendWords.contains { "gửi".contains($0) }, "Send in Vietnamese")
+        XCTAssertTrue(ClaudeDesktopComposer.stopWords.contains { "dừng phản hồi".contains($0) }, "Stop in Vietnamese")
+    }
 }
