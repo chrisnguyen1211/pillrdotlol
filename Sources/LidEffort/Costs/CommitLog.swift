@@ -10,7 +10,7 @@ enum CommitLog {
     /// How long a count is reused: git is not asked on every redraw.
     static let reuse: TimeInterval = 10 * 60
     private static let lock = NSLock()
-    private static var held: (key: String, at: Date, days: [Date: Int])?
+    private static var held: (key: String, at: Date, times: [Date])?
 
     /// The repositories the folders are in, each once.
     static func roots(of folders: [String], limit: Int = 60) -> [String] {
@@ -26,25 +26,34 @@ enum CommitLog {
         return roots
     }
 
-    /// Commits per local day since a moment, by each repository's own user.
-    static func days(roots: [String], since: Date, calendar: Calendar = .current, now: Date = Date()) -> [Date: Int] {
-        let key = roots.joined(separator: "|") + "@\(Int(calendar.startOfDay(for: since).timeIntervalSince1970))"
-        if let held = lock.withLock({ held }), held.key == key, now.timeIntervalSince(held.at) < reuse { return held.days }
+    /// When each commit was made since a moment, by each repository's own
+    /// user, each commit once, oldest first.
+    static func times(roots: [String], since: Date, now: Date = Date()) -> [Date] {
+        let key = roots.joined(separator: "|") + "@\(Int(since.timeIntervalSince1970) / 3600)"
+        if let held = lock.withLock({ held }), held.key == key, now.timeIntervalSince(held.at) < reuse { return held.times }
         var seen: Set<String> = []
-        var days: [Date: Int] = [:]
+        var times: [Date] = []
         for root in roots {
             guard let email = git(["config", "user.email"], in: root)?.trimmingCharacters(in: .whitespacesAndNewlines),
                   !email.isEmpty,
                   let log = git(["log", "--all", "--no-merges", "--author=\(email)",
-                                 "--since=\(Int(since.timeIntervalSince1970))", "--format=%H %ct"], in: root)
+                                 "--since=@\(Int(since.timeIntervalSince1970))", "--format=%H %ct"], in: root)
             else { continue }
             for line in log.split(separator: "\n") {
                 let parts = line.split(separator: " ")
                 guard parts.count == 2, let seconds = TimeInterval(parts[1]), seen.insert(String(parts[0])).inserted else { continue }
-                days[calendar.startOfDay(for: Date(timeIntervalSince1970: seconds)), default: 0] += 1
+                times.append(Date(timeIntervalSince1970: seconds))
             }
         }
-        lock.withLock { held = (key, now, days) }
+        times.sort()
+        lock.withLock { held = (key, now, times) }
+        return times
+    }
+
+    /// Commits per local day since a moment.
+    static func days(roots: [String], since: Date, calendar: Calendar = .current, now: Date = Date()) -> [Date: Int] {
+        var days: [Date: Int] = [:]
+        for time in times(roots: roots, since: since, now: now) { days[calendar.startOfDay(for: time), default: 0] += 1 }
         return days
     }
 

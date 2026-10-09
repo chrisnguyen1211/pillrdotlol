@@ -64,6 +64,12 @@ final class DashboardModel: ObservableObject {
     /// local days, and in each hour of today.
     @Published private(set) var paidByDay: [(day: Date, amount: Double)] = []
     @Published private(set) var paidByHour: [Double] = Array(repeating: 0, count: 24)
+    /// When each commit was made, for today's hour-by-hour view.
+    @Published private(set) var commitTimes: [Date] = []
+    /// Badges held, with when each was earned.
+    @Published private(set) var earned: [String: Date] = [:]
+    /// The longest run of working days.
+    @Published private(set) var bestStreak = 0
     @Published private(set) var activity = ActivityLedger.Summary()
     @Published private(set) var streak = 0
     @Published private(set) var loading = false
@@ -81,7 +87,8 @@ final class DashboardModel: ObservableObject {
     static func forRender(range: Range, sessions: [TimelinePane.Row], keys: [KeyRow], plans: [CodingPlans.Row] = [],
                           activity: ActivityLedger.Summary, streak: Int, commits: [Date: Int] = [:],
                           coach: [ActivityLedger.CoachEvent] = [], paidByDay: [(day: Date, amount: Double)] = [],
-                          paidByHour: [Double] = Array(repeating: 0, count: 24)) -> DashboardModel {
+                          paidByHour: [Double] = Array(repeating: 0, count: 24), commitTimes: [Date] = [],
+                          earned: [String: Date] = [:], bestStreak: Int = 0) -> DashboardModel {
         let model = DashboardModel(extraKeys: { [] })
         model.frozen = true
         model.range = range
@@ -94,6 +101,9 @@ final class DashboardModel: ObservableObject {
         model.coach = coach
         model.paidByDay = paidByDay
         model.paidByHour = paidByHour
+        model.commitTimes = commitTimes
+        model.earned = earned
+        model.bestStreak = bestStreak
         return model
     }
 
@@ -112,6 +122,7 @@ final class DashboardModel: ObservableObject {
         let span = DateInterval(start: min(interval.start, weekAgo), end: max(interval.end, Date()))
         let perToken = Set(CostAccountStore.shared.accounts.filter { $0.billing == .api }.map(\.id))
         let stores = CostModels.all.compactMap(\.store_)
+        let paidPlans = plans.filter { ($0.monthly ?? 0) > 0 }.count
         let toLocal: @Sendable (SpendLedger.Figure?) -> Double? = { [currency = PriceTable.shared.currency,
                                                                      rate = PriceTable.shared.effectiveRate] figure in
             guard let figure, case .money(let code) = figure.unit else { return nil }
@@ -152,7 +163,14 @@ final class DashboardModel: ObservableObject {
                 }
                 let activity = ActivityLedger.shared
                 let figures = activity.map { ProductivityCoach.gather(ledger: $0, stores: stores) }
+                // Badges already reached are given here too, not only on the hour.
+                if let activity {
+                    Achievements.award(ProductivityCoach.badgeStats(ledger: activity, stores: stores,
+                                                                    keyIDs: keys.map(\.id), plans: paidPlans))
+                }
                 return Loaded(keys: rows,
+                              commitTimes: figures?.commitTimes ?? [],
+                              bestStreak: figures.map { Achievements.longestStreak($0.busy) } ?? 0,
                               activity: activity?.summary(from: interval.start, to: interval.end) ?? .init(),
                               streak: activity?.streak() ?? 0,
                               commits: figures?.commits.mapValues { Int($0) } ?? [:],
@@ -168,12 +186,17 @@ final class DashboardModel: ObservableObject {
             self.coach = result.coach
             self.paidByDay = result.paidByDay
             self.paidByHour = result.paidByHour
+            self.commitTimes = result.commitTimes
+            self.bestStreak = result.bestStreak
+            self.earned = Achievements.earned()
             self.loading = false
         }
     }
 
     private struct Loaded: @unchecked Sendable {
         let keys: [KeyRow]
+        let commitTimes: [Date]
+        let bestStreak: Int
         let activity: ActivityLedger.Summary
         let streak: Int
         let commits: [Date: Int]
@@ -181,6 +204,10 @@ final class DashboardModel: ObservableObject {
         let paidByDay: [(day: Date, amount: Double)]
         let paidByHour: [Double]
     }
+
+    /// What was paid by use in the range: tokens of logins paid per token,
+    /// and keys. Plans are not here; they belong to Productivity.
+    var apiSpent: Double { tokenSpend + keySpend }
 
     /// Commits in the range.
     var commitsInRange: Int {

@@ -47,9 +47,17 @@ final class DashboardRenderTests: XCTestCase {
                           period: start, value: 14, previous: 11, shown: false)],
             paidByDay: (0..<7).map { (Calendar.current.date(byAdding: .day, value: $0 - 6, to: Calendar.current.startOfDay(for: Date()))!,
                                       Double([3, 8, 2, 12, 6, 9, 4][$0])) },
-            paidByHour: (0..<24).map { $0 >= 9 && $0 <= 18 ? Double(($0 * 5) % 7) : 0 })
+            paidByHour: (0..<24).map { $0 >= 9 && $0 <= 18 ? Double(($0 * 5) % 7) : 0 },
+            commitTimes: (0..<9).map { Calendar.current.startOfDay(for: Date()).addingTimeInterval(Double(9 + $0 % 5) * 3600) },
+            earned: ["hours.1": Date(), "hours.2": Date(), "commits.1": Date(), "streak.1": Date(), "tokenMaxxer.1": Date(),
+                     "tokenMaxxer.2": Date(), "tokenMaxxer.3": Date(), "dayHours.1": Date(), "keys.1": Date(), "late.1": Date()],
+            bestStreak: 11)
         let view = VStack(spacing: 16) {
             DashboardFolded(model: model).frame(height: WidgetSize.rowHeight)
+            CommitsWidget(model: DashboardModel.forRender(range: .today, sessions: [], keys: [], activity: .init(), streak: 0,
+                                                          commitTimes: (0..<9).map { Calendar.current.startOfDay(for: Date())
+                                                              .addingTimeInterval(Double(9 + $0 % 5) * 3600) }),
+                          compact: false).frame(height: 158)
             DashboardSections(model: model)
         }
         .padding(18)

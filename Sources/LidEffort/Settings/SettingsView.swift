@@ -132,16 +132,21 @@ struct SettingsView: View {
     /// The tab the window opens on; renders pick another.
     var startSection: SettingsSection = .lid
     @Environment(\.notchReduceTransparency) private var reduceTransparency
-    /// The dashboard at the head, unfolded over the panes.
-    @State private var dashboardExpanded = false
+    /// How much of the dashboard shows at the head, kept between openings.
+    @AppStorage("dashboard.mode") private var dashboardModeRaw = DashboardMode.folded.rawValue
+    private var dashboardMode: Binding<DashboardMode> {
+        Binding(get: { DashboardMode(rawValue: dashboardModeRaw) ?? .folded }, set: { dashboardModeRaw = $0.rawValue })
+    }
+    private var dashboardExpanded: Bool { dashboardMode.wrappedValue == .expanded }
 
     var body: some View {
         VStack(spacing: 0) {
             // Kept above what follows, so nothing below can take its clicks.
             topBar
                 .zIndex(1)
-            DashboardPanel(preferences: preferences, expanded: $dashboardExpanded)
-                .frame(height: dashboardExpanded ? nil : DashboardPanel.foldedHeight)
+            DashboardPanel(preferences: preferences, mode: dashboardMode)
+                .frame(height: dashboardExpanded ? nil
+                       : (dashboardMode.wrappedValue == .hidden ? DashboardPanel.hiddenHeight : DashboardPanel.foldedHeight))
                 .frame(maxHeight: dashboardExpanded ? .infinity : nil)
                 .clipped()
                 .padding(.horizontal, 18)
@@ -167,7 +172,7 @@ struct SettingsView: View {
         }
         // Typing a search is looking for a setting: the dashboard folds away.
         .onChange(of: query) { _, text in
-            if !text.isEmpty { dashboardExpanded = false }
+            if !text.isEmpty, dashboardExpanded { dashboardMode.wrappedValue = .folded }
         }
         // Rebuild the whole pane when the language changes.
         //

@@ -323,7 +323,7 @@ final class ActivityLedger {
     /// A record broken, or a nudge given: kept so neither is said twice and
     /// the dashboard can show them.
     struct CoachEvent: Equatable {
-        enum Kind: String { case record, nudge }
+        enum Kind: String { case record, nudge, badge }
         let at: Date
         let kind: Kind
         let metric: String

@@ -13,6 +13,8 @@ enum ProductivityCoach {
         var busy: [Date: Double] = [:]
         var commits: [Date: Double] = [:]
         var finished: [Date: Double] = [:]
+        /// When each commit was made, for the hour-by-hour view.
+        var commitTimes: [Date] = []
 
         func series(_ metric: Metric) -> [Date: Double] {
             switch metric {
@@ -159,8 +161,8 @@ extension ProductivityCoach {
         figures.busy = summary.busyByDay
         figures.finished = summary.finishedByDay.mapValues(Double.init)
         let folders = ledger.folders(since: since) + stores.flatMap { $0.folders(since: Int(since.timeIntervalSince1970)) }
-        figures.commits = CommitLog.days(roots: CommitLog.roots(of: folders), since: since, calendar: calendar, now: now)
-            .mapValues(Double.init)
+        figures.commitTimes = CommitLog.times(roots: CommitLog.roots(of: folders), since: since, now: now)
+        for time in figures.commitTimes { figures.commits[calendar.startOfDay(for: time), default: 0] += 1 }
         return figures
     }
 
@@ -185,5 +187,56 @@ extension ProductivityCoach {
                              period: finding.period, value: finding.value, previous: finding.previous, shown: finding == pick))
         }
         return pick
+    }
+}
+
+extension ProductivityCoach {
+    /// What the notch says after a check: a record or a nudge, or a badge.
+    enum Card: Equatable {
+        case finding(Finding)
+        case badge(Achievements.Badge)
+
+        var note: CardNote {
+            switch self {
+            case .finding(let finding): return ProductivityCoach.note(finding)
+            case .badge(let badge): return Achievements.note(badge)
+            }
+        }
+    }
+
+    /// Records and nudges as `check`, then badges: every one reached is
+    /// given and logged, and one is said when nothing else has been today.
+    static func checkAll(ledger: ActivityLedger, stores: [CostStore], keyIDs: [String], plans: Int,
+                         now: Date = Date(), calendar: Calendar = .current, defaults: UserDefaults = .standard) -> Card? {
+        let shownBefore = ledger.coachEvents(limit: 50).contains { $0.shown && calendar.isDate($0.at, inSameDayAs: now) }
+        if let finding = check(ledger: ledger, stores: stores, now: now, calendar: calendar) { return .finding(finding) }
+        let stats = badgeStats(ledger: ledger, stores: stores, keyIDs: keyIDs, plans: plans, now: now, calendar: calendar)
+        let new = Achievements.award(stats, now: now, defaults: defaults)
+        let pick = shownBefore ? nil : new.first
+        for badge in new {
+            ledger.log(.init(at: now, kind: .badge, metric: badge.id, timeframe: "", period: now,
+                             value: Double(badge.tier.rawValue), previous: nil, shown: badge == pick))
+        }
+        return pick.map(Card.badge)
+    }
+
+    /// The figures badges are measured on: the whole activity ledger, a year
+    /// of commits, and what the keys were paid this month and today.
+    static func badgeStats(ledger: ActivityLedger, stores: [CostStore], keyIDs: [String], plans: Int,
+                           now: Date = Date(), calendar: Calendar = .current) -> Achievements.Stats {
+        let since = now.addingTimeInterval(-365 * 86_400)
+        let folders = ledger.folders(since: since) + stores.flatMap { $0.folders(since: Int(since.timeIntervalSince1970)) }
+        let commits = CommitLog.times(roots: CommitLog.roots(of: folders), since: since, now: now)
+        let month = SpendLedger.range(.month, containing: now)
+        let day = SpendLedger.range(.day, containing: now)
+        func dollars(_ figure: SpendLedger.Figure?) -> Double {
+            guard let figure, case .money(let code) = figure.unit, (code ?? "USD") == "USD" else { return 0 }
+            return figure.amount
+        }
+        let paidMonth = keyIDs.map { dollars(SpendLedger.shared?.used(provider: $0, from: month.from, to: month.to)) }.reduce(0, +)
+        let paidToday = keyIDs.map { dollars(SpendLedger.shared?.used(provider: $0, from: day.from, to: day.to)) }.reduce(0, +)
+        return Achievements.stats(ledger: ledger, commits: commits, paidThisMonth: paidMonth, paidToday: paidToday,
+                                  keys: keyIDs.count, plans: plans, costPerSession: nil, finishedThisMonth: 0,
+                                  now: now, calendar: calendar)
     }
 }

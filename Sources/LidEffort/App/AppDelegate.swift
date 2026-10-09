@@ -1255,6 +1255,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         RunLoop.main.add(timer, forMode: .common)
         coachTimer = timer
+        // Once soon after launch, so badges already reached are given.
+        coachSoon = Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 120_000_000_000)
+            guard !Task.isCancelled else { return }
+            self?.coachCheck()
+        }
     }
 
     @MainActor
@@ -1262,12 +1268,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         guard UserDefaults.standard.object(forKey: Self.coachEnabledKey) as? Bool ?? true,
               let ledger = ActivityLedger.shared, let fleet = notchFleet, !fleet.isTouring else { return }
         let stores = CostModels.all.compactMap(\.store_)
+        let keyIDs = preferences?.extraKeys.map(\.id) ?? []
+        let plans = CodingPlans.rows(snapshots: Costs.latestSnapshots, accounts: CostAccountStore.shared.accounts,
+                                     localCurrency: PriceTable.shared.currency).filter { ($0.monthly ?? 0) > 0 }.count
         Task.detached(priority: .utility) { [weak fleet] in
-            guard let finding = ProductivityCoach.check(ledger: ledger, stores: stores) else { return }
+            guard let card = ProductivityCoach.checkAll(ledger: ledger, stores: stores, keyIDs: keyIDs, plans: plans) else { return }
             await MainActor.run {
                 var event = UsageAlertEvent(kind: .recap, providerID: "coach", providerName: "", windowLabel: "",
                                             glyph: .third, previousFraction: 0, currentFraction: 0, resetsAt: nil)
-                event.note = ProductivityCoach.note(finding)
+                event.note = card.note
                 fleet?.showResetAlert(event, duration: 10)
             }
         }
