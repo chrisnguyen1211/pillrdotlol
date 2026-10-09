@@ -28,7 +28,8 @@ struct DashboardSky: View {
 
     private func scene(at date: Date, moving: Bool) -> some View {
         Canvas { context, size in
-            SkyPainter(hour: SkyClock.hour(of: date), time: moving ? date.timeIntervalSinceReferenceDate : 0)
+            let sky = SkyClock.sky(at: date)
+            SkyPainter(hour: sky.hour, time: moving ? date.timeIntervalSinceReferenceDate : 0, moon: sky.moon)
                 .paint(&context, size: size)
         }
     }
@@ -36,6 +37,24 @@ struct DashboardSky: View {
 
 /// The local hour as a fraction: 14.5 is half past two in the afternoon.
 enum SkyClock {
+    /// The sky to draw at a moment: the painter's hour for the real sun of
+    /// this day and place, and the real moon.
+    @MainActor
+    static func sky(at date: Date, calendar: Calendar = .current) -> (hour: Double, moon: SkyAstronomy.Moon) {
+        let day = calendar.startOfDay(for: date)
+        let sun: SkyAstronomy.SunDay
+        if let held = heldDay, held.day == day, held.zone == calendar.timeZone.identifier {
+            sun = held.sun
+        } else {
+            sun = SkyAstronomy.sunDay(on: date, at: SkyAstronomy.place(for: calendar.timeZone), calendar: calendar)
+            heldDay = (day, calendar.timeZone.identifier, sun)
+        }
+        return (SkyAstronomy.drawnHour(hour(of: date, calendar: calendar), sun: sun),
+                SkyAstronomy.moon(at: date, sun: sun, calendar: calendar))
+    }
+
+    @MainActor private static var heldDay: (day: Date, zone: String, sun: SkyAstronomy.SunDay)?
+
     static func hour(of date: Date, calendar: Calendar = .current) -> Double {
         let parts = calendar.dateComponents([.hour, .minute, .second], from: date)
         return Double(parts.hour ?? 12) + Double(parts.minute ?? 0) / 60 + Double(parts.second ?? 0) / 3600
@@ -113,6 +132,8 @@ struct SkyPainter {
     let hour: Double
     /// Seconds, for what moves; 0 holds everything still.
     let time: Double
+    /// Where the moon is and how much of it is lit; nil keeps it down.
+    var moon: SkyAstronomy.Moon? = nil
     /// The side of one pixel, in points.
     var cell: CGFloat = 3
 
@@ -137,7 +158,10 @@ struct SkyPainter {
         if night > 0 { stars(&context, size: size, alpha: night) }
         if night > 0.4 { shootingStar(&context, size: size, alpha: night) }
         sun(&context, size: size, horizon: horizon)
-        moon(&context, size: size, horizon: horizon, alpha: night)
+        if let moon, let progress = moon.progress {
+            // Faint by day, as the real one is.
+            self.moon(&context, size: size, horizon: horizon, progress: progress, phase: moon.phase, alpha: max(night, 0.3))
+        }
         clouds(&context, size: size, light: light)
         mountains(&context, size: size, light: light, ridge: ridge)
         if night > 0.5 { fireflies(&context, size: size, ground: ground, alpha: night) }
@@ -246,23 +270,26 @@ struct SkyPainter {
     }
 
     /// A crescent, up from dusk to dawn.
-    private func moon(_ context: inout GraphicsContext, size: CGSize, horizon: CGFloat, alpha: Double) {
-        guard alpha > 0.05 else { return }
-        let night = hour >= 12 ? hour - 19.2 : hour + 4.8
-        let p = max(0, min(1, night / 10.6))
-        let x = size.width * (0.1 + 0.8 * p)
-        let y = horizon - CGFloat(sin(Double.pi * p)) * (horizon - 24) + 4
+    /// The moon along its arc, lit as much as its phase: waxing from the
+    /// right, waning from the left, the dark part a faint earthshine.
+    private func moon(_ context: inout GraphicsContext, size: CGSize, horizon: CGFloat, progress: Double, phase: Double, alpha: Double) {
+        let p = max(0, min(1, progress))
+        let x = size.width * (0.06 + 0.88 * p)
+        let height = sin(Double.pi * p)
+        let y = horizon - CGFloat(height) * (horizon - 24) + 16 * CGFloat(max(0, 1 - height * 4))
+        let lit = (1 - cos(2 * Double.pi * phase)) / 2
         context.fill(Path(ellipseIn: CGRect(x: x - 50, y: y - 50, width: 100, height: 100)),
-                     with: .radialGradient(Gradient(colors: [Color(red: 1, green: 0.94, blue: 0.75).opacity(0.22 * alpha), .clear]),
+                     with: .radialGradient(Gradient(colors: [Color(red: 1, green: 0.94, blue: 0.75).opacity(0.25 * alpha * lit), .clear]),
                                            center: CGPoint(x: x, y: y), startRadius: 2, endRadius: 50))
         let r = 5
+        let terminator = cos(2 * Double.pi * phase)
         for j in -r...r {
-            for i in -r...r {
-                let disc = i * i + j * j <= r * r + 2
-                let bite = (i - 3) * (i - 3) + (j + 2) * (j + 2) <= r * r - 5
-                guard disc, !bite else { continue }
+            for i in -r...r where i * i + j * j <= r * r + 2 {
+                let edge = sqrt(max(0, Double(r * r - j * j)))
+                let shown = phase < 0.5 ? Double(i) >= terminator * edge - 0.5 : Double(i) <= -terminator * edge + 0.5
                 let shade = i + j < -3 ? Color(red: 1, green: 0.97, blue: 0.86) : Color(red: 0.95, green: 0.9, blue: 0.72)
-                pixel(&context, x + CGFloat(i) * cell, y + CGFloat(j) * cell, shade.opacity(alpha))
+                pixel(&context, x + CGFloat(i) * cell, y + CGFloat(j) * cell,
+                      shown ? shade.opacity(alpha) : Color(red: 0.55, green: 0.6, blue: 0.75).opacity(0.18 * alpha))
             }
         }
     }

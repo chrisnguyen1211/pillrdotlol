@@ -193,6 +193,38 @@ final class DashboardRenderTests: XCTestCase {
         XCTAssertEqual(DashboardMode(rawValue: "") ?? .folded, .folded, "folded, the small view, unless chosen otherwise")
     }
 
+    /// Sunrise, sunset and the moon's night, frame by frame, on one sheet
+    /// to read the flow from: `EFFORT_RENDER_DIR=… swift test --filter testTheSkysDay`.
+    func testTheSkysDay() throws {
+        guard let dir = ProcessInfo.processInfo.environment["EFFORT_RENDER_DIR"] else { return }
+        let day = Calendar.current.startOfDay(for: Date())
+        let groups: [(String, [Double])] = [
+            ("sunrise", stride(from: 4.5, through: 7.5, by: 0.25).map { $0 }),
+            ("sunset", stride(from: 16.5, through: 19.75, by: 0.25).map { $0 }),
+            ("night", stride(from: 0.0, through: 23.0, by: 1.0).map { $0 }),
+        ]
+        for (name, hours) in groups {
+            let sheet = LazyVGrid(columns: Array(repeating: GridItem(.fixed(340), spacing: 6), count: 3), spacing: 6) {
+                ForEach(hours, id: \.self) { hour in
+                    ZStack(alignment: .topLeading) {
+                        DashboardSky(date: day.addingTimeInterval(hour * 3600)).frame(width: 340, height: 100)
+                        Text(String(format: "%02d:%02d", Int(hour) % 24, Int((hour - floor(hour)) * 60)))
+                            .font(.system(size: 11, weight: .bold).monospacedDigit()).foregroundStyle(.white)
+                            .padding(3).background(Color.black.opacity(0.5))
+                    }
+                }
+            }
+            .padding(6).background(Color.black)
+            let renderer = ImageRenderer(content: sheet)
+            renderer.scale = 1
+            let image = try XCTUnwrap(renderer.nsImage)
+            if let tiff = image.tiffRepresentation, let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) {
+                try FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
+                try png.write(to: URL(fileURLWithPath: dir).appendingPathComponent("skyday-\(name).png"))
+            }
+        }
+    }
+
     /// The sky at the hours that look most unlike: morning, noon, golden
     /// afternoon, sunset, dusk and night.
     func testTheSkyFollowsTheHour() throws {
