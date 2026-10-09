@@ -144,11 +144,14 @@ struct EffortChangeCard: View {
                         .padding(.top, Self.valuesGap)
                 }
                 // The session in view, when it could not simply be told:
-                // amber for "next session", green for "typed in".
+                // green for "typed in"; "next session" in the card's own
+                // quiet ink with a clock, not a warning colour, since
+                // nothing is wrong.
                 if let note = event.note {
-                    Text(note)
+                    (event.noteIsLive ? Text(note)
+                        : Text(Image(systemName: "clock")) + Text(" ") + Text(note))
                         .font(Typography.cardBody)
-                        .foregroundStyle(event.noteIsLive ? Palette.ample : Palette.watch)
+                        .foregroundStyle(event.noteIsLive ? Palette.ample : Palette.textSecondary)
                         .lineLimit(Self.noteLines)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, Self.noteGap)
