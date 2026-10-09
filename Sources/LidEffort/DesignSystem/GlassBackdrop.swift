@@ -130,10 +130,14 @@ struct AdaptiveGlass<S: Shape>: View {
     let sees: Bool
     /// The tint over the desktop, when it should be heavier than `frost`.
     var fallbackTint: CGFloat? = nil
+    /// Laid over what is behind and under the glass, so the glass bends a
+    /// dimmed (or lightened) copy of it: see `CardGlass.scrim`.
+    var scrim: Color? = nil
 
     var body: some View {
         ZStack {
             GlassBackdrop(shape: shape, frost: sees ? frost : 1, tint: sees ? 1 : (fallbackTint ?? frost))
+            if let scrim { shape.fill(scrim) }
             Color.clear.glassEffect(glass, in: shape)
                 .opacity(sees ? 1 : 0)
         }
@@ -173,8 +177,34 @@ struct CardGlass<S: Shape>: View {
         // not be read. Text first: nearly the whole tint, whatever the
         // transparency setting says.
         AdaptiveGlass(shape: shape, glass: .regular, frost: NotchLayout.cardFrost(frost), sees: sees,
-                      fallbackTint: max(NotchLayout.cardFrost(frost), CardGlass<S>.readableTint))
+                      fallbackTint: max(NotchLayout.cardFrost(frost), CardGlass<S>.readableTint),
+                      scrim: CardGlass<S>.scrim(sees: sees))
     }
+
+    /// What keeps the cards' text readable whatever shows through them.
+    ///
+    /// The ink is set per appearance (`Palette.textPrimary`,
+    /// `textSecondary`), but the glass takes on the brightness of what is
+    /// behind it: a white page under a dark card turned the card mid-grey,
+    /// and grey text on it all but vanished (1:1 for the secondary line,
+    /// under 4:1 even for white). A layer of the appearance's own ground,
+    /// black in dark and white in light, between what is behind and the
+    /// glass bounds how far the card can drift from the ground the ink was
+    /// picked for; the glass still bends and lights whatever comes through,
+    /// so the card stays glass, a smoked one in dark.
+    ///
+    /// Dark needs more of it where the glass sees a window: the glass itself
+    /// lifts what it refracts, and the backdrop under it is only part frost.
+    /// Light needs little: a dark window only greys a light card, and the
+    /// ink holds on grey. The amounts keep the secondary line at 4.5:1 or
+    /// better over a white window and a black one, as measured on screen by
+    /// `CardLegibilityRenderTests`; dark has next to no margin left, so it
+    /// is not to be thinned.
+    static func scrim(sees: Bool) -> Color {
+        Color(dark: .black.withAlphaComponent(darkScrim(sees: sees)), light: .white.withAlphaComponent(lightScrim))
+    }
+    static func darkScrim(sees: Bool) -> CGFloat { sees ? 0.87 : 0.66 }
+    static var lightScrim: CGFloat { 0.45 }
 }
 
 enum ChromeGlassMotion {

@@ -38,7 +38,17 @@ enum Palette {
     static let textPrimary   = Color(dark: .white, light: .black)
     /// Light: dark enough for 4.5:1 on a light card, which #6B6B6B was not
     /// once the card sat on a blurred dark desktop.
-    static let textSecondary = Color(dark: NSColor(hex: 0x808080), light: NSColor(hex: 0x555555))
+    ///
+    /// Translucent, as the tracks are, rather than a fixed grey: a fixed grey
+    /// stays put while the glass under it takes on the brightness of what is
+    /// behind, and the two met on a dark card over a white page. Half-white
+    /// is the frame's #808080 over the solid style's black and lifts with a
+    /// lighter card; two-thirds black is #555555 over white and deepens with
+    /// a greyer one. With `CardGlass.scrim` bounding the card, that keeps
+    /// 4.5:1 over a white window or a black one (`CardLegibilityRenderTests`).
+    static let textSecondary = Color(dark: secondaryInkDark, light: secondaryInkLight)
+    static let secondaryInkDark = NSColor.white.withAlphaComponent(0.502)
+    static let secondaryInkLight = NSColor.black.withAlphaComponent(0.667)
 }
 
 extension Color {
