@@ -34,6 +34,12 @@
     <td align="center" width="25%"><b>🔑 API keys</b><br><sub>Credit left and spend for about 70 providers</sub></td>
     <td align="center" width="25%"><b>🎚️ The lid</b><br><sub>Hold ⌘ and tilt it to set reasoning effort</sub></td>
   </tr>
+  <tr>
+    <td align="center" width="25%"><b>📊 Dashboard</b><br><sub>Agent time, commits shipped and API spend, in Settings</sub></td>
+    <td align="center" width="25%"><b>🌅 A real sky</b><br><sub>The sun and moon at your Mac's own hour and place</sub></td>
+    <td align="center" width="25%"><b>🏅 Badges</b><br><sub>48 to earn, and records against your own best</sub></td>
+    <td align="center" width="25%"><b>✅ Answered anywhere</b><br><sub>Answer in the terminal and the card leaves the notch</sub></td>
+  </tr>
 </table>
 
 ## ✨ What it does
@@ -54,7 +60,7 @@ Ten agents tell pillr the moment a turn ends: Claude Code, Codex, Grok, Cursor, 
 
 ### Approve and answer without leaving your flow
 
-Allow or deny Claude Code's permission prompts, and answer its questions (one choice, several, or your own words) right from the notch. Your answer goes straight back to the session that asked.
+Allow or deny Claude Code's permission prompts, and answer its questions (one choice, several, or your own words) right from the notch. Your answer goes straight back to the session that asked. Answer in the terminal or the Claude app instead, and the card leaves the notch on its own.
 
 <p align="center"><img src="docs/media/shots/questions.png" alt="Two questions from Claude Code: platforms to ship first, with macOS and CLI ticked, and a database question answered in its own words" width="800"></p>
 
@@ -69,6 +75,20 @@ Add the API keys you pay for: pick the provider as you type, paste the key. pill
 Open the lid a little to raise reasoning effort, close it to lower it. One level per 7°, applied when you let go of ⌘, to the agent you're working with and on its model's own scale. Without ⌘, the lid is just the lid.
 
 <p align="center"><img src="docs/media/shots/effort.png" alt="The effort bar from low to ultra, its last stretch in a shifting rainbow" width="800"></p>
+
+### Your agents' month, under your own sky
+
+Settings opens on a dashboard: how long your agents worked, the commits you shipped, what you paid by use, for today, this week or this month. Commits are your own, counted by git in the repos your agents worked in: a column an hour today, a column a day this week, a square a day this month, like GitHub's. Unfold it for everything (waiting on you, lines changed, streak, time by agent and by hour, coding plans priced from each vendor's list, models, recent sessions, spend by key), or slide it away to one line. Hover any column, square or row for its figure.
+
+Behind the widgets is a pixel sky at your Mac's own hour. The sun rises and sets behind the mountains at the real times for where your Mac is, and the moon shows its real phase. Worked out from your time zone: no location asked, nothing fetched.
+
+<p align="center"><img src="docs/media/shots/dashboard.png" alt="Settings opening on the dashboard: Agents at work, Commits shipped as a month of squares, and API spent, frosted over a pixel sky with mountains" width="800"></p>
+
+### Beat your best, earn the badge
+
+pillr says so on the notch when your agents have their best day, week or month, nudges you on a slow week, and hands out badges as you go: 48 of them, 16 families in bronze, silver and gold, from Night Owl to Token Maxxer. A new one flips onto the notch with a burst of confetti. Keep a streak going and its card catches fire, bigger at 10, 50, 100, 150 and 365 days. Only ever against your own past; no leaderboard, no one else.
+
+<p align="center"><img src="docs/media/shots/badges.png" alt="A row of pillr badges in bronze, silver and gold, each family its own shape and enamel, and a new badge's card with rays and confetti" width="800"></p>
 
 **And everywhere else:** any edge of the screen (top, right, bottom or left), and it follows the display you're working on. Light, dark, or matching your Mac.
 
@@ -141,7 +161,7 @@ pillr runs entirely on your Mac. **No account, no analytics, no server of ours.*
 <summary><b>What it reads</b></summary>
 <br>
 
-Each agent's own logins (its keychain item or auth file, such as `~/.codex/auth.json`), session files and transcripts under folders like `~/.claude`, `~/.codex` and `~/.grok`, and the Claude app's session records. Keychain reads are only of the agents' own logins and the API keys you give pillr. Session files are never modified.
+Each agent's own logins (its keychain item or auth file, such as `~/.codex/auth.json`), session files and transcripts under folders like `~/.claude`, `~/.codex` and `~/.grok`, and the Claude app's session records. For the dashboard, the git history of the repos your agents worked in (your own commits, by each repo's `user.email`). For the sky, your wallpaper's file (to pick a card's ink by contrast) and the system's time zone table (`/usr/share/zoneinfo/zone.tab`). Keychain reads are only of the agents' own logins and the API keys you give pillr. Session files are never modified.
 </details>
 
 <details>
@@ -170,7 +190,7 @@ The lid gesture rewrites the single line holding the reasoning effort in `~/.cla
 <summary><b>What it runs, sends and types</b></summary>
 <br>
 
-**Runs.** Occasionally `claude --print /usage` to read Claude Code's usage, and `claude -p` to keep Claude Code's login fresh. Both use Claude Code's own credentials and start no MCP servers.
+**Runs.** Occasionally `claude --print /usage` to read Claude Code's usage, and `claude -p` to keep Claude Code's login fresh. Both use Claude Code's own credentials and start no MCP servers. For the dashboard, `git log` and `git rev-parse` in the repos your agents worked in, read-only.
 
 **Sends.** Requests go only to each agent's own servers, to each API key's own provider, and to GitHub for updates. Nothing else leaves your Mac. Logs stay on your Mac and contain no message text; crash reports are kept locally and never uploaded.
 
@@ -214,6 +234,12 @@ To type <code>/effort</code> and your replies into a Claude app session, and to 
 <summary><b>Why does pillr ask for Automation?</b></summary>
 <br>
 To script Terminal, iTerm2 and cmux: typing <code>/effort</code> or a reply into an idle tab, bringing a session's tab to the front, and opening a new window when you hand work to another agent.
+</details>
+
+<details>
+<summary><b>Does the dashboard's sky need my location?</b></summary>
+<br>
+No. Sunrise and sunset are worked out on your Mac from your time zone's place in the system's own time zone table, and the moon's phase from the date. pillr asks for no location and fetches nothing for it.
 </details>
 
 <details>
