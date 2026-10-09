@@ -199,7 +199,7 @@ final class DashboardRenderTests: XCTestCase {
         let calendar = Calendar.current
         let day = calendar.startOfDay(for: Date())
         var dark: [Double] = []
-        for hour in [7.5, 12.0, 16.5, 18.0, 19.5, 23.0] {
+        for hour in [7.5, 12.0, 16.5, 18.0, 18.8, 19.5, 23.0] {
             let date = day.addingTimeInterval(hour * 3600)
             let renderer = ImageRenderer(content: DashboardSky(date: date).frame(width: SettingsView.width - 36, height: DashboardPanel.foldedHeight))
             renderer.scale = 1
@@ -214,7 +214,7 @@ final class DashboardRenderTests: XCTestCase {
                 try png.write(to: URL(fileURLWithPath: dir).appendingPathComponent("sky-\(hour).png"))
             }
         }
-        XCTAssertGreaterThan(dark[1], dark[5])
+        XCTAssertGreaterThan(dark[1], dark[6])
         XCTAssertEqual(SkyClock.part(12), .noon)
         XCTAssertEqual(SkyClock.part(23), .night)
         XCTAssertEqual(SkyClock.part(18), .sunset)

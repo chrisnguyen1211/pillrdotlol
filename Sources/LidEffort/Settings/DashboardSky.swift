@@ -123,6 +123,9 @@ struct SkyPainter {
     func paint(_ context: inout GraphicsContext, size: CGSize) {
         let light = SkyLight.at(hour)
         let ground = size.height
+        // Where the sun and the moon go down: the foot of the far range.
+        let ridge = Self.ridgeHeight(size)
+        let horizon = size.height - ridge * 0.55
         let rect = CGRect(origin: .zero, size: size)
         context.fill(Path(rect), with: .linearGradient(
             Gradient(stops: [.init(color: Self.color(light.top), location: 0),
@@ -133,10 +136,48 @@ struct SkyPainter {
         let night = max(0, 1 - light.day * 2.2)
         if night > 0 { stars(&context, size: size, alpha: night) }
         if night > 0.4 { shootingStar(&context, size: size, alpha: night) }
-        sun(&context, size: size, horizon: ground)
-        moon(&context, size: size, horizon: ground, alpha: night)
+        sun(&context, size: size, horizon: horizon)
+        moon(&context, size: size, horizon: horizon, alpha: night)
         clouds(&context, size: size, light: light)
+        mountains(&context, size: size, light: light, ridge: ridge)
         if night > 0.5 { fireflies(&context, size: size, ground: ground, alpha: night) }
+    }
+
+    /// How tall the mountains stand: a fifth of the sky, never a wall.
+    static func ridgeHeight(_ size: CGSize) -> CGFloat { min(size.height * 0.22, 64) }
+
+    /// Two ranges along the foot, in square pixels: the far one hazy with
+    /// the sky's own colour, the near one darker. The sun and the moon set
+    /// behind them; at night they are silhouettes.
+    private func mountains(_ context: inout GraphicsContext, size: CGSize, light: SkyLight, ridge: CGFloat) {
+        let columns = Int(size.width / cell) + 1
+        let haze = light.bottom
+        let rock = SIMD3<Double>(0.16, 0.2, 0.32)
+        let far = haze + (rock - haze) * 0.35
+        let near = (rock + (haze - rock) * 0.15) * (0.35 + 0.65 * light.day)
+        for (layer, fill, height, seed) in [(0, far * (0.55 + 0.45 * light.day), ridge, 0.0), (1, near, ridge * 0.62, 2.7)] {
+            let color = Self.color(fill)
+            for column in 0..<columns {
+                let x = Double(column) / Double(columns)
+                // Peaks, not hills: tent shapes of a few widths laid over
+                // each other, the tallest of them kept, and a ragged edge.
+                func tent(_ frequency: Double, _ shift: Double) -> Double {
+                    let t = (x * frequency + shift).truncatingRemainder(dividingBy: 1)
+                    return pow(1 - abs(t * 2 - 1), 1.6)
+                }
+                var h = max(tent(3.3, seed * 0.13 + 0.2), 0.8 * tent(5.9, seed * 0.29 + 0.55), 0.6 * tent(9.7, seed * 0.41))
+                h = 0.2 + 0.8 * h + 0.04 * sin(x * 63 + seed)
+                let top = (size.height - CGFloat(min(1, max(0.15, h))) * height) / cell
+                let y = top.rounded(.down) * cell
+                context.fill(Path(CGRect(x: CGFloat(column) * cell, y: y, width: cell, height: size.height - y)),
+                             with: .color(color))
+                // Snow on the far range's peaks by day, a lit edge on the near.
+                if layer == 0, h > 0.86, light.day > 0.3 {
+                    context.fill(Path(CGRect(x: CGFloat(column) * cell, y: y, width: cell, height: cell)),
+                                 with: .color(Color.white.opacity(0.55 * light.day)))
+                }
+            }
+        }
     }
 
     // MARK: Pieces
@@ -188,7 +229,9 @@ struct SkyPainter {
         let p = (hour - rise) / (set - rise)
         let x = size.width * (0.06 + 0.88 * p)
         let height = sin(Double.pi * max(0, min(1, p)))
-        let y = horizon - CGFloat(height) * (horizon - 22) + 6
+        // Down into the mountains at either end: below the horizon by its own
+        // size, so it sinks behind the range rather than stopping on it.
+        let y = horizon - CGFloat(height) * (horizon - 22) + 20 * CGFloat(max(0, 1 - height * 4))
         let low = 1 - height
         let disc = SIMD3<Double>(1, 0.95 - 0.35 * low, 0.69 - 0.4 * low)
         let glow = Gradient(colors: [Self.color(disc, 0.55), Self.color(disc, 0)])
