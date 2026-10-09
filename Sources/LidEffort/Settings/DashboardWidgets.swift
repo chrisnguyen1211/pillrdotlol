@@ -862,12 +862,12 @@ struct AchievementsWidget: View {
                     .font(.system(size: 11)).foregroundStyle(.secondary)
                     .padding(.vertical, 6)
             } else {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 78, maximum: 96), spacing: 6)], alignment: .leading, spacing: 8) {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 84, maximum: 104), spacing: 6)], alignment: .leading, spacing: 8) {
                     ForEach(badges) { badge in
                         VStack(spacing: 4) {
-                            Medal(badge: badge, earned: true, size: 40)
-                                .scaleEffect(hovered == badge.id ? 1.14 : 1)
-                                .shadow(color: .yellow.opacity(hovered == badge.id ? 0.35 : 0), radius: 6)
+                            Medal(badge: badge, earned: true, size: 54, shine: hovered == badge.id)
+                                .scaleEffect(hovered == badge.id ? 1.1 : 1)
+                                .rotation3DEffect(.degrees(hovered == badge.id ? 10 : 0), axis: (x: 0, y: 1, z: 0))
                             Text(Achievements.name(badge))
                                 .font(.system(size: 9.5, weight: .medium)).multilineTextAlignment(.center)
                                 .lineLimit(2).fixedSize(horizontal: false, vertical: true)
@@ -889,47 +889,5 @@ struct AchievementsWidget: View {
     private func describe(_ badge: Achievements.Badge, earned: Date?) -> String {
         let when = earned.map { L10n.t(" · earned \($0.formatted(.dateTime.day().month(.abbreviated))))") } ?? ""
         return "\(Achievements.name(badge)) (\(badge.tier.name)): \(Achievements.requirement(badge))\(when)"
-    }
-}
-
-/// A medal: a disc in bronze, silver or gold with its emblem, on a ribbon.
-struct Medal: View {
-    let badge: Achievements.Badge
-    let earned: Bool
-    let size: CGFloat
-
-    private var metal: [Color] {
-        switch badge.tier {
-        case .bronze: return [Color(red: 0.93, green: 0.66, blue: 0.42), Color(red: 0.62, green: 0.36, blue: 0.16)]
-        case .silver: return [Color(red: 0.95, green: 0.96, blue: 0.97), Color(red: 0.58, green: 0.61, blue: 0.66)]
-        case .gold: return [Color(red: 1.0, green: 0.88, blue: 0.45), Color(red: 0.80, green: 0.56, blue: 0.10)]
-        }
-    }
-
-    var body: some View {
-        let family = Achievements.family(badge.family)
-        ZStack {
-            // The ribbon behind the disc.
-            HStack(spacing: size * 0.06) {
-                Rectangle().fill(earned ? Color.blue.opacity(0.75) : Color.gray.opacity(0.3))
-                    .frame(width: size * 0.18, height: size * 0.42).rotationEffect(.degrees(18))
-                Rectangle().fill(earned ? Color.red.opacity(0.7) : Color.gray.opacity(0.3))
-                    .frame(width: size * 0.18, height: size * 0.42).rotationEffect(.degrees(-18))
-            }
-            .offset(y: size * 0.3)
-            Circle()
-                .fill(LinearGradient(colors: earned ? metal : [Color.gray.opacity(0.35), Color.gray.opacity(0.2)],
-                                     startPoint: .topLeading, endPoint: .bottomTrailing))
-                .overlay(Circle().strokeBorder(Color.white.opacity(earned ? 0.55 : 0.2), lineWidth: size * 0.05).padding(size * 0.08))
-                .shadow(color: .black.opacity(earned ? 0.25 : 0), radius: 1.5, y: 1)
-                .frame(width: size * 0.8, height: size * 0.8)
-            Image(systemName: family?.symbol ?? "star.fill")
-                .font(.system(size: size * 0.3, weight: .bold))
-                .foregroundStyle(earned ? Color.white : Color.gray.opacity(0.6))
-                .shadow(color: .black.opacity(earned ? 0.3 : 0), radius: 0.5, y: 0.5)
-        }
-        .frame(width: size, height: size)
-        .opacity(earned ? 1 : 0.55)
-        .accessibilityLabel("\(Achievements.name(badge)), \(badge.tier.name)")
     }
 }

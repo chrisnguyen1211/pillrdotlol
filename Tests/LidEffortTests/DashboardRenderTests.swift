@@ -79,6 +79,36 @@ final class DashboardRenderTests: XCTestCase {
         }
     }
 
+    /// Every badge, a family a row, bronze to gold.
+    func testEveryBadgeRenders() throws {
+        let sheet = VStack(alignment: .leading, spacing: 10) {
+            ForEach(Achievements.families, id: \.id) { family in
+                HStack(spacing: 18) {
+                    ForEach(Achievements.Tier.allCases, id: \.self) { tier in
+                        let badge = Achievements.Badge(family: family.id, tier: tier)
+                        VStack(spacing: 3) {
+                            Medal(badge: badge, earned: true, size: 64)
+                            Text(Achievements.name(badge)).font(.system(size: 10, weight: .medium))
+                        }
+                        .frame(width: 92)
+                    }
+                }
+            }
+        }
+        .padding(20)
+        for dark in [false, true] {
+            let renderer = ImageRenderer(content: sheet.background(dark ? Color(white: 0.12) : Color(white: 0.95))
+                .environment(\.colorScheme, dark ? .dark : .light))
+            renderer.scale = 2
+            let image = try XCTUnwrap(renderer.nsImage)
+            if let dir = ProcessInfo.processInfo.environment["EFFORT_RENDER_DIR"], let tiff = image.tiffRepresentation,
+               let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) {
+                try FileManager.default.createDirectory(atPath: dir, withIntermediateDirectories: true)
+                try png.write(to: URL(fileURLWithPath: dir).appendingPathComponent("badges-\(dark ? "dark" : "light").png"))
+            }
+        }
+    }
+
     /// The Streak card's fire at each milestone: none under ten days, a
     /// blaze at a year.
     func testTheStreakFireGrowsAtEachMilestone() throws {
