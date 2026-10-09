@@ -1351,7 +1351,7 @@ final class NotchWindowController {
 
     /// The folded prompt card's box: beside the pill, like the done card.
     /// The parts of the notch the intro tour points its doodles at.
-    enum TourAnchor { case notch, prompt, toast, tooltip }
+    enum TourAnchor { case notch, prompt, toast, tooltip, alert }
 
     /// Where one of them is on screen, in screen coordinates — nil before the
     /// panel exists, or for a prompt card when no prompt is up.
@@ -1379,6 +1379,16 @@ final class NotchWindowController {
         case .tooltip:
             guard let index = model.hoveredIndex ?? model.tourHeldIndex, let card = tooltipRect(index: index) else { return nil }
             local = notchRect.union(card)
+        // The open notch and the alert card beside it. Before the card is up,
+        // where a badge card will be, so the tour's note is laid out round it
+        // once rather than moved when it lands.
+        case .alert:
+            let event = model.activeResetAlert
+            let index = event.flatMap { model.resetAlertIndex(for: $0) } ?? 0
+            let height = event.map { UsageResetCard.cardHeight(for: $0) } ?? UsageResetCard.badgeCardHeight
+            let open = placement.rect(along: model.slack, across: 0, length: model.shapeLength * model.sizeScale,
+                                      depth: model.notchDrawnDepth)
+            local = open.union(alertCardRect(index: index, height: height))
         }
         return CGRect(x: panel.frame.minX + local.minX, y: panel.frame.maxY - local.maxY,
                       width: local.width, height: local.height)
@@ -1604,6 +1614,15 @@ final class NotchWindowController {
                 }
             }
         }
+    }
+
+    /// Takes `event`'s card down now, and folds the peek it opened — for the
+    /// tour, whose badge card must not outlive its step. Any other card stays.
+    func dismissResetAlert(_ event: UsageResetEvent) {
+        guard model.activeResetAlert == event else { return }
+        withAnimation(.easeOut(duration: 0.18)) { model.activeResetAlert = nil }
+        updateInteractiveRects()
+        endPeek()
     }
 
     /// How long after a peek folds a click still counts as answering it. Covers

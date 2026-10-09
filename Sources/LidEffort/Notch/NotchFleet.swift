@@ -502,6 +502,11 @@ final class NotchFleet {
         }
     }
 
+    /// Takes `event`'s card down from every panel, if it is the one up.
+    func dismissResetAlert(_ event: UsageResetEvent) {
+        for controller in controllers.values { controller.dismissResetAlert(event) }
+    }
+
     func setRefreshing(_ ids: Set<String>) {
         self.refreshing = ids
         for controller in controllers.values {
