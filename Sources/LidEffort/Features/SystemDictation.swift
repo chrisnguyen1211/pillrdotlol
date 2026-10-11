@@ -1,14 +1,16 @@
 import AppKit
 import AVFoundation
+import Carbon
 import Speech
 
 /// Hold fn to speak a reply: the words appear in the field as they are
 /// said, and stay there when fn is let go, to be read over and sent.
 ///
 /// Heard by Apple's speech recognition, the service the keyboard's dictation
-/// uses, in the languages and the mode set for it in System Settings →
-/// Keyboard → Dictation: the first of its languages, on Apple's servers
-/// unless dictation is set to work offline only. The Mac's own dictation
+/// uses, in the language of the keyboard input source chosen when fn goes
+/// down (Vietnamese Telex: Vietnamese; ABC: English), else the first of the
+/// languages set for dictation; on Apple's servers unless dictation is set
+/// to work offline only. The Mac's own dictation
 /// can't be used for this: it types into the app in front, and the reply
 /// field sits in a panel that leaves the app in front where it was.
 /// Nothing is recorded or kept.
@@ -88,7 +90,13 @@ final class SystemDictation: ObservableObject {
 
     private func begin(hold this: Int, expecting words: [String]) throws {
         let settings = Self.dictationSettings()
-        guard let recognizer = settings.languages.lazy.compactMap({ SFSpeechRecognizer(locale: Locale(identifier: $0)) }).first
+        let supported = SFSpeechRecognizer.supportedLocales().map(\.identifier)
+        let keyboard = Self.keyboardLanguage().flatMap {
+            Self.recognizerLocale(for: $0, supported: supported, dictation: settings.languages,
+                                  region: Locale.current.region?.identifier)
+        }
+        let languages = (keyboard.map { [$0] } ?? []) + settings.languages
+        guard let recognizer = languages.lazy.compactMap({ SFSpeechRecognizer(locale: Locale(identifier: $0)) }).first
                 ?? SFSpeechRecognizer(), recognizer.isAvailable else {
             fail(L10n.t("Speech recognition isn't available right now."))
             return
@@ -136,6 +144,47 @@ final class SystemDictation: ObservableObject {
         if engine.isRunning { engine.stop() }
         engine.inputNode.removeTap(onBus: 0)
         level = 0
+    }
+
+    // MARK: The keyboard's language
+
+    /// The language of the keyboard input source in use: `vi` for
+    /// Vietnamese Telex, `en` for ABC, `zh-Hans` for Pinyin.
+    static func keyboardLanguage() -> String? {
+        guard let source = TISCopyCurrentKeyboardInputSource()?.takeRetainedValue(),
+              let pointer = TISGetInputSourceProperty(source, kTISPropertyInputSourceLanguages) else { return nil }
+        let languages = Unmanaged<CFArray>.fromOpaque(pointer).takeUnretainedValue() as? [String]
+        return languages?.first
+    }
+
+    /// The recognizer's locale for a keyboard's language: one the dictation
+    /// settings already name, else one in the Mac's own region, else the
+    /// language's most common (en-US, zh-CN, pt-BR…), else any.
+    nonisolated static func recognizerLocale(for language: String, supported: [String], dictation: [String],
+                                             region: String?) -> String? {
+        let normalized = supported.map { $0.replacingOccurrences(of: "_", with: "-") }
+        func base(_ identifier: String) -> String {
+            let parts = identifier.replacingOccurrences(of: "_", with: "-").split(separator: "-")
+            guard let first = parts.first else { return identifier }
+            // zh-Hans and zh-Hant are written languages; their speech is the region's.
+            if first == "zh", parts.count > 1, ["Hans", "Hant"].contains(String(parts[1])) { return "zh-\(parts[1])" }
+            return String(first)
+        }
+        let wanted = base(language)
+        func speaks(_ identifier: String) -> Bool {
+            let lang = base(identifier)
+            switch wanted {
+            case "zh-Hans": return ["zh-CN", "zh-SG"].contains(identifier) || lang == "zh-Hans"
+            case "zh-Hant": return ["zh-TW", "zh-HK"].contains(identifier) || lang == "zh-Hant"
+            default: return lang == wanted
+            }
+        }
+        let candidates = normalized.filter(speaks)
+        guard !candidates.isEmpty else { return nil }
+        if let named = dictation.map({ $0.replacingOccurrences(of: "_", with: "-") }).first(where: candidates.contains) { return named }
+        if let region, let local = candidates.first(where: { $0.hasSuffix("-\(region)") }) { return local }
+        let usual = ["en-US", "zh-CN", "zh-TW", "pt-BR", "es-ES", "fr-FR", "de-DE", "ja-JP", "ko-KR", "ru-RU", "vi-VN"]
+        return usual.first(where: candidates.contains) ?? candidates.sorted().first
     }
 
     // MARK: The keyboard's dictation settings

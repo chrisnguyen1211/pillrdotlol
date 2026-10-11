@@ -33,4 +33,20 @@ final class SystemDictationTests: XCTestCase {
         let none = try XCTUnwrap(UserDefaults(suiteName: "dictation-\(UUID().uuidString)"))
         XCTAssertEqual(SystemDictation.dictationSettings(defaults: none, preferred: ["fr-FR"]).languages, ["fr-FR"])
     }
+
+    /// The keyboard in use picks the language: Telex for Vietnamese, ABC for
+    /// English, Pinyin for Chinese.
+    func testTheKeyboardsLanguagePicksTheRecognizer() {
+        let supported = ["vi-VN", "en-US", "en-GB", "en-SG", "zh-CN", "zh-TW", "zh-HK", "fr-FR", "fr-CA"]
+        let dictation = ["vi-VN", "zh-CN"]
+        XCTAssertEqual(SystemDictation.recognizerLocale(for: "vi", supported: supported, dictation: dictation, region: "VN"), "vi-VN")
+        XCTAssertEqual(SystemDictation.recognizerLocale(for: "en", supported: supported, dictation: dictation, region: "VN"), "en-US",
+                       "no English for Vietnam: the usual one")
+        XCTAssertEqual(SystemDictation.recognizerLocale(for: "en", supported: supported, dictation: dictation, region: "SG"), "en-SG")
+        XCTAssertEqual(SystemDictation.recognizerLocale(for: "zh-Hans", supported: supported, dictation: dictation, region: "VN"), "zh-CN")
+        XCTAssertEqual(SystemDictation.recognizerLocale(for: "zh-Hant", supported: supported, dictation: [], region: "HK"), "zh-HK")
+        XCTAssertEqual(SystemDictation.recognizerLocale(for: "en", supported: supported, dictation: ["en_GB"], region: "US"), "en-GB",
+                       "the one dictation is set to wins")
+        XCTAssertNil(SystemDictation.recognizerLocale(for: "xx", supported: supported, dictation: dictation, region: "VN"))
+    }
 }
