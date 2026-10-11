@@ -12,8 +12,13 @@ import Foundation
 ///   by tty), but the server refuses any client that is not itself inside a
 ///   cmux terminal session (manaflow-ai/cmux#3089) — and pillr never is.
 /// * **Terminal.app** and **iTerm2** match a tab by tty.
-/// * Everything else publishes nothing (Warp, Ghostty), and the caller falls
-///   back to raising the app — the honest answer rather than a silent no-op.
+/// * **Ghostty** (1.3 and newer, AppleScript): by tty where it publishes one
+///   (1.4), else by working directory when exactly one terminal has it.
+/// * **kitty** and **WezTerm** through their own remote control, by the
+///   window or pane id they export into the session's environment.
+/// * Everything else publishes nothing (Warp, the editors' terminals), and
+///   the caller falls back to raising the app's window: the honest answer
+///   rather than a silent no-op.
 enum TerminalTabFocus {
     /// Best effort: true when a tab was selected. Anything going wrong —
     /// no tty, no cwd, no match, a refused prompt — is false, and the caller
@@ -65,9 +70,85 @@ enum TerminalTabFocus {
                   end repeat
                 end tell
                 """)
+        case ghosttyBundleID:
+            guard tty != nil || cwd != nil else { return false }
+            return runOsascript(ghosttyScript(tty: tty, cwdCandidates: cwd.map(cmuxPathCandidates) ?? []))
+        case PaneHosts.kittyBundleID:
+            let bundle = SessionFocus.owningApp(of: pid)?.bundleURL
+            guard let window = Kitty.locate(pid: pid, bundleURL: bundle, facts: .live,
+                                            isSafe: HostTools.isSafeExecutable) else { return false }
+            return Kitty.focus(window, run: HostCommand.live)
+        case PaneHosts.weztermBundleID:
+            let bundle = SessionFocus.owningApp(of: pid)?.bundleURL
+            guard let pane = WezTerm.locate(pid: pid, bundleURL: bundle, facts: .live,
+                                            isSafe: HostTools.isSafeExecutable) else { return false }
+            return WezTerm.focus(pane, run: HostCommand.live)
         default:
             return false
         }
+    }
+
+    /// Hosts whose tab `selectTab` can name; the rest only get their
+    /// window raised.
+    static let selectableBundleIDs: Set<String> = [
+        "com.cmuxterm.app", "com.apple.Terminal", "com.googlecode.iterm2", ghosttyBundleID,
+        PaneHosts.kittyBundleID, PaneHosts.weztermBundleID,
+    ]
+
+    // MARK: - Ghostty
+
+    static let ghosttyBundleID = "com.mitchellh.ghostty"
+
+    /// Ghostty's AppleScript (1.3+): `terminals` carry an id, a name and a
+    /// working directory; 1.4 adds `tty`. The tty is tried first; on 1.3
+    /// the property does not exist and the `try` passes over it. A working
+    /// directory names the terminal only when no other one shares it.
+    static func ghosttyScript(tty: String?, cwdCandidates: [String]) -> String {
+        let ttyTest: String
+        if let tty {
+            let name = appleScriptEscaped(tty)
+            ttyTest = """
+                    try
+                      set theTTY to (tty of term) as text
+                      if theTTY is "/dev/\(name)" or theTTY is "\(name)" then set ttyHit to {w, t, term}
+                    end try
+            """
+        } else {
+            ttyTest = ""
+        }
+        let cwdTest: String
+        if cwdCandidates.isEmpty {
+            cwdTest = ""
+        } else {
+            let list = cwdCandidates.map { "\"\(appleScriptEscaped($0))\"" }.joined(separator: ", ")
+            cwdTest = """
+                    try
+                      if ((working directory of term) as text) is in {\(list)} then set end of cwdHits to {w, t, term}
+                    end try
+            """
+        }
+        return """
+            tell application "Ghostty"
+              set ttyHit to missing value
+              set cwdHits to {}
+              repeat with w in windows
+                repeat with t in tabs of w
+                  repeat with term in terminals of t
+            \(ttyTest)
+            \(cwdTest)
+                  end repeat
+                end repeat
+              end repeat
+              if ttyHit is missing value then
+                if (count of cwdHits) is not 1 then return "ambiguous"
+                set ttyHit to item 1 of cwdHits
+              end if
+              select tab (item 2 of ttyHit)
+              focus (item 3 of ttyHit)
+              activate window (item 1 of ttyHit)
+              return "found"
+            end tell
+            """
     }
 
     // MARK: - cmux

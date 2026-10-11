@@ -11,10 +11,12 @@ import OSLog
 /// the Claude app (the window must be showing that session, and the box must
 /// read back the message exactly), the Codex app (its own link opens the
 /// thread, and the window must be seen to show it before its Send is
-/// pressed), Superset (its own host service). Anywhere
-/// else the session is brought to the front with the text pasted and left
-/// for you to send. Stop is Esc, pressed only once the session's own tab is
-/// confirmed in front.
+/// pressed), Superset (its own host service), and a pane pillr can read and
+/// type into from outside: tmux, Zellij, kitty and WezTerm (`PaneHosts`, the
+/// prompt must be idle there too). Anywhere else the session is brought to
+/// the front with the text pasted and left for you to send. Stop is Esc,
+/// pressed in the pane itself where pillr can type into it, else only once
+/// the session's own tab is confirmed in front.
 @MainActor
 enum SessionCommander {
     enum Reach: Equatable {
@@ -28,6 +30,9 @@ enum SessionCommander {
         case claudeApp(hostSessionID: String)
         /// A thread of the Codex app, opened by its own link.
         case codexApp(threadID: String)
+        /// Typed in the background into its tmux, Zellij, kitty or WezTerm
+        /// pane.
+        case pane(PaneHost)
         /// Brought to the front with the text pasted, unsent.
         case pasteInto(app: String)
         case none
@@ -74,32 +79,47 @@ enum SessionCommander {
     }
 
     private static func computeReach(pid: pid_t) -> Reach {
-        if let place = Superset.place(of: pid), case .v2 = place.stack { return .superset }
-        let app = SessionFocus.owningApp(of: pid)
-        switch app?.bundleIdentifier {
+        let supersetV2: Bool
+        if let place = Superset.place(of: pid), case .v2 = place.stack { supersetV2 = true } else { supersetV2 = false }
+        let app = supersetV2 ? nil : SessionFocus.owningApp(of: pid)
+        let pane = supersetV2 ? nil : PaneHosts.locate(pid: pid, bundleID: app?.bundleIdentifier, bundleURL: app?.bundleURL)
+        let claudeHost = app?.bundleIdentifier == ClaudeDesktopComposer.bundleID
+            ? SessionModels.desktop(pid: pid)?.hostSessionID : nil
+        return chooseReach(supersetV2: supersetV2, pane: pane, bundleID: app?.bundleIdentifier,
+                           appName: app?.localizedName, tty: SessionFocus.tty(of: pid), claudeHost: claudeHost)
+    }
+
+    /// Which way a session is reached, from what was found about it. A pane
+    /// pillr can type into wins over the app around it: in tmux, the
+    /// terminal's own tab is tmux's client, not the agent.
+    nonisolated static func chooseReach(supersetV2: Bool, pane: PaneHost?, bundleID: String?,
+                                        appName: String?, tty: String?, claudeHost: String?) -> Reach {
+        if supersetV2 { return .superset }
+        if let pane { return .pane(pane) }
+        switch bundleID {
         case "com.apple.Terminal":
-            if let tty = SessionFocus.tty(of: pid) { return .terminal(tty: tty) }
+            if let tty { return .terminal(tty: tty) }
         case "com.googlecode.iterm2":
-            if let tty = SessionFocus.tty(of: pid) { return .iterm(tty: tty) }
+            if let tty { return .iterm(tty: tty) }
         case ClaudeDesktopComposer.bundleID:
-            if let host = SessionModels.desktop(pid: pid)?.hostSessionID, !host.isEmpty {
-                return .claudeApp(hostSessionID: host)
-            }
+            if let claudeHost, !claudeHost.isEmpty { return .claudeApp(hostSessionID: claudeHost) }
         default:
             break
         }
-        if let name = app?.localizedName { return .pasteInto(app: name) }
+        if let appName { return .pasteInto(app: appName) }
         return .none
     }
 
     /// Stop is offered where the session's own tab can be put in front and
-    /// confirmed: Terminal.app and iTerm2, which find a tab by its tty.
+    /// confirmed: Terminal.app and iTerm2, which find a tab by its tty; and
+    /// where Esc can be typed into the pane itself.
     static func canStop(_ session: AgentSession) -> Bool {
         // The Codex app's own Stop, pressed in the background.
         if session.state == .busy, case .codexApp = reach(session) { return true }
         guard session.state == .busy, let pid = session.processID else { return false }
         // The Claude app's own Stop button, pressed in the background.
         if case .claudeApp = reach(session) { return true }
+        if case .pane = reach(session) { return true }
         guard SessionFocus.tty(of: pid) != nil else { return false }
         let bundle = SessionFocus.owningApp(of: pid)?.bundleIdentifier
         return bundle == "com.apple.Terminal" || bundle == "com.googlecode.iterm2"
@@ -171,32 +191,22 @@ enum SessionCommander {
             case .noComposer, .notFront: return .failed(L10n.t("No message box found in the Claude app"))
             case .notSent: return .failed(L10n.t("The Claude app didn't take the text"))
             }
+        case .pane(let host):
+            let stash = stashKey(for: session)
+            let written = await Task.detached(priority: .userInitiated) {
+                PaneHosts.write(line, stashKey: stash, to: host)
+            }.value
+            log.notice("reply: \(host.name, privacy: .public) \(String(describing: written), privacy: .public)")
+            // kitty or WezTerm not answering (remote control off, another
+            // instance): nothing was typed, so it is pasted like any
+            // terminal's.
+            if written == .notFound || written == .unreadable, !host.isMultiplexer,
+               let app = SessionFocus.owningApp(of: pid)?.localizedName {
+                return await pasteInto(app, line: line, session: session, pid: pid, stepAside: stepAside)
+            }
+            return outcome(written, host: host)
         case .pasteInto(let app):
-            // Asked before anything moves: a refusal after the app has been
-            // brought forward would leave you switched away for nothing.
-            guard AXIsProcessTrusted() else { return .failed(accessibilityOff()) }
-            stepAside()
-            guard let place = await SessionFocus.focusTab(pid: pid), place.activated || place.tabSelected else {
-                return .failed(L10n.t("\(app) did not come forward"))
-            }
-            try? await Task.sleep(nanoseconds: 450_000_000)
-            guard let front = NSWorkspace.shared.frontmostApplication,
-                  front.processIdentifier == SessionFocus.owningApp(of: pid)?.processIdentifier else {
-                return .failed(L10n.t("\(app) did not come forward"))
-            }
-            // ⌘V lands in whichever tab is in front. Pasted only where that
-            // is surely the session's; otherwise the message waits on the
-            // clipboard for you to put where it belongs.
-            let window = PasteTarget.frontWindow(of: front.processIdentifier)
-            let hints = PasteTarget.hints(session: session, cwd: SessionFocus.currentDirectory(of: pid))
-            guard PasteTarget.isSure(tabSelected: place.tabSelected, window: window, hints: hints) else {
-                copy(line)
-                log.notice("reply copied for \(app, privacy: .public): the tab in front may not be the session's")
-                return .copied(app: app)
-            }
-            paste(line)
-            log.notice("reply pasted into \(app, privacy: .public), left unsent")
-            return .pasted(app: app)
+            return await pasteInto(app, line: line, session: session, pid: pid, stepAside: stepAside)
         case .none:
             return .failed(L10n.t("This session can't be written to from here"))
         }
@@ -238,6 +248,41 @@ enum SessionCommander {
         }
     }
 
+    /// The session brought forward and the line pasted, unsent; or, where
+    /// the tab in front may not be the session's, left on the clipboard.
+    private static func pasteInto(_ app: String, line: String, session: AgentSession, pid: pid_t,
+                                  stepAside: () -> Void) async -> ReplyOutcome {
+        // Asked before anything moves: a refusal after the app has been
+        // brought forward would leave you switched away for nothing.
+        guard AXIsProcessTrusted() else { return .failed(accessibilityOff()) }
+        stepAside()
+        guard let place = await SessionFocus.focusTab(pid: pid), place.activated || place.tabSelected else {
+            return .failed(L10n.t("\(app) did not come forward"))
+        }
+        try? await Task.sleep(nanoseconds: 450_000_000)
+        guard let front = NSWorkspace.shared.frontmostApplication,
+              front.processIdentifier == SessionFocus.owningApp(of: pid)?.processIdentifier else {
+            return .failed(L10n.t("\(app) did not come forward"))
+        }
+        // ⌘V lands in whichever tab is in front. Pasted only where that
+        // is surely the session's; otherwise the message waits on the
+        // clipboard for you to put where it belongs. In an editor it must
+        // also be its terminal that has the keyboard, not a source file.
+        let window = PasteTarget.frontWindow(of: front.processIdentifier)
+        let hints = PasteTarget.hints(session: session, cwd: SessionFocus.currentDirectory(of: pid))
+        let terminalFocused = PasteTarget.isEditor(front.bundleIdentifier)
+            ? PasteTarget.focusIsTerminal(appPID: front.processIdentifier) : nil
+        guard PasteTarget.isSure(tabSelected: place.tabSelected, window: window, hints: hints,
+                                 terminalFocused: terminalFocused) else {
+            copy(line)
+            log.notice("reply copied for \(app, privacy: .public): the tab in front may not be the session's")
+            return .copied(app: app)
+        }
+        paste(line)
+        log.notice("reply pasted into \(app, privacy: .public), left unsent")
+        return .pasted(app: app)
+    }
+
     /// The key that sets a draft aside in the session's agent and gives it
     /// back once the next message is sent: Claude Code's Ctrl+S (stash).
     /// Agents without one keep a draft from being written over.
@@ -250,6 +295,23 @@ enum SessionCommander {
     private static func accessibilityOff() -> String {
         AccessibilityAccess.request()
         return L10n.t("Accessibility is off for pillr. Switch it on in System Settings → Privacy & Security → Accessibility")
+    }
+
+    /// A pane write's outcome as the card says it.
+    nonisolated static func outcome(_ result: PaneWriter.Outcome, host: PaneHost) -> ReplyOutcome {
+        switch result {
+        case .sent: return .sent
+        case .busy: return .busy
+        case .notFound: return .failed(L10n.t("Its \(host.name) pane wasn't found"))
+        case .unreadable, .refused:
+            // Before 0.44, Zellij has no way to name a pane: its read is
+            // refused before anything is typed.
+            if case .zellij = host {
+                return .failed(L10n.t("Zellij refused the message. Replies need Zellij 0.44 or newer"))
+            }
+            return .failed(result == .unreadable ? L10n.t("\(host.name) wouldn't let pillr read the pane")
+                                                 : L10n.t("\(host.name) refused the message"))
+        }
     }
 
     private static func outcome(_ result: EffortInjector.Outcome, host: String) -> ReplyOutcome {
@@ -274,6 +336,11 @@ enum SessionCommander {
         }
         if case .codexApp(let thread) = reach(session) {
             return CodexDesktopComposer.stopInBackground(thread: thread)
+        }
+        if case .pane(let host) = reach(session) {
+            let stopped = await Task.detached(priority: .userInitiated) { PaneHosts.stop(host) }.value
+            log.notice("stop: Esc -> \(host.name, privacy: .public) \(stopped, privacy: .public)")
+            return stopped
         }
         guard canStop(session), let pid = session.processID, let tty = SessionFocus.tty(of: pid),
               let app = SessionFocus.owningApp(of: pid), AXIsProcessTrusted() else { return false }
@@ -432,11 +499,12 @@ enum ITermWriter {
 
 /// Whether ⌘V in the app in front is sure to land in the session's own tab.
 ///
-/// Only Terminal, iTerm2 and cmux can be told which tab to show; Ghostty,
-/// Warp, VS Code and the rest are only brought forward, with whatever tab
-/// they last had. So the paste goes ahead where nothing else could be in
-/// front — one window, no tabs in it — or where the window in front names
-/// the session's folder or the session itself.
+/// Terminal, iTerm2, cmux, Ghostty, kitty and WezTerm can be told which tab
+/// to show; Warp, VS Code and the rest are only brought forward, at best
+/// with the window that names the session's folder. So the paste goes ahead
+/// where nothing else could be in front (one window, no tabs in it) or
+/// where the window in front names the session's folder or the session
+/// itself; and in an editor, only while its terminal has the keyboard.
 enum PasteTarget {
     struct Window: Equatable {
         let count: Int
@@ -444,7 +512,10 @@ enum PasteTarget {
         let title: String?
     }
 
-    static func isSure(tabSelected: Bool, window: Window?, hints: [String]) -> Bool {
+    /// `terminalFocused` is asked of editors only: false there is never sure.
+    static func isSure(tabSelected: Bool, window: Window?, hints: [String],
+                       terminalFocused: Bool? = nil) -> Bool {
+        if terminalFocused == false { return false }
         if tabSelected { return true }
         guard let window else { return false }
         if window.count == 1 && !window.hasTabs { return true }
@@ -452,11 +523,10 @@ enum PasteTarget {
         return hints.contains { hint in hint.count >= 3 && title.contains(hint.lowercased()) }
     }
 
-    /// What the session's window is likely to be titled after: its folder
-    /// and its own name.
+    /// What the session's window is likely to be titled after: its folder,
+    /// the repository that folder is in, and its own name.
     static func hints(session: AgentSession, cwd: String?) -> [String] {
-        var hints: [String] = []
-        if let cwd, !cwd.isEmpty, cwd != "/" { hints.append((cwd as NSString).lastPathComponent) }
+        var hints = WindowFocus.folderHints(cwd: cwd)
         let name = session.name.trimmingCharacters(in: .whitespacesAndNewlines)
         if !name.isEmpty, !hints.contains(name) { hints.append(name) }
         return hints

@@ -63376,6 +63376,108 @@
           }
         }
       }
+    },
+    "Its %@ pane wasn't found" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son volet %@ est introuvable"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ のペインが見つかりません"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O painel do %@ não foi encontrado"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Панель %@ не найдена"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "找不到它的 %@ 窗格"
+          }
+        }
+      }
+    },
+    "%@ wouldn't let pillr read the pane" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ n'a pas laissé pillr lire le volet"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ が pillr にペインの読み取りを許可しませんでした"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ não deixou o pillr ler o painel"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ не дал pillr прочитать панель"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 不允许 pillr 读取窗格"
+          }
+        }
+      }
+    },
+    "Zellij refused the message. Replies need Zellij 0.44 or newer" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zellij a refusé le message. Les réponses demandent Zellij 0.44 ou plus récent"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zellij がメッセージを拒否しました。返信には Zellij 0.44 以降が必要です"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O Zellij recusou a mensagem. As respostas precisam do Zellij 0.44 ou mais recente"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zellij отклонил сообщение. Для ответов нужен Zellij 0.44 или новее"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zellij 拒绝了消息。回复需要 Zellij 0.44 或更高版本"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"

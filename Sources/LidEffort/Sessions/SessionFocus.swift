@@ -12,9 +12,12 @@ import Foundation
 ///
 /// Raising the app is the answer every terminal gets. Selecting the *tab*
 /// inside it needs the terminal's own scripting interface and there is no
-/// general one — cmux answers through its socket CLI, Terminal.app and iTerm2
-/// by tty over AppleScript, Warp and Ghostty publish nothing. `focus` tries
-/// the tab and settles for the app; `activateApp` is the app-only route.
+/// general one: cmux, Ghostty, Terminal.app and iTerm2 answer over
+/// AppleScript, kitty and WezTerm through their remote control, tmux and
+/// Zellij through their own command lines (and then the terminal their
+/// client runs in is the app); Warp and the editors publish nothing, and
+/// get the window that names the session's folder raised. `focus` tries the
+/// tab and settles for the app; `activateApp` is the app-only route.
 enum SessionFocus {
     /// Where focusing got to: the app brought forward, and whether the
     /// session's own tab was chosen in it — which only some terminals allow.
@@ -72,16 +75,42 @@ enum SessionFocus {
             Log.usage.notice("focus pid \(pid, privacy: .public): opened its Claude app session by link")
             return Focused(activated: true, tabSelected: true)
         }
-        let tty = tty(of: pid)
         let cwd = currentDirectory(of: pid)
-        Log.usage.notice("focus pid \(pid, privacy: .public): app \(app?.localizedName ?? "none", privacy: .public) (\(app?.bundleIdentifier ?? "-", privacy: .public)), tty \(tty ?? "-", privacy: .public)")
-        let selected = await Task.detached(priority: .userInitiated) {
-            TerminalTabFocus.selectTab(bundleID: app?.bundleIdentifier, pid: pid, tty: tty, cwd: cwd)
+        // In tmux or Zellij the pane is chosen in the multiplexer, and the
+        // terminal to raise is the one its client runs in: the agent's own
+        // tree ends at a server that belongs to no app.
+        var hostPID = pid
+        var hostTTY = tty(of: pid)
+        var paneSelected = true
+        // (No bundle given: only a multiplexer is looked for here; kitty and
+        // WezTerm choose their tab in `selectTab` like any terminal.)
+        if let pane = PaneHosts.locate(pid: pid, bundleID: nil, bundleURL: nil), pane.isMultiplexer {
+            let chosen = await Task.detached(priority: .userInitiated) { PaneHosts.focus(pane) }.value
+            Log.usage.notice("focus pid \(pid, privacy: .public): \(pane.name, privacy: .public) pane \(chosen.selected, privacy: .public), client \(chosen.clientPID ?? 0, privacy: .public)")
+            paneSelected = chosen.selected
+            guard let client = chosen.clientPID else { return nil }
+            hostPID = client
+            hostTTY = chosen.clientTTY
+        }
+        let host = hostPID == pid ? app : owningApp(of: hostPID)
+        let tty = hostTTY
+        Log.usage.notice("focus pid \(pid, privacy: .public): app \(host?.localizedName ?? "none", privacy: .public) (\(host?.bundleIdentifier ?? "-", privacy: .public)), tty \(tty ?? "-", privacy: .public)")
+        let selectPID = hostPID
+        var selected = await Task.detached(priority: .userInitiated) {
+            TerminalTabFocus.selectTab(bundleID: host?.bundleIdentifier, pid: selectPID, tty: tty, cwd: cwd)
         }.value
-        guard let app else {
+        guard let app = host else {
             Log.usage.notice("no owning app for pid \(pid, privacy: .public)")
             return nil
         }
+        // No tab to name: the window that names the session's folder, where
+        // there is exactly one.
+        if !selected, !TerminalTabFocus.selectableBundleIDs.contains(app.bundleIdentifier ?? "") {
+            let hints = WindowFocus.folderHints(cwd: cwd)
+            let raised = await MainActor.run { WindowFocus.raise(appPID: app.processIdentifier, hints: hints) }
+            Log.usage.notice("focus pid \(pid, privacy: .public): window raised \(raised, privacy: .public)")
+        }
+        selected = selected && paneSelected
         // Since macOS 14 an app that is not itself active may be refused
         // when it asks to activate another — and this one never is active;
         // its panel does not take key. Asking the workspace to open the
