@@ -100,8 +100,9 @@ struct DoneToast: Equatable, Identifiable {
         id.hasPrefix("antigravity.") ? "com.google.antigravity" : nil
     }
 
-    /// Whether a click on the card goes anywhere.
-    var opens: Bool { pid != nil || app != nil }
+    /// Whether a click on the card goes anywhere: the session's window, its
+    /// app, or its thread in the Codex app by the app's own link.
+    var opens: Bool { pid != nil || app != nil || SessionFocus.link(for: session) != nil }
 
     static func == (lhs: DoneToast, rhs: DoneToast) -> Bool { lhs.id == rhs.id }
 

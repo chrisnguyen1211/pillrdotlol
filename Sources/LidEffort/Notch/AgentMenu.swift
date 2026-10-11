@@ -231,12 +231,15 @@ extension NotchWindowController {
             let item = ActionMenuItem("\(session.name) · \(Self.label(session.state))") { [weak self] in
                 if let pid = session.processID {
                     self?.model.onFocusSession?(pid)
+                } else if SessionFocus.openByLink(session) {
+                    // A Codex app thread, opened there by its link.
                 } else if let app = DoneToast.app(forSessionID: session.id) {
                     NotchWindowController.bringForward(bundleID: app)
                 }
             }
             item.toolTip = session.detail
-            item.isEnabled = session.processID != nil || DoneToast.app(forSessionID: session.id) != nil
+            item.isEnabled = session.processID != nil || SessionFocus.link(for: session) != nil
+                || DoneToast.app(forSessionID: session.id) != nil
             submenu.addItem(item)
         }
         let item = NSMenuItem(title: L10n.t("Sessions (\(sessions.count))"), action: nil, keyEquivalent: "")

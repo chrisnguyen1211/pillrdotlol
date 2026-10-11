@@ -842,6 +842,8 @@ final class NotchWindowController {
                     reply(.reply(toast.session))
                 } else if let pid = toast.pid {
                     focusSession(pid)
+                } else if SessionFocus.openByLink(toast.session) {
+                    // A Codex app thread: open that very thread there.
                 } else if let app = toast.app {
                     Self.bringForward(bundleID: app)
                 }

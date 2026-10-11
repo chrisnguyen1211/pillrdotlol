@@ -1159,14 +1159,19 @@ struct SessionRow: View {
         }
         // Comes forward under the pointer, so it is plain which one a click
         // would open.
-        .hoverLift(pointingHand: session.processID != nil && onFocus != nil)
+        .hoverLift(pointingHand: onFocus != nil && (session.processID != nil || SessionFocus.link(for: session) != nil))
         .onHover { hovering = $0 }
-        // Sessions that publish a pid can be jumped to; the rest are text,
-        // and a gesture on them would promise something it cannot do.
+        // Sessions that publish a pid can be jumped to, and a Codex app
+        // thread opened by its link; the rest are text, and a gesture on
+        // them would promise something it cannot do.
         .contentShape(Rectangle())
         .onTapGesture {
-            guard let pid = session.processID else { return }
-            onFocus?(pid)
+            guard onFocus != nil else { return }
+            if let pid = session.processID {
+                onFocus?(pid)
+            } else {
+                SessionFocus.openByLink(session)
+            }
         }
     }
 }
