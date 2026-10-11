@@ -1,5 +1,7 @@
 import XCTest
 import CoreGraphics
+import SwiftUI
+import AppKit
 @testable import LidEffort
 
 /// A card over the desktop takes the wallpaper's tone under it.
@@ -49,5 +51,13 @@ final class WallpaperToneTests: XCTestCase {
                 XCTAssertGreaterThanOrEqual(pick.contrast, 4.5, "wallpaper \(wallpaper), frost \(frost): \(pick)")
             }
         }
+    }
+
+    /// The frost is always drawn in the appearance pillr is set to (or the
+    /// wallpaper's tone), never left to the window's: pillr set to Light on
+    /// a Mac in Dark frosted dark under black ink.
+    func testTheFrostFollowsTheDrawnAppearanceNotTheWindows() {
+        XCTAssertEqual(GlassBackdrop<Rectangle>.appearance(.light)?.name, .aqua)
+        XCTAssertEqual(GlassBackdrop<Rectangle>.appearance(.dark)?.name, .darkAqua)
     }
 }

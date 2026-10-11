@@ -40,18 +40,21 @@ struct GlassBackdrop<S: Shape>: NSViewRepresentable {
         view.alphaValue = frost
         view.tint = Float(tint)
         view.path = { rect in shape.path(in: rect).cgPath }
-        view.appearance = Self.appearance(context.environment.cardTone)
+        view.appearance = Self.appearance(context.environment.cardTone ?? context.environment.colorScheme)
         return view
     }
 
-    /// A card in the wallpaper's tone frosts in that tone, not the Mac's.
-    static func appearance(_ tone: ColorScheme?) -> NSAppearance? {
-        tone.map { NSAppearance(named: $0 == .dark ? .darkAqua : .aqua) } ?? nil
+    /// The frost in the tone it is drawn for: the wallpaper's for a toned
+    /// card, else the appearance pillr is set to. Always set, never left to
+    /// the window: pillr set to Light on a Mac in Dark frosted dark under
+    /// black ink, and the text all but vanished.
+    static func appearance(_ scheme: ColorScheme) -> NSAppearance? {
+        NSAppearance(named: scheme == .dark ? .darkAqua : .aqua)
     }
 
     func updateNSView(_ view: ShapedEffectView, context: Context) {
         view.material = material
-        view.appearance = Self.appearance(context.environment.cardTone)
+        view.appearance = Self.appearance(context.environment.cardTone ?? context.environment.colorScheme)
         view.tint = Float(tint)
         if context.transaction.animation != nil, !context.transaction.disablesAnimations,
            abs(view.alphaValue - frost) > 0.001 {
