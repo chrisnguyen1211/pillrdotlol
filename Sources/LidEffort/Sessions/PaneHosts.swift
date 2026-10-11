@@ -48,9 +48,10 @@ enum PaneHosts {
     /// over the terminal around it: tmux in kitty is typed into by tmux.
     static func locate(pid: pid_t, bundleID: String?, bundleURL: URL?,
                        facts: ProcessFacts = .live,
-                       isSafe: (String) -> Bool = HostTools.isSafeExecutable) -> PaneHost? {
+                       isSafe: (String) -> Bool = HostTools.isSafeExecutable,
+                       run: @escaping HostCommand.Runner = HostCommand.live) -> PaneHost? {
         if let pane = Tmux.locate(pid: pid, facts: facts, isSafe: isSafe) { return .tmux(pane) }
-        if let pane = Zellij.locate(pid: pid, facts: facts, isSafe: isSafe) { return .zellij(pane) }
+        if let pane = Zellij.locate(pid: pid, facts: facts, isSafe: isSafe, run: run) { return .zellij(pane) }
         switch bundleID {
         case kittyBundleID:
             return Kitty.locate(pid: pid, bundleURL: bundleURL, facts: facts, isSafe: isSafe).map(PaneHost.kitty)
@@ -322,14 +323,53 @@ struct ZellijPane: Equatable, Hashable, Sendable {
 /// action used here takes `--pane-id`, so nothing depends on which pane
 /// has the focus. Older Zellij has no way to name a pane and refuses.
 enum Zellij {
-    static func locate(pid: pid_t, facts: ProcessFacts, isSafe: (String) -> Bool) -> ZellijPane? {
+    static func locate(pid: pid_t, facts: ProcessFacts, isSafe: (String) -> Bool,
+                       run: @escaping HostCommand.Runner = HostCommand.live) -> ZellijPane? {
         guard let server = facts.ancestor(named: "zellij", of: pid),
-              let session = facts.inherited("ZELLIJ_SESSION_NAME", from: pid)?.value,
-              let paneID = facts.inherited("ZELLIJ_PANE_ID", from: pid)?.value, isPaneID(paneID),
-              !session.hasPrefix("-") else { return nil }
-        guard let tool = HostTools.resolve("zellij", preferring: [server.path], isSafe: isSafe) else { return nil }
-        let socketDir = facts.inherited("ZELLIJ_SOCKET_DIR", from: pid)?.value
-        return ZellijPane(tool: tool, session: session, paneID: paneID, socketDir: socketDir)
+              let tool = HostTools.resolve("zellij", preferring: [server.path], isSafe: isSafe) else { return nil }
+        if let session = facts.inherited("ZELLIJ_SESSION_NAME", from: pid)?.value,
+           let paneID = facts.inherited("ZELLIJ_PANE_ID", from: pid)?.value, isPaneID(paneID), !session.hasPrefix("-") {
+            let socketDir = facts.inherited("ZELLIJ_SOCKET_DIR", from: pid)?.value
+            return ZellijPane(tool: tool, session: session, paneID: paneID, socketDir: socketDir)
+        }
+        // macOS 27 keeps another process's environment to itself: the
+        // session is then the server's own socket name, and the pane the
+        // one running the agent's command in the agent's folder.
+        guard let session = sessionName(serverArguments: facts.environment(server.pid)) else { return nil }
+        let probe = ZellijPane(tool: tool, session: session, paneID: "0", socketDir: nil)
+        guard let listed = run(command(probe, ["list-panes", "--all", "--json"])), listed.succeeded else { return nil }
+        let arguments = Array(facts.environment(pid).dropFirst())
+        guard let paneID = pane(in: listed.output, arguments: arguments, cwd: SessionFocus.currentDirectory(of: pid)) else {
+            return nil
+        }
+        return ZellijPane(tool: tool, session: session, paneID: paneID, socketDir: nil)
+    }
+
+    /// `zellij --server /…/zellij-501/contract_version_1/<session>`.
+    static func sessionName(serverArguments: [String]) -> String? {
+        guard let index = serverArguments.firstIndex(of: "--server"), serverArguments.indices.contains(index + 1) else {
+            return nil
+        }
+        let name = (serverArguments[index + 1] as NSString).lastPathComponent
+        return name.isEmpty || name.hasPrefix("-") ? nil : name
+    }
+
+    /// The one terminal pane whose running command is the process's own
+    /// (its arguments, as `pane_command` writes them) and, if told, whose
+    /// folder is the process's. `terminal_<id>`.
+    static func pane(in json: String, arguments: [String], cwd: String?) -> String? {
+        guard let data = json.data(using: .utf8),
+              let panes = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] else { return nil }
+        let command = arguments.joined(separator: " ")
+        let matches = panes.filter { pane in
+            guard (pane["is_plugin"] as? Bool) == false, (pane["exited"] as? Bool) != true,
+                  let running = pane["pane_command"] as? String, !running.isEmpty else { return false }
+            return running == command || command.hasSuffix(" " + running) || running.hasSuffix(" " + command) || running == arguments.last
+        }
+        let narrowed = cwd.map { folder in matches.filter { ($0["pane_cwd"] as? String) == folder } } ?? matches
+        let pick = narrowed.count == 1 ? narrowed : (matches.count == 1 ? matches : [])
+        guard let id = pick.first?["id"] as? Int else { return nil }
+        return "terminal_\(id)"
     }
 
     static func isPaneID(_ value: String) -> Bool {

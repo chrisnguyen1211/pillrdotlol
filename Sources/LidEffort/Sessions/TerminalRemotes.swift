@@ -21,13 +21,57 @@ struct KittyWindow: Equatable, Hashable, Sendable {
 /// `allow_remote_control` (`yes`, `socket` or `socket-only`) with
 /// `listen_on unix:…`, which is what puts `$KITTY_LISTEN_ON` in a pane.
 enum Kitty {
-    static func locate(pid: pid_t, bundleURL: URL?, facts: ProcessFacts, isSafe: (String) -> Bool) -> KittyWindow? {
-        guard let socket = facts.inherited("KITTY_LISTEN_ON", from: pid)?.value, socket.hasPrefix("unix:") else { return nil }
+    static func locate(pid: pid_t, bundleURL: URL?, facts: ProcessFacts, isSafe: (String) -> Bool,
+                       config: String? = Kitty.userConfig()) -> KittyWindow? {
+        // `$KITTY_LISTEN_ON`; where the agent's environment can't be read
+        // (macOS 27 keeps a system shell's to itself), kitty's own
+        // `--listen-on`, else kitty.conf's `listen_on` (to which kitty adds
+        // `-<its pid>`), whichever socket is there.
+        let socket: String
+        if let told = facts.inherited("KITTY_LISTEN_ON", from: pid)?.value {
+            guard told.hasPrefix("unix:") else { return nil }
+            socket = told
+        } else {
+            // Guessed, so only one that is really there.
+            let kitty = facts.ancestor(named: "kitty", of: pid)
+            let guesses = kitty.map { listenOn(arguments: facts.environment($0.pid), config: config, kittyPID: $0.pid) } ?? []
+            guard let found = guesses.compactMap({ $0 }).first(where: { candidate in
+                candidate.hasPrefix("unix:") && (candidate.hasPrefix("unix:@")
+                    || FileManager.default.fileExists(atPath: String(candidate.dropFirst("unix:".count))))
+            }) else { return nil }
+            socket = found
+        }
         let preferred = [HostTools.inBundle(bundleURL, "Contents/MacOS/kitten"),
                          HostTools.inBundle(bundleURL, "Contents/MacOS/kitty")].compactMap { $0 }
         guard let tool = HostTools.resolve("kitten", preferring: preferred, isSafe: isSafe) else { return nil }
         let window = facts.inherited("KITTY_WINDOW_ID", from: pid).flatMap { Int($0.value) }
         return KittyWindow(tool: tool, socket: socket, windowID: window, ancestry: facts.ancestry(pid))
+    }
+
+    /// Sockets kitty may be listening on, from its own arguments and then
+    /// its config: as given, and with `-<pid>` added as kitty does to a
+    /// configured one.
+    static func listenOn(arguments: [String], config: String?, kittyPID: pid_t) -> [String?] {
+        var found: [String] = []
+        for (index, argument) in arguments.enumerated() {
+            if argument == "--listen-on", arguments.indices.contains(index + 1) { found.append(arguments[index + 1]) }
+            if argument.hasPrefix("--listen-on=") { found.append(String(argument.dropFirst("--listen-on=".count))) }
+        }
+        for line in (config ?? "").split(separator: "\n") {
+            let parts = line.trimmingCharacters(in: .whitespaces).split(separator: " ", maxSplits: 1)
+            guard parts.count == 2, parts[0] == "listen_on" else { continue }
+            let value = parts[1].trimmingCharacters(in: .whitespaces)
+            found.append(value.replacingOccurrences(of: "{kitty_pid}", with: String(kittyPID)))
+            found.append(value + "-\(kittyPID)")
+        }
+        return found
+    }
+
+    static func userConfig() -> String? {
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        let base = ProcessInfo.processInfo.environment["XDG_CONFIG_HOME"].map(URL.init(fileURLWithPath:))
+            ?? home.appendingPathComponent(".config")
+        return try? String(contentsOf: base.appendingPathComponent("kitty/kitty.conf"), encoding: .utf8)
     }
 
     static func command(_ window: KittyWindow, _ arguments: [String], input: String? = nil) -> HostCommand {
@@ -134,10 +178,23 @@ enum WezTerm {
         let preferred = [HostTools.inBundle(bundleURL, "Contents/MacOS/wezterm")].compactMap { $0 }
         guard let tool = HostTools.resolve("wezterm", preferring: preferred, isSafe: isSafe) else { return nil }
         let pane = facts.inherited("WEZTERM_PANE", from: pid).flatMap { Int($0.value) }
+        // `$WEZTERM_UNIX_SOCKET`; where the agent's environment can't be
+        // read (macOS 27 keeps a system shell's to itself), the socket the
+        // GUI the agent runs under opened for itself, `gui-sock-<its pid>`:
+        // `wezterm cli` alone only tries the default `sock`.
         let socket = facts.inherited("WEZTERM_UNIX_SOCKET", from: pid)?.value
+            ?? facts.ancestor(named: "wezterm-gui", of: pid).flatMap { guiSocket(pid: $0.pid) }
         let tty = facts.tty(pid)
         guard pane != nil || tty != nil else { return nil }
         return WezTermPane(tool: tool, socket: socket, paneID: pane, tty: tty)
+    }
+
+    /// The socket a WezTerm GUI process listens on, where WezTerm puts it.
+    static func guiSocket(pid: pid_t, home: URL = FileManager.default.homeDirectoryForCurrentUser) -> String? {
+        let runtime = ProcessInfo.processInfo.environment["XDG_RUNTIME_DIR"].map(URL.init(fileURLWithPath:))
+        let places = [runtime?.appendingPathComponent("wezterm"), home.appendingPathComponent(".local/share/wezterm")]
+        return places.compactMap { $0?.appendingPathComponent("gui-sock-\(pid)").path }
+            .first { FileManager.default.fileExists(atPath: $0) }
     }
 
     static func command(_ pane: WezTermPane, _ arguments: [String], input: String? = nil) -> HostCommand {

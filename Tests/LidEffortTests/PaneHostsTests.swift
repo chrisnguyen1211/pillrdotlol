@@ -714,3 +714,46 @@ final class WindowFocusTests: XCTestCase {
         XCTAssertTrue(script.compileAndReturnError(&error), "\(String(describing: error))")
     }
 }
+
+
+/// Finding a pane where the agent's environment can't be read: macOS 27
+/// keeps a system shell's (`/bin/bash`, `/bin/zsh`) to itself.
+final class PaneWithoutEnvironmentTests: XCTestCase {
+    func testZellijsSessionIsItsServersSocketName() {
+        XCTAssertEqual(Zellij.sessionName(serverArguments: ["/opt/homebrew/bin/zellij", "--server",
+            "/var/folders/x/T/zellij-501/contract_version_1/work"]), "work")
+        XCTAssertNil(Zellij.sessionName(serverArguments: ["zellij", "attach"]))
+    }
+
+    func testZellijsPaneIsTheOneRunningTheAgent() {
+        let json = """
+        [{"id":0,"is_plugin":true,"pane_command":null},
+         {"id":0,"is_plugin":false,"exited":false,"pane_command":"/bin/zsh","pane_cwd":"/Users/me"},
+         {"id":2,"is_plugin":false,"exited":false,"pane_command":"claude --resume","pane_cwd":"/Users/me/app"},
+         {"id":3,"is_plugin":false,"exited":false,"pane_command":"claude --resume","pane_cwd":"/Users/me/other"}]
+        """
+        XCTAssertEqual(Zellij.pane(in: json, arguments: ["claude", "--resume"], cwd: "/Users/me/app"), "terminal_2")
+        XCTAssertNil(Zellij.pane(in: json, arguments: ["claude", "--resume"], cwd: nil), "two alike and no folder: none")
+        XCTAssertNil(Zellij.pane(in: json, arguments: ["codex"], cwd: "/Users/me/app"))
+    }
+
+    func testKittysSocketFromItsArgumentsOrConfig() {
+        XCTAssertEqual(Kitty.listenOn(arguments: ["kitty", "--listen-on", "unix:/tmp/k"], config: nil, kittyPID: 9).compactMap { $0 },
+                       ["unix:/tmp/k"])
+        XCTAssertEqual(Kitty.listenOn(arguments: ["kitty", "--listen-on=unix:/tmp/k"], config: nil, kittyPID: 9).compactMap { $0 },
+                       ["unix:/tmp/k"])
+        XCTAssertEqual(Kitty.listenOn(arguments: ["kitty"], config: "allow_remote_control yes\nlisten_on unix:/tmp/mykitty",
+                                      kittyPID: 42).compactMap { $0 },
+                       ["unix:/tmp/mykitty", "unix:/tmp/mykitty-42"], "kitty adds its pid to a configured socket")
+    }
+
+    func testWezTermsGUISocketIsFoundByItsPID() throws {
+        let home = FileManager.default.temporaryDirectory.appendingPathComponent("wez-\(UUID().uuidString)")
+        let dir = home.appendingPathComponent(".local/share/wezterm")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: home) }
+        FileManager.default.createFile(atPath: dir.appendingPathComponent("gui-sock-777").path, contents: Data())
+        XCTAssertEqual(WezTerm.guiSocket(pid: 777, home: home), dir.appendingPathComponent("gui-sock-777").path)
+        XCTAssertNil(WezTerm.guiSocket(pid: 778, home: home))
+    }
+}
