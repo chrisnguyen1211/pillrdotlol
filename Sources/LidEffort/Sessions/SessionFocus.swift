@@ -34,6 +34,25 @@ enum SessionFocus {
         return place.activated || place.tabSelected
     }
 
+    /// The link that opens a session with no process of its own in the app
+    /// that holds it: a Codex app thread, `codex://threads/<id>`.
+    static func link(for session: AgentSession) -> URL? {
+        guard session.processID == nil, let thread = session.appThreadID else { return nil }
+        return CodexDesktopComposer.link(toThread: thread)
+    }
+
+    /// Opens such a session by its link: the Codex app comes forward on
+    /// that very thread (started if need be), which an app that isn't
+    /// active (the notch never is) may not ask for by activating it.
+    @MainActor
+    @discardableResult
+    static func openByLink(_ session: AgentSession) -> Bool {
+        guard let url = link(for: session) else { return false }
+        let opened = NSWorkspace.shared.open(url)
+        Log.usage.notice("focus: opened a Codex app thread by its link: \(opened, privacy: .public)")
+        return opened
+    }
+
     /// `focus(pid:)`, telling the app apart from the tab. Nil when nothing
     /// owns the process.
     static func focusTab(pid: pid_t) async -> Focused? {

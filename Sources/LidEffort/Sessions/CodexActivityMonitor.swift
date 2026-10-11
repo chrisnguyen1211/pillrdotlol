@@ -69,23 +69,31 @@ final class CodexActivityMonitor: ObservableObject, AgentActivityMonitor {
         // in different places: the CLI and the VS Code extension append to a
         // rollout, and the desktop app writes to its own catalogue. Whichever
         // moved last is the one that is working.
-        var candidates: [(id: String, name: String, at: Date, log: URL?)] = []
+        var candidates: [(id: String, name: String, at: Date, log: URL?, appThread: String?)] = []
+        // The Codex app works in the default home only; a thread is its to
+        // open when it wrote it, or lists it as other than a terminal's.
+        let appHome = profile.slug == nil
 
         if let rollout = CodexStore.newestRollout(in: stateStore),
            let modified = (try? FileManager.default
                .attributesOfItem(atPath: rollout.path))?[.modificationDate] as? Date {
+            let thread = appHome && CodexAppThread.isAppOriginator(CodexAppThread.originator(ofRollout: rollout))
+                ? CodexAppThread.threadID(inRolloutName: rollout.lastPathComponent) : nil
             candidates.append((id: "\(profile.id).\(rollout.lastPathComponent)",
-                               name: profile.displayName, at: modified, log: rollout))
+                               name: profile.displayName, at: modified, log: rollout, appThread: thread))
         }
-        if let desktop = CodexStore.newestDesktopThread(in: desktopStore) {
+        if let desktop = CodexStore.newestDesktopThreadRow(in: desktopStore) {
+            let thread = appHome && CodexAppThread.isAppSource(kind: desktop.kind)
+                && CodexAppThread.isThreadID(desktop.threadID) ? desktop.threadID : nil
             candidates.append((id: "\(profile.id).desktop", name: desktop.title,
-                               at: desktop.updatedAt, log: nil))
+                               at: desktop.updatedAt, log: nil, appThread: thread))
         }
 
         guard let newest = candidates.max(by: { $0.at < $1.at }),
               var session = session(id: newest.id, name: newest.name,
                                     modified: newest.at, staleAfter: staleAfter, now: now)
         else { return [] }
+        session.appThreadID = newest.appThread
         // The rollout says which call it is on; the desktop catalogue does not.
         if let log = newest.log {
             if session.state == .busy { session.doing = SessionDoing.cached(log, parse: SessionDoing.codex(tail:)) }

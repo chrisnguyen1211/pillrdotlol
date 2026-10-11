@@ -46,6 +46,11 @@ struct AgentSession: Identifiable, Equatable {
     /// "+120 −30", "64% context" — shown after the model, the same slot for
     /// every agent.
     var facts: [String] = []
+    /// The Codex app's thread this session is, when the app holds it: the
+    /// id its own link opens (`codex://threads/<id>`). Set where the thread
+    /// is known at the moment the session is published, so a card answers
+    /// the thread it was about rather than whichever is newest by then.
+    var appThreadID: String? = nil
 
     /// This session with `other`'s model, effort and facts — for a copy
     /// rebuilt with a new state or place, which should not forget them.

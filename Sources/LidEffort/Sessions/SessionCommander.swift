@@ -9,7 +9,9 @@ import OSLog
 /// pressed where pillr can confirm the text went into the right session —
 /// Terminal.app (the tab is found by its tty, and the prompt must be idle),
 /// the Claude app (the window must be showing that session, and the box must
-/// read back the message exactly), Superset (its own host service). Anywhere
+/// read back the message exactly), the Codex app (its own link opens the
+/// thread, and the window must be seen to show it before its Send is
+/// pressed), Superset (its own host service). Anywhere
 /// else the session is brought to the front with the text pasted and left
 /// for you to send. Stop is Esc, pressed only once the session's own tab is
 /// confirmed in front.
@@ -24,6 +26,8 @@ enum SessionCommander {
         case superset
         /// A Claude app session.
         case claudeApp(hostSessionID: String)
+        /// A thread of the Codex app, opened by its own link.
+        case codexApp(threadID: String)
         /// Brought to the front with the text pasted, unsent.
         case pasteInto(app: String)
         case none
@@ -47,6 +51,11 @@ enum SessionCommander {
     private static let log = Logger(subsystem: "lol.pillr.app", category: "sessions")
 
     static func reach(_ session: AgentSession) -> Reach {
+        // A Codex app thread has no process of its own to follow: the app
+        // runs it, and its link opens it.
+        if session.appThreadID != nil, let reach = codexReach(session, installed: CodexDesktopComposer.isInstalled) {
+            return reach
+        }
         guard let pid = session.processID else { return .none }
         if let cached = reaches[pid], cached.until > Date() { return cached.reach }
         let reach = computeReach(pid: pid)
@@ -55,6 +64,14 @@ enum SessionCommander {
     }
 
     private static var reaches: [pid_t: (reach: Reach, until: Date)] = [:]
+
+    /// A session the Codex app holds, by the thread its card was about —
+    /// with the app installed to open it, and a thread id its link takes.
+    nonisolated static func codexReach(_ session: AgentSession, installed: Bool) -> Reach? {
+        guard installed, session.processID == nil, let thread = session.appThreadID,
+              CodexDesktopComposer.link(toThread: thread) != nil else { return nil }
+        return .codexApp(threadID: thread)
+    }
 
     private static func computeReach(pid: pid_t) -> Reach {
         if let place = Superset.place(of: pid), case .v2 = place.stack { return .superset }
@@ -78,6 +95,8 @@ enum SessionCommander {
     /// Stop is offered where the session's own tab can be put in front and
     /// confirmed: Terminal.app and iTerm2, which find a tab by its tty.
     static func canStop(_ session: AgentSession) -> Bool {
+        // The Codex app's own Stop, pressed in the background.
+        if session.state == .busy, case .codexApp = reach(session) { return true }
         guard session.state == .busy, let pid = session.processID else { return false }
         // The Claude app's own Stop button, pressed in the background.
         if case .claudeApp = reach(session) { return true }
@@ -100,10 +119,16 @@ enum SessionCommander {
     private static func deliver(_ text: String, to session: AgentSession,
                                 stepAside: () -> Void) async -> ReplyOutcome {
         guard let line = oneLine(text) else { return .failed(L10n.t("The message is empty")) }
+        if case .codexApp(let thread) = reach(session) {
+            log.notice("reply: codexApp")
+            return await deliverToCodexApp(line, thread: thread, stepAside: stepAside)
+        }
         guard let pid = session.processID else { return .failed(L10n.t("This session has no process to write to")) }
         let reach = reach(session)
         log.notice("reply: \(String(describing: reach), privacy: .public)")
         switch reach {
+        case .codexApp(let thread):
+            return await deliverToCodexApp(line, thread: thread, stepAside: stepAside)
         case .iterm(let tty):
             guard EffortInjector.itermAllowed else {
                 return .failed(L10n.t("iTerm2 hasn't allowed pillr yet. Allow it in Settings → General → Run Setup Again… → Terminals"))
@@ -177,6 +202,42 @@ enum SessionCommander {
         }
     }
 
+    /// A Codex app thread: in the background when the window already shows
+    /// it, else opened by the app's own link — which brings the app forward
+    /// on that very thread, started if need be — and sent there once the
+    /// window is seen to show it.
+    private static func deliverToCodexApp(_ line: String, thread: String,
+                                          stepAside: () -> Void) async -> ReplyOutcome {
+        guard AXIsProcessTrusted() else { return .failed(accessibilityOff()) }
+        let background = CodexDesktopComposer.sendInBackground(message: line, toThread: thread)
+        log.notice("reply: codex background \(String(describing: background), privacy: .public)")
+        switch background {
+        case .sent: return .sent
+        case .working, .draft, .userTyping: return .busy
+        case .notTrusted: return .failed(accessibilityOff())
+        default: break
+        }
+        stepAside()
+        switch await CodexDesktopComposer.open(thread: thread) {
+        case .thread: break
+        case .other: return .failed(L10n.t("The Codex app didn't open this chat"))
+        case .unknown: return .failed(L10n.t("pillr couldn't tell which chat the Codex app is showing"))
+        }
+        try? await Task.sleep(nanoseconds: 450_000_000)
+        let front = CodexDesktopComposer.send(message: line, toThread: thread)
+        log.notice("reply: codex in front \(String(describing: front), privacy: .public)")
+        switch front {
+        case .sent: return .sent
+        case .working, .draft, .userTyping: return .busy
+        case .notTrusted: return .failed(accessibilityOff())
+        case .otherThread: return .failed(L10n.t("The Codex app didn't open this chat"))
+        case .unconfirmed: return .failed(L10n.t("pillr couldn't tell which chat the Codex app is showing"))
+        case .notRunning, .notFront: return .failed(L10n.t("The Codex app did not come forward"))
+        case .noComposer: return .failed(L10n.t("No message box found in the Codex app"))
+        case .notSent: return .failed(L10n.t("The Codex app didn't take the text"))
+        }
+    }
+
     /// The key that sets a draft aside in the session's agent and gives it
     /// back once the next message is sent: Claude Code's Ctrl+S (stash).
     /// Agents without one keep a draft from being written over.
@@ -210,6 +271,9 @@ enum SessionCommander {
     static func stop(_ session: AgentSession) async -> Bool {
         if case .claudeApp(let host) = reach(session) {
             return ClaudeDesktopComposer.stopInBackground(hostSession: host)
+        }
+        if case .codexApp(let thread) = reach(session) {
+            return CodexDesktopComposer.stopInBackground(thread: thread)
         }
         guard canStop(session), let pid = session.processID, let tty = SessionFocus.tty(of: pid),
               let app = SessionFocus.owningApp(of: pid), AXIsProcessTrusted() else { return false }

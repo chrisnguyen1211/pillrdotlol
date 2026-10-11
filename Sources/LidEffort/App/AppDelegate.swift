@@ -1189,15 +1189,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             found = all.first { ours($0.provider) && (stop.sessionID.map($0.session.id.contains) ?? false) }
                 ?? all.first { ours($0.provider) }
         }
+        // Codex names the thread that finished: the card opens and answers
+        // that one in the Codex app when the app holds it, and none when a
+        // terminal does — not the thread the ring happened to show.
+        let codexThread: String? = stop.agent == "codex"
+            ? stop.sessionID.flatMap { CodexAppThread.isAppThread($0) ? $0 : nil } : nil
         let event: SessionCompletionWatcher.Event
-        if let found {
-            event = .init(session: found.session, reason: .finished, providerID: found.provider)
+        if var session = found?.session, let provider = found?.provider {
+            if stop.agent == "codex", stop.sessionID != nil { session.appThreadID = codexThread }
+            event = .init(session: session, reason: .finished, providerID: provider)
         } else {
             // No ring for it here: still say which agent finished, and where.
             let folder = stop.cwd.map { ($0 as NSString).lastPathComponent } ?? stop.agent.capitalized
-            let session = AgentSession(id: "\(stop.agent).\(stop.sessionID ?? folder)", name: folder,
+            var session = AgentSession(id: "\(stop.agent).\(stop.sessionID ?? folder)", name: folder,
                                        detail: ProviderGlyph.forProvider(stop.agent)?.agentName ?? stop.agent.capitalized,
                                        state: .success, waitingFor: nil, since: Date())
+            session.appThreadID = codexThread
             event = .init(session: session, reason: .finished, providerID: stop.agent)
         }
         settling.removeValue(forKey: event.session.id)?.cancel()

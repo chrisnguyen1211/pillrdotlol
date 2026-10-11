@@ -183,22 +183,41 @@ enum CodexStore {
 
     /// The most recently touched desktop thread: when, and what it is called.
     static func newestDesktopThread(in url: URL) -> (title: String, updatedAt: Date)? {
+        newestDesktopThreadRow(in: url).map { ($0.title, $0.updatedAt) }
+    }
+
+    /// The newest thread with its id, and the kind the catalogue lists it
+    /// as — `cli` for a terminal's, which the app is not to answer for.
+    static func newestDesktopThreadRow(in url: URL) -> (title: String, updatedAt: Date, threadID: String, kind: String?)? {
         guard let db = SQLiteStore.open(url) else { return nil }
         defer { sqlite3_close(db) }
 
-        let rows = SQLiteStore.rows(
+        var rows = SQLiteStore.rows(
             in: db,
             sql: """
-            SELECT source_updated_at, display_title, thread_id
+            SELECT source_updated_at, display_title, thread_id, coalesce(source_kind, '')
             FROM local_thread_catalog ORDER BY source_updated_at DESC LIMIT 1
             """,
-            columns: 3
+            columns: 4
         )
+        // A catalogue from before it said what made each thread.
+        var kind: String? = rows.first?[3]
+        if rows.isEmpty {
+            rows = SQLiteStore.rows(
+                in: db,
+                sql: """
+                SELECT source_updated_at, display_title, thread_id
+                FROM local_thread_catalog ORDER BY source_updated_at DESC LIMIT 1
+                """,
+                columns: 3
+            )
+            kind = nil
+        }
         guard let row = rows.first, let seconds = Double(row[0]) else { return nil }
         // Seconds since the epoch, with a fractional part — not the
         // milliseconds the `threads` table next door uses.
         let title = row[1].isEmpty ? "Codex" : row[1]
-        return (title, Date(timeIntervalSince1970: seconds))
+        return (title, Date(timeIntervalSince1970: seconds), row[2], kind)
     }
 
     /// The rollout of the most recently touched thread.
