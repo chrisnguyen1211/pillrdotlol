@@ -68,10 +68,12 @@ enum SessionFocus {
         // A Claude app session: the app's own link opens that very session
         // and brings the window forward, which an app that isn't active
         // (the notch never is) may not ask for itself.
+        // An older Claude app that doesn't know the link leaves the window
+        // as it was: then the usual way below, the app brought forward.
         if app?.bundleIdentifier == ClaudeDesktopComposer.bundleID,
            let host = await MainActor.run(body: { SessionModels.desktop(pid: pid)?.hostSessionID }),
-           let url = ClaudeDesktopComposer.link(toHostSession: host),
-           await MainActor.run(body: { NSWorkspace.shared.open(url) }) {
+           ClaudeDesktopComposer.link(toHostSession: host) != nil,
+           await ClaudeDesktopComposer.open(hostSession: host) {
             Log.usage.notice("focus pid \(pid, privacy: .public): opened its Claude app session by link")
             return Focused(activated: true, tabSelected: true)
         }

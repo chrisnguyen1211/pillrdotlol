@@ -392,10 +392,13 @@ enum ClaudeDesktopComposer {
     /// at most, until the window shows it. The app comes forward with it.
     @MainActor
     static func open(hostSession id: String) async -> Bool {
-        guard let url = link(toHostSession: id), let app = runningApp, AXIsProcessTrusted() else { return false }
+        guard let url = link(toHostSession: id), let app = runningApp else { return false }
         let configuration = NSWorkspace.OpenConfiguration()
         configuration.activates = true
         guard (try? await NSWorkspace.shared.open(url, configuration: configuration)) != nil else { return false }
+        // Without Accessibility the window can't be read: opened is all
+        // there is to go on (and nothing is typed without it anyway).
+        guard AXIsProcessTrusted() else { return true }
         for _ in 0..<24 {
             try? await Task.sleep(nanoseconds: 150_000_000)
             if view(of: app) == .session(id) {
