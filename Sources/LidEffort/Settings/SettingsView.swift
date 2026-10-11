@@ -1432,6 +1432,11 @@ private struct AccountRow: View {
                             .help(provider.signIn.switchHint)
                     }
                 }
+                if let launch = account.launchHint {
+                    Text(Self.highlighting(account.launchCommands, in: launch))
+                        .foregroundStyle(.secondary)
+                        .textSelection(.enabled)
+                }
                 // Says where the account actually lives, which is the whole
                 // answer to "how do I change it" — not here.
                 Text(provider.signIn.switchHint)
@@ -1452,6 +1457,19 @@ private struct AccountRow: View {
                 .foregroundStyle(.orange)
                 .fixedSize(horizontal: false, vertical: true)
         }
+    }
+
+    /// The commands in a launch line set apart as code — the part someone
+    /// actually types, found at a glance — inside the translated sentence.
+    static func highlighting(_ commands: [String], in line: String) -> AttributedString {
+        var text = AttributedString(line)
+        for command in commands {
+            guard let range = text.range(of: command) else { continue }
+            text[range].font = .system(.caption, design: .monospaced).weight(.semibold)
+            text[range].foregroundColor = .accentColor
+            text[range].backgroundColor = Color.accentColor.opacity(0.12)
+        }
+        return text
     }
 
     /// Where this row's "Open" button goes.

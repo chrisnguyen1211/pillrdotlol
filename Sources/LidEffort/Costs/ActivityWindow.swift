@@ -446,11 +446,8 @@ enum TranscriptTitles {
     /// Every Claude profile's `projects` folder — by directory name, so no
     /// keychain is consulted just to label a row.
     private static var roots: [URL] {
-        let home = ClaudeProfile.homeDirectory
-        let names = (try? FileManager.default.contentsOfDirectory(atPath: home.path)) ?? []
-        return [ClaudeProfile.default(home: home).projectsDirectory]
-            + names.filter { ClaudeProfile.slug(fromDirectoryName: $0) != nil }
-                .map { home.appendingPathComponent($0).appendingPathComponent("projects") }
+        ClaudeProfile.distinctByResolvedPath(
+            ClaudeProfile.configDirectories().map { $0.appendingPathComponent("projects") })
     }
 
     static func title(sessionID: String, cwd: String) -> String? {

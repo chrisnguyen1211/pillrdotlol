@@ -158,6 +158,41 @@ struct ClaudeProfile: Equatable, Hashable {
     /// are doing — see `ClaudeTranscript`.
     var projectsDirectory: URL { configDirectory.appendingPathComponent("projects") }
 
+    /// Claude Code's settings for this profile, where pillr's hooks go. Often
+    /// a symlink into `~/.claude` for a second login that shares the first
+    /// one's configuration — see `distinctByResolvedPath`.
+    var settingsURL: URL { configDirectory.appendingPathComponent("settings.json") }
+
+    /// `~/.claude` and every `~/.claude-<slug>` directory, by name alone.
+    ///
+    /// For lookups that only read inside a directory — a session registry, a
+    /// transcript title — where asking the keychain whether each one is an
+    /// account would cost more than looking. A directory that is not one, like
+    /// a plugin's `~/.claude-mem`, simply has nothing in it to find.
+    static func configDirectories(home: URL = homeDirectory,
+                                  fileManager: FileManager = .default) -> [URL] {
+        let names = (try? fileManager.contentsOfDirectory(atPath: home.path)) ?? []
+        let extras = names.filter { name in
+            var isDirectory: ObjCBool = false
+            return slug(fromDirectoryName: name) != nil
+                && fileManager.fileExists(atPath: home.appendingPathComponent(name).path, isDirectory: &isDirectory)
+                && isDirectory.boolValue
+        }
+        return [ClaudeProfile.default(home: home).configDirectory]
+            + extras.sorted().map { home.appendingPathComponent($0) }
+    }
+
+    /// The URLs in order, minus any that resolve to the same file or folder as
+    /// an earlier one.
+    ///
+    /// Two logins that share `settings.json` or `projects` through a symlink
+    /// are one file to write and one folder to count: hooking it twice is
+    /// harmless, but indexing it twice doubles every figure on the dashboard.
+    static func distinctByResolvedPath(_ urls: [URL]) -> [URL] {
+        var seen = Set<String>()
+        return urls.filter { seen.insert($0.resolvingSymlinksInPath().path).inserted }
+    }
+
     /// Claude Code's own settings file, which carries the signed-in address.
     ///
     /// The default profile keeps it *beside* the directory, at `~/.claude.json`;

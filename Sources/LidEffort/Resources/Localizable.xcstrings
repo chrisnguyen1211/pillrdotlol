@@ -4047,6 +4047,108 @@
         }
       }
     },
+    "Counted under %@: the two share one projects folder" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compté sous %@ : les deux partagent un même dossier projects"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ に計上：2 つで同じ projects フォルダを共有しています"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contado em %@: os dois compartilham uma pasta projects"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Учитывается в %@: у них общая папка projects"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "计入 %@：两者共用同一个 projects 文件夹"
+          }
+        }
+      }
+    },
+    "Default login · open with %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Connexion par défaut · s’ouvre avec %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "既定のログイン · %@ で開く"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Login padrão · abra com %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Вход по умолчанию · открывается командой %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "默认登录 · 用 %@ 打开"
+          }
+        }
+      }
+    },
+    "Open with %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "S’ouvre avec %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ で開く"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abra com %@"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Открывается командой %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用 %@ 打开"
+          }
+        }
+      }
+    },
     "pillr" : {
       "localizations" : {
         "fr" : {
@@ -28017,36 +28119,36 @@
         }
       }
     },
-    "When a Claude Code session asks to run a tool or asks you a question, the prompt shows under that session in the Claude tooltip and beside the folded pill. It stays until you answer. If you are looking at that session, or switch to it, Claude asks in its own dialog instead. Turning this on adds one hook to ~/.claude/settings.json; turning it off removes it." : {
+    "When a Claude Code session asks to run a tool or asks you a question, the prompt shows under that session in the Claude tooltip and beside the folded pill. It stays until you answer. If you are looking at that session, or switch to it, Claude asks in its own dialog instead. Turning this on adds one hook to the settings.json of every Claude login (~/.claude and any ~/.claude-<name>); turning it off removes it." : {
       "localizations" : {
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quand une session Claude Code demande à exécuter un outil ou vous pose une question, la demande s'affiche sous cette session dans l'info-bulle Claude et à côté de la pastille repliée. Elle reste jusqu'à votre réponse. Si vous regardez cette session, ou basculez dessus, Claude demande plutôt dans sa propre boîte de dialogue. Activer ceci ajoute un hook à ~/.claude/settings.json ; le désactiver le retire."
+            "value" : "Quand une session Claude Code demande à exécuter un outil ou vous pose une question, la demande s'affiche sous cette session dans l'info-bulle Claude et à côté de la pastille repliée. Elle reste jusqu'à votre réponse. Si vous regardez cette session, ou basculez dessus, Claude demande plutôt dans sa propre boîte de dialogue. Activer ceci ajoute un hook au settings.json de chaque connexion Claude (~/.claude et chaque ~/.claude-<nom>) ; le désactiver le retire."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Claude Code のセッションがツールの実行許可を求めたり質問したりすると、そのプロンプトが Claude のツールチップ内のそのセッションの下と、畳まれたピルの横に表示されます。答えるまで表示されたままです。そのセッションを見ているとき、またはそれに切り替えたときは、代わりに Claude が自身のダイアログで尋ねます。これをオンにすると ~/.claude/settings.json にフックを 1 つ追加し、オフにすると削除します。"
+            "value" : "Claude Code のセッションがツールの実行許可を求めたり質問したりすると、そのプロンプトが Claude のツールチップ内のそのセッションの下と、畳まれたピルの横に表示されます。答えるまで表示されたままです。そのセッションを見ているとき、またはそれに切り替えたときは、代わりに Claude が自身のダイアログで尋ねます。これをオンにすると、各 Claude ログイン（~/.claude と各 ~/.claude-<名前>）の settings.json にフックを 1 つ追加し、オフにすると削除します。"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Quando uma sessão do Claude Code pede para executar uma ferramenta ou faz uma pergunta, o pedido aparece sob essa sessão na dica do Claude e ao lado da cápsula recolhida. Ele fica até você responder. Se você estiver olhando para essa sessão, ou mudar para ela, o Claude pergunta no próprio diálogo. Ativar isto adiciona um hook a ~/.claude/settings.json; desativar o remove."
+            "value" : "Quando uma sessão do Claude Code pede para executar uma ferramenta ou faz uma pergunta, o pedido aparece sob essa sessão na dica do Claude e ao lado da cápsula recolhida. Ele fica até você responder. Se você estiver olhando para essa sessão, ou mudar para ela, o Claude pergunta no próprio diálogo. Ativar isto adiciona um hook ao settings.json de cada login do Claude (~/.claude e cada ~/.claude-<nome>); desativar o remove."
           }
         },
         "ru" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Когда сеанс Claude Code просит запустить инструмент или задаёт вопрос, запрос появляется под этим сеансом в подсказке Claude и рядом со свёрнутой пилюлей. Он остаётся, пока вы не ответите. Если вы смотрите на этот сеанс или переключаетесь на него, Claude спрашивает в собственном диалоге. Включение добавляет один хук в ~/.claude/settings.json; выключение удаляет его."
+            "value" : "Когда сеанс Claude Code просит запустить инструмент или задаёт вопрос, запрос появляется под этим сеансом в подсказке Claude и рядом со свёрнутой пилюлей. Он остаётся, пока вы не ответите. Если вы смотрите на этот сеанс или переключаетесь на него, Claude спрашивает в собственном диалоге. Включение добавляет один хук в settings.json каждого входа Claude (~/.claude и каждый ~/.claude-<имя>); выключение удаляет его."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "当 Claude Code 会话请求运行工具或向你提问时，请求会显示在 Claude 提示卡中该会话的下方，以及收起的胶囊旁边，直到你回答为止。如果你正看着那个会话，或切换到了它，Claude 会改在自己的对话框里问。打开这项会向 ~/.claude/settings.json 添加一个 hook；关掉则会移除。"
+            "value" : "当 Claude Code 会话请求运行工具或向你提问时，请求会显示在 Claude 提示卡中该会话的下方，以及收起的胶囊旁边，直到你回答为止。如果你正看着那个会话，或切换到了它，Claude 会改在自己的对话框里问。打开这项会向每个 Claude 登录的 settings.json（~/.claude 以及每个 ~/.claude-<名称>）添加一个 hook；关掉则会移除。"
           }
         }
       }

@@ -424,6 +424,7 @@ actor ClaudeOAuthProvider: UsageProvider {
 
     nonisolated func account() -> ProviderAccount? {
         let manageURL = URL(string: "https://claude.ai/settings/usage")
+        let launch = ClaudeLaunchCommands.find()
 
         // Settings must not be the thing that raises a keychain prompt. Where
         // the CLI can answer, the readings never touch the token, and opening
@@ -439,7 +440,9 @@ actor ClaudeOAuthProvider: UsageProvider {
                 label: address,
                 plan: nil,   // Claude Code's own config does not name the plan
                 source: profile.sourceName,
-                manageURL: manageURL
+                manageURL: manageURL,
+                launchHint: profile.launchLine(commands: launch),
+                launchCommands: profile.launchCommands(launch)
             )
         }
 
@@ -455,7 +458,9 @@ actor ClaudeOAuthProvider: UsageProvider {
             label: profile.signedInAddress(),
             plan: credentials.subscriptionType,
             source: profile.sourceName,
-            manageURL: manageURL
+            manageURL: manageURL,
+            launchHint: profile.launchLine(commands: launch),
+            launchCommands: profile.launchCommands(launch)
         )
     }
 }

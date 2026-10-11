@@ -1087,7 +1087,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         guard HookConsent.mayInstall(), AgentHooks.claudePresent,
                               let executable = Bundle.main.executablePath else { return }
                         try ClaudeHookInstaller.install(executable: executable)
-                    } else if ClaudeHookInstaller.isInstalled() {
+                    } else {
+                        // Only files that have it are rewritten.
                         try ClaudeHookInstaller.remove()
                     }
                 } catch {

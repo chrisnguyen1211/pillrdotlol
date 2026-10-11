@@ -426,7 +426,7 @@ struct SessionsPane: View {
                                  subtitle: preferences.answerPromptsFromNotch && !hookInstalled
                                     ? L10n.t("Setting up. The hook goes in once pillr is in Applications.")
                                     : L10n.t("Allow, deny and answer questions in the tooltip or beside the pill."),
-                                 info: L10n.t("When a Claude Code session asks to run a tool or asks you a question, the prompt shows under that session in the Claude tooltip and beside the folded pill. It stays until you answer. If you are looking at that session, or switch to it, Claude asks in its own dialog instead. Turning this on adds one hook to ~/.claude/settings.json; turning it off removes it."))
+                                 info: L10n.t("When a Claude Code session asks to run a tool or asks you a question, the prompt shows under that session in the Claude tooltip and beside the folded pill. It stays until you answer. If you are looking at that session, or switch to it, Claude asks in its own dialog instead. Turning this on adds one hook to the settings.json of every Claude login (~/.claude and any ~/.claude-<name>); turning it off removes it."))
                 }
                 if preferences.answerPromptsFromNotch {
                     Text(L10n.t("Sessions started before this was switched on pick it up when restarted."))

@@ -5,8 +5,8 @@ import Foundation
 /// The "turn finished" signal from every agent that has one, so the done
 /// card is said the moment an answer ends rather than guessed from files:
 ///
-/// * **Claude Code** — a `Stop` hook in `~/.claude/settings.json`
-///   (`ClaudeHookInstaller`).
+/// * **Claude Code** — a `Stop` hook in `~/.claude/settings.json` and in every
+///   other login's (`~/.claude-<slug>`) that is not a link to it (`ClaudeHookInstaller`).
 /// * **Grok** — a `Stop` hook in a file of pillr's own, `~/.grok/hooks/pillr.json`;
 ///   Grok runs it once per turn, on a genuine completion only.
 /// * **Cursor** — a `stop` hook in `~/.cursor/hooks.json`.
@@ -91,6 +91,7 @@ enum AgentHooks {
     static func links() -> [Link] {
         let fm = FileManager.default
         let claude = claudePresent
+        let claudeURLs = ClaudeHookInstaller.allSettingsURLs
         let codex = fm.fileExists(atPath: codexConfigURL.path)
         let grok = fm.fileExists(atPath: home.appendingPathComponent(".grok").path)
         let cursor = fm.fileExists(atPath: home.appendingPathComponent(".cursor").path)
@@ -99,7 +100,8 @@ enum AgentHooks {
         let kimi = BuiltInTargets.kimi.isPresent(exists: fm.fileExists(atPath:))
         return [
             Link(id: "claude", name: "Claude Code", present: claude,
-                 doneHooked: ClaudeHookInstaller.isStopInstalled(), approvalsHooked: ClaudeHookInstaller.isInstalled()),
+                 doneHooked: ClaudeHookInstaller.isStopInstalled(at: claudeURLs),
+                 approvalsHooked: ClaudeHookInstaller.isInstalled(at: claudeURLs)),
             Link(id: "codex", name: "Codex", present: codex, doneHooked: isCodexInstalled(), approvalsHooked: nil),
             Link(id: "grok", name: "Grok", present: grok, doneHooked: fm.fileExists(atPath: grokHookURL.path), approvalsHooked: nil),
             Link(id: "cursor", name: "Cursor", present: cursor, doneHooked: isCursorInstalled(), approvalsHooked: nil),
@@ -135,8 +137,11 @@ enum AgentHooks {
     /// Returns the agents it took something out of.
     @discardableResult
     static func removeEverything(defaults: UserDefaults = .standard) -> [String] {
-        let before = links().filter(\.doneHooked).map(\.name)
-        let approvals = ClaudeHookInstaller.isInstalled()
+        // Any Claude login that has a hook counts, not only when every one does.
+        let claudeURLs = ClaudeHookInstaller.allSettingsURLs
+        let claudeStop = claudeURLs.contains { ClaudeHookInstaller.isStopInstalled(at: $0) }
+        let before = links().filter { $0.doneHooked || ($0.id == "claude" && claudeStop) }.map(\.name)
+        let approvals = claudeURLs.contains { ClaudeHookInstaller.isInstalled(at: $0) }
         removeAll()
         if approvals { try? ClaudeHookInstaller.remove() }
         defaults.set(false, forKey: HookConsent.key)
@@ -145,7 +150,7 @@ enum AgentHooks {
     }
 
     static func removeAll() {
-        if ClaudeHookInstaller.isStopInstalled() { try? ClaudeHookInstaller.removeStop() }
+        try? ClaudeHookInstaller.removeStop()
         try? removeGrok()
         try? removeCursor()
         try? removeCodex()

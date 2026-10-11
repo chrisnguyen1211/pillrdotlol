@@ -40,6 +40,24 @@ struct CostAccount: Identifiable, Equatable {
     var transcriptsRoot: URL {
         configDirectory.appendingPathComponent(provider == "codex" ? "sessions" : "projects")
     }
+
+    /// Whether this account's transcripts are its own to count.
+    ///
+    /// A second login whose `projects` is a symlink to the first one's has no
+    /// transcripts of its own: the folder is counted under the first account,
+    /// and counting it again here would double every figure on the dashboard.
+    /// Which login wrote a shared transcript is not recorded anywhere, so the
+    /// first account keeps them all rather than guessing a split.
+    func indexesTranscripts(among accounts: [CostAccount]) -> Bool {
+        transcriptOwner(among: accounts) == nil
+    }
+
+    /// The earlier account whose transcript folder is this one's, if any.
+    func transcriptOwner(among accounts: [CostAccount]) -> CostAccount? {
+        let earlier = accounts.prefix { $0.id != id }.filter { $0.provider == provider }
+        let mine = transcriptsRoot.resolvingSymlinksInPath().path
+        return earlier.first { $0.transcriptsRoot.resolvingSymlinksInPath().path == mine }
+    }
 }
 
 @MainActor

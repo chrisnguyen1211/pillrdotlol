@@ -17,6 +17,11 @@ struct ProviderAccount: Equatable {
     let source: String
     /// The provider's own usage page, for checking this against the source.
     let manageURL: URL?
+    /// How to open the tool on this account, where that needs saying — the
+    /// command for each Claude login.
+    var launchHint: String? = nil
+    /// The commands inside `launchHint`, so the row can set them apart.
+    var launchCommands: [String] = []
 
     /// One line for the settings row.
     var summary: String {

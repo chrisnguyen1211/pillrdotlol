@@ -24,6 +24,11 @@ final class CostModel: ObservableObject {
 
     @Published private(set) var rows: [ProjectCost] = []
     @Published private(set) var state: State = .unavailable
+    /// The account that counts this login's turns, when the two share one
+    /// `projects` folder. Such a login has no store of its own: its limit
+    /// jumps cannot be matched to turns that are not told apart from the
+    /// owner's, and would otherwise all read as used "Elsewhere".
+    let sharedWith: String?
     /// False for plans with no rolling limits (credit-based seats): the session
     /// and week views need limit samples, so only month and all-time apply.
     @Published private(set) var quotaBacked = true
@@ -55,9 +60,11 @@ final class CostModel: ObservableObject {
         let saved = CostRange(rawValue: UserDefaults.standard.string(forKey: Self.rangeKey) ?? "") ?? .session
         range = saved == .allTime ? .month : saved
 
-        // One database and one transcript watcher per account.
+        // One database and one transcript watcher per account — none for a
+        // login whose transcripts are counted under another (see sharedWith).
+        sharedWith = account.transcriptOwner(among: CostAccountStore.shared.accounts)?.name
         let dbName = "agentcost-\(account.id).sqlite"
-        store = CostStore(url: CostPaths.directory.appendingPathComponent(dbName))
+        store = sharedWith == nil ? CostStore(url: CostPaths.directory.appendingPathComponent(dbName)) : nil
         indexer = store.flatMap {
             CostIndexer(store: $0, root: account.transcriptsRoot, format: account.provider == "codex" ? .codex : .claude)
         }

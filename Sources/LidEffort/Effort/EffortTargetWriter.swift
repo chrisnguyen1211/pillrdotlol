@@ -170,11 +170,30 @@ enum EffortTargetWriter {
     /// Atomic replace: write a temp file next to the target, then swap it in,
     /// so a crash mid-write can never leave a truncated config behind.
     static func replaceContents(of url: URL, with text: String) throws {
+        // Written where a symlink points, never over the link itself: a second
+        // Claude login whose settings.json links to the first one's would
+        // otherwise quietly get a copy of its own and stop sharing. A target
+        // that cannot be written (a read-only store a dotfile manager links
+        // into) gets the old behaviour instead: the link is replaced.
+        let resolved = url.resolvingSymlinksInPath()
+        if resolved != url, (try? replace(resolved, with: text)) != nil { return }
+        try replace(url, with: text)
+    }
+
+    private static func replace(_ url: URL, with text: String) throws {
         let directory = url.deletingLastPathComponent()
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         let tempURL = directory.appendingPathComponent(".pillr-effort.tmp-\(UUID().uuidString)")
         try text.write(to: tempURL, atomically: true, encoding: .utf8)
-        if FileManager.default.fileExists(atPath: url.path) {
+        // Never left behind when the swap below fails.
+        defer { try? FileManager.default.removeItem(at: tempURL) }
+        if (try? FileManager.default.destinationOfSymbolicLink(atPath: url.path)) != nil {
+            // Only reached when the link's target could not be written:
+            // `replaceItemAt` follows the link, so the link itself is taken
+            // out and the new file put in its place.
+            try FileManager.default.removeItem(at: url)
+            try FileManager.default.moveItem(at: tempURL, to: url)
+        } else if FileManager.default.fileExists(atPath: url.path) {
             _ = try FileManager.default.replaceItemAt(url, withItemAt: tempURL)
         } else {
             try FileManager.default.moveItem(at: tempURL, to: url)

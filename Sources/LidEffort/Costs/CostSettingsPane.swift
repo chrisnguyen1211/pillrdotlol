@@ -127,7 +127,9 @@ private struct CostAccountRows: View {
     /// What the login spent in the range the tooltip shows, in money.
     private var spentLine: String {
         switch model.state {
-        case .unavailable: return L10n.t("No sessions on this Mac yet")
+        case .unavailable:
+            if let owner = model.sharedWith { return L10n.t("Counted under \(owner): the two share one projects folder") }
+            return L10n.t("No sessions on this Mac yet")
         case .waiting: return L10n.t("Nothing measured yet")
         case .ready:
             let priced = model.rows.compactMap(\.cost)
