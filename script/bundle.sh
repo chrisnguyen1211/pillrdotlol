@@ -84,6 +84,10 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>NSHighResolutionCapable</key><true/>
   <key>NSAppleEventsUsageDescription</key>
   <string>pillr talks to your terminal to open the session you click, send your reply or the lid&apos;s effort level to a running agent session, and run an agent&apos;s sign-in command when you ask. It never reads your keystrokes.</string>
+  <key>NSMicrophoneUsageDescription</key>
+  <string>Hold fn while the reply field is open to speak your reply. Only while fn is held; nothing is recorded or kept.</string>
+  <key>NSSpeechRecognitionUsageDescription</key>
+  <string>Turns what you say into the reply's text, on this Mac where your language allows it.</string>
   <key>SUFeedURL</key><string>https://github.com/chrisnguyen1211/pillrdotlol/releases/latest/download/appcast.xml</string>
   <key>SUPublicEDKey</key><string>h+92Fqo2lrXsHeqRF5jkQUTe06UOpqpSq/ZxEVnNS3g=</string>
   <key>NSHumanReadableCopyright</key><string>© 2026 Cuong Nguyen &amp; Duc Tri Vu Nguyen. Open-source notices: Settings → General → Acknowledgements.</string>

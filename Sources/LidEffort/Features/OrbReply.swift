@@ -26,6 +26,13 @@ struct OrbReplyView: View {
     @State private var wordsShown = 0
     @State private var shake = 0.0
     @FocusState private var focused: Bool
+    /// Hold fn to speak: what was typed when fn went down, and the watch
+    /// on the key while the field is up.
+    @StateObject private var voice = VoiceDictation()
+    @State private var typedBeforeVoice = ""
+    @State private var fnWatch: Any?
+
+    private var canSpeak: Bool { phase == .idle && !sending && reach != .none && demoText == nil }
 
     private let reduced = NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
     static let stage = CGSize(width: 520, height: 150)
@@ -56,13 +63,62 @@ struct OrbReplyView: View {
             }
             .frame(width: shapeSize.width, height: shapeSize.height)
             .offset(x: shake)
+            if phase == .idle { voiceHint.offset(y: pill.height / 2 + 16) }
         }
         .frame(width: Self.stage.width, height: Self.stage.height)
         .onAppear {
             focused = true
             if let demoText { Task { await demo(demoText) } }
+            watchFn()
+        }
+        .onDisappear {
+            if let fnWatch { NSEvent.removeMonitor(fnWatch) }
+            fnWatch = nil
+            voice.stop()
+        }
+        .onChange(of: voice.heard) { _, heard in
+            guard voice.isListening else { return }
+            text = VoiceDictation.merge(typed: typedBeforeVoice, heard: heard)
         }
         .onExitCommand(perform: onClose)
+    }
+
+    /// fn down starts listening, fn up stops; the key itself goes no
+    /// further, so the 🌐 key's own action (emoji, input source) doesn't
+    /// fire under the field.
+    private func watchFn() {
+        guard fnWatch == nil, demoText == nil else { return }
+        fnWatch = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { event in
+            guard let down = VoiceDictation.fnChange(keyCode: event.keyCode, flags: event.modifierFlags) else { return event }
+            if down, canSpeak {
+                typedBeforeVoice = text
+                voice.start()
+            } else if !down {
+                voice.stop()
+            }
+            return nil
+        }
+    }
+
+    /// Under the capsule: how to speak, that it is listening, or why not.
+    @ViewBuilder private var voiceHint: some View {
+        Group {
+            switch voice.state {
+            case .listening:
+                Label(L10n.t("Listening… let go of fn to stop"), systemImage: "waveform")
+                    .foregroundStyle(.primary)
+            case .failed(let why):
+                Label(why, systemImage: "mic.slash").foregroundStyle(Palette.watch)
+            case .idle:
+                if canSpeak {
+                    Label(L10n.t("Hold fn to speak"), systemImage: "mic").foregroundStyle(.secondary)
+                }
+            }
+        }
+        .font(.system(size: 11, weight: .medium))
+        .lineLimit(1)
+        .transition(.opacity)
+        .animation(.easeOut(duration: 0.15), value: voice.state)
     }
 
     // MARK: The pill
@@ -71,7 +127,14 @@ struct OrbReplyView: View {
         HStack(spacing: 12) {
             // Whose session this is — its agent's mark, not a generic one.
             Group {
-                if let glyph = ProviderGlyph.forSession(session) {
+                if voice.isListening {
+                    // The voice, as it is heard.
+                    Image(systemName: "waveform", variableValue: voice.level)
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(Color.accentColor)
+                        .symbolEffect(.pulse, isActive: voice.level < 0.05)
+                        .frame(width: 20)
+                } else if let glyph = ProviderGlyph.forSession(session) {
                     ProviderGlyphView(glyph: glyph, size: 20)
                 } else {
                     Image(systemName: "arrowshape.turn.up.left.fill").font(.system(size: 15))
@@ -133,6 +196,7 @@ struct OrbReplyView: View {
 
     private func send() {
         guard demoText == nil, phase == .idle, !sending else { return }
+        voice.stop()
         guard ready else { wobble(); return }
         let message = text
         Task { @MainActor in await play(message: message, deliver: {
