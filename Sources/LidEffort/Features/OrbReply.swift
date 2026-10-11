@@ -26,10 +26,12 @@ struct OrbReplyView: View {
     @State private var wordsShown = 0
     @State private var shake = 0.0
     @FocusState private var focused: Bool
-    /// Hold fn to speak, by the Mac's own dictation: whether it is on, and
-    /// the watch on the key while the field is up.
-    @State private var dictating = false
+    /// Hold fn to speak: what was typed when fn went down, and the watch
+    /// on the key while the field is up.
+    @StateObject private var voice = SystemDictation()
+    @State private var typedBeforeVoice = ""
     @State private var fnWatch: Any?
+    private var dictating: Bool { voice.isListening }
 
     private var canSpeak: Bool { phase == .idle && !sending && reach != .none && demoText == nil }
 
@@ -73,24 +75,33 @@ struct OrbReplyView: View {
         .onDisappear {
             if let fnWatch { NSEvent.removeMonitor(fnWatch) }
             fnWatch = nil
-            if dictating { SystemDictation.stop() }
+            voice.stop()
+        }
+        .onChange(of: voice.heard) { _, heard in
+            // The last words still come in a moment after fn is let go.
+            guard voice.transcribing else { return }
+            text = SystemDictation.merge(typed: typedBeforeVoice, heard: heard)
         }
         .onExitCommand(perform: onClose)
     }
 
-    /// fn down turns the Mac's dictation on in the field, fn up turns it
-    /// off; the key itself goes no further, so the 🌐 key's own action
-    /// (emoji, input source) doesn't fire under the field.
+    /// Names this reply is likely to hold: the session and its agent.
+    private var expectedWords: [String] {
+        [session.name, ProviderGlyph.forSession(session)?.agentName ?? ""].filter { !$0.isEmpty }
+    }
+
+    /// fn down starts listening, fn up stops; the key itself goes no
+    /// further, so the 🌐 key's own action (emoji, input source) doesn't
+    /// fire under the field.
     private func watchFn() {
         guard fnWatch == nil, demoText == nil else { return }
         fnWatch = NSEvent.addLocalMonitorForEvents(matching: .flagsChanged) { event in
             guard let down = SystemDictation.fnChange(keyCode: event.keyCode, flags: event.modifierFlags) else { return event }
-            if down, canSpeak, !dictating {
-                focused = true
-                dictating = SystemDictation.start()
-            } else if !down, dictating {
-                SystemDictation.stop()
-                dictating = false
+            if down, canSpeak, !voice.isListening {
+                typedBeforeVoice = text
+                voice.start(expecting: expectedWords)
+            } else if !down {
+                voice.stop()
             }
             return nil
         }
@@ -102,6 +113,8 @@ struct OrbReplyView: View {
             if dictating {
                 Label(L10n.t("Listening… let go of fn to stop"), systemImage: "waveform")
                     .foregroundStyle(.primary)
+            } else if case .failed(let why) = voice.state {
+                Label(why, systemImage: "mic.slash").foregroundStyle(Palette.watch)
             } else if canSpeak {
                 Label(L10n.t("Hold fn to speak"), systemImage: "mic").foregroundStyle(.secondary)
             }
@@ -109,7 +122,7 @@ struct OrbReplyView: View {
         .font(.system(size: 11, weight: .medium))
         .lineLimit(1)
         .transition(.opacity)
-        .animation(.easeOut(duration: 0.15), value: dictating)
+        .animation(.easeOut(duration: 0.15), value: voice.state)
     }
 
     // MARK: The pill
@@ -119,10 +132,10 @@ struct OrbReplyView: View {
             // Whose session this is — its agent's mark, not a generic one.
             Group {
                 if dictating {
-                    Image(systemName: "waveform")
+                    // The voice, as it is heard.
+                    Image(systemName: "waveform", variableValue: voice.level)
                         .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(Color.accentColor)
-                        .symbolEffect(.variableColor.iterative, isActive: true)
                         .frame(width: 20)
                 } else if let glyph = ProviderGlyph.forSession(session) {
                     ProviderGlyphView(glyph: glyph, size: 20)
@@ -186,7 +199,7 @@ struct OrbReplyView: View {
 
     private func send() {
         guard demoText == nil, phase == .idle, !sending else { return }
-        if dictating { SystemDictation.stop(); dictating = false }
+        voice.stop()
         guard ready else { wobble(); return }
         let message = text
         Task { @MainActor in await play(message: message, deliver: {
