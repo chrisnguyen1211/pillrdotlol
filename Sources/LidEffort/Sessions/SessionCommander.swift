@@ -123,13 +123,18 @@ enum SessionCommander {
             log.notice("reply: background \(String(describing: background), privacy: .public)")
             switch background {
             case .sent: return .sent
-            case .otherSession: return .otherSession
             case .draft, .userTyping: return .busy
             case .notTrusted: return .failed(accessibilityOff())
             default: break
             }
             stepAside()
-            guard await SessionFocus.focus(pid: pid) else { return .failed(L10n.t("The Claude app did not come forward")) }
+            if background == .otherSession {
+                // The window shows another session: open this one there by
+                // the Claude app's own link, which brings it forward too.
+                guard await ClaudeDesktopComposer.open(hostSession: host) else { return .otherSession }
+            } else {
+                guard await SessionFocus.focus(pid: pid) else { return .failed(L10n.t("The Claude app did not come forward")) }
+            }
             try? await Task.sleep(nanoseconds: 450_000_000)
             let front = ClaudeDesktopComposer.send(message: line, toHostSession: host)
             log.notice("reply: in front \(String(describing: front), privacy: .public)")

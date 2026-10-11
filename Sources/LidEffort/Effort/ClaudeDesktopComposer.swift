@@ -322,6 +322,32 @@ enum ClaudeDesktopComposer {
         return sawPage ? .noSession : .unknown
     }
 
+    /// The Claude app's own link to a session's page: the address its
+    /// window shows for it, `claude.ai/epitaxy/local_…`, under its scheme.
+    static func link(toHostSession id: String) -> URL? {
+        guard hostSessionID(inAddress: id) == id else { return nil }
+        return URL(string: "claude://claude.ai/epitaxy/\(id)")
+    }
+
+    /// Opens a session in the Claude app's window and waits, a few seconds
+    /// at most, until the window shows it. The app comes forward with it.
+    @MainActor
+    static func open(hostSession id: String) async -> Bool {
+        guard let url = link(toHostSession: id), let app = runningApp, AXIsProcessTrusted() else { return false }
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = true
+        guard (try? await NSWorkspace.shared.open(url, configuration: configuration)) != nil else { return false }
+        for _ in 0..<24 {
+            try? await Task.sleep(nanoseconds: 150_000_000)
+            if view(of: app) == .session(id) {
+                log.notice("composer: opened the session by its link")
+                return true
+            }
+        }
+        log.notice("composer: the session's link didn't open it")
+        return false
+    }
+
     /// `local_<uuid>` from a Claude Desktop page address, if it names one.
     static func hostSessionID(inAddress address: String) -> String? {
         guard let range = address.range(of: #"local_[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}"#,

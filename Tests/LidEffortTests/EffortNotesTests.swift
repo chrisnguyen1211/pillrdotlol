@@ -131,4 +131,14 @@ final class ClaudeAppViewTests: XCTestCase {
         XCTAssertTrue(ClaudeDesktopComposer.sendWords.contains { "gửi".contains($0) }, "Send in Vietnamese")
         XCTAssertTrue(ClaudeDesktopComposer.stopWords.contains { "dừng phản hồi".contains($0) }, "Stop in Vietnamese")
     }
+
+    /// A session the Claude app isn't showing is opened by the app's own link.
+    func testASessionIsOpenedByTheClaudeAppsOwnLink() {
+        let id = "local_56f8c627-e12b-4431-a984-b5ffc9f735d5"
+        XCTAssertEqual(ClaudeDesktopComposer.link(toHostSession: id)?.absoluteString, "claude://claude.ai/epitaxy/\(id)")
+        XCTAssertEqual(ClaudeDesktopComposer.hostSessionID(inAddress: "https://claude.ai/epitaxy/\(id)"), id,
+                       "the address the window then shows names the same session")
+        XCTAssertNil(ClaudeDesktopComposer.link(toHostSession: "local_../../settings"), "only a session id makes a link")
+        XCTAssertNil(ClaudeDesktopComposer.link(toHostSession: "\(id)?x=1"))
+    }
 }
