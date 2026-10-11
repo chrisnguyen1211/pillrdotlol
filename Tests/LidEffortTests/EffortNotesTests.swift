@@ -141,4 +141,15 @@ final class ClaudeAppViewTests: XCTestCase {
         XCTAssertNil(ClaudeDesktopComposer.link(toHostSession: "local_../../settings"), "only a session id makes a link")
         XCTAssertNil(ClaudeDesktopComposer.link(toHostSession: "\(id)?x=1"))
     }
+
+    /// Claude Code's own stash (Ctrl+S) sets a draft aside for a reply;
+    /// other agents keep a draft from being written over.
+    func testOnlyClaudeCodeGetsItsDraftSetAside() {
+        func session(_ id: String) -> AgentSession {
+            AgentSession(id: id, name: "s", detail: "", state: .idle, waitingFor: nil, since: Date())
+        }
+        XCTAssertEqual(SessionCommander.stashKey(for: session("claude.abc")), "\u{13}")
+        XCTAssertNil(SessionCommander.stashKey(for: session("grok.abc")))
+        XCTAssertNil(SessionCommander.stashKey(for: session("codex.abc")))
+    }
 }

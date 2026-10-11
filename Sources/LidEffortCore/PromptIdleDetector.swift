@@ -20,17 +20,34 @@ public enum PromptIdleDetector {
     /// -to-inject prompt — as opposed to typed text, an open submenu, a
     /// dialog, a running turn, or a screen we don't recognize at all — is:
     /// no busy marker anywhere, and the *last* `❯` line has nothing after it.
-    public static func isIdle(screenText: String) -> Bool {
+    public static func isIdle(screenText: String) -> Bool { state(screenText: screenText) == .idle }
+
+    /// The input line as the screen shows it.
+    public enum State: Equatable {
+        /// Empty, and no turn running: safe to type into.
+        case idle
+        /// No turn running, but something typed is waiting on the line:
+        /// someone's draft.
+        case draft
+        /// A turn running, a menu or dialog open, or a screen not known.
+        case busy
+    }
+
+    public static func state(screenText: String) -> State {
         let lower = screenText.lowercased()
-        if busyMarkers.contains(where: { lower.contains($0) }) { return false }
+        if busyMarkers.contains(where: { lower.contains($0) }) { return .busy }
         // A framed input line reads the same once its border is off: Grok
         // draws `│ ❯` where Claude Code draws a bare `❯`.
         let lines = screenText.components(separatedBy: .newlines)
             .map { $0.trimmingCharacters(in: frame) }
-        guard let lastPromptLine = lines.last(where: { $0.hasPrefix("❯") }) else {
-            return false
-        }
-        let afterMarker = lastPromptLine.dropFirst("❯".count)
-        return String(afterMarker).trimmingCharacters(in: frame).isEmpty
+        guard let index = lines.lastIndex(where: { $0.hasPrefix("❯") }) else { return .busy }
+        let afterMarker = String(lines[index].dropFirst("❯".count)).trimmingCharacters(in: frame)
+        if afterMarker.isEmpty { return .idle }
+        // A numbered choice under the marker is a menu, not a draft.
+        if afterMarker.range(of: #"^[0-9]+\. "#, options: .regularExpression) != nil { return .busy }
+        // Only the input box itself, drawn under its top rule: a picker's
+        // highlighted row (a session in /resume) has the same marker.
+        guard index > 0, lines[index - 1].contains("──") else { return .busy }
+        return .draft
     }
 }

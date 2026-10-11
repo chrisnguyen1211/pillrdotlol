@@ -143,14 +143,23 @@ enum EffortInjector {
     /// A message you wrote in pillr, typed into the session's Terminal tab —
     /// only at an idle, empty prompt, the same rule as `/effort`. One line:
     /// a line break would send the first half on its own.
-    static func typeMessage(_ text: String, tty: String) -> Outcome {
+    static func typeMessage(_ text: String, tty: String, stashKey: Character? = nil) -> Outcome {
         guard let line = SessionCommander.oneLine(text) else { return .appleScriptError("empty") }
         guard tty.range(of: #"^ttys?[0-9]+$"#, options: .regularExpression) != nil else { return .noTTY }
         let tabs = readAllTabs()
         guard let match = tabs.first(where: { $0.tty == tty }) else { return .tabNotFound }
         if match.contents.hasPrefix("\u{3}") { return .contentUnreadable(String(match.contents.dropFirst())) }
-        guard PromptIdleDetector.isIdle(screenText: match.contents) else { return .promptNotIdle }
-        let literal = SessionCommander.appleScriptLiteral(line)
+        // A draft on the line: the agent's own stash takes it and gives it
+        // back once the reply is sent (Claude Code's Ctrl+S).
+        let prefix: String
+        switch PromptIdleDetector.state(screenText: match.contents) {
+        case .idle: prefix = ""
+        case .draft:
+            guard let stashKey else { return .promptNotIdle }
+            prefix = "(ASCII character \(stashKey.asciiValue ?? 19)) & "
+        case .busy: return .promptNotIdle
+        }
+        let literal = prefix + SessionCommander.appleScriptLiteral(line)
         let script = """
         tell application "Terminal"
             set wCount to count of windows

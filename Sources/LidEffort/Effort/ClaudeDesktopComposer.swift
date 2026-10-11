@@ -69,15 +69,15 @@ enum ClaudeDesktopComposer {
         // Just brought to the front from pillr's panel: the window may still
         // be redrawing its message box. Once more, from a fresh look, if the
         // first try could not put the message in.
-        let first = deliver(line, askForTrust: false)
+        let first = deliver(line, askForTrust: false, keepDraft: true)
         guard first == .notSent else { return first }
         usleep(500_000)
         log.notice("composer: second try with a fresh message box")
-        return deliver(line, askForTrust: false)
+        return deliver(line, askForTrust: false, keepDraft: true)
     }
 
     @MainActor
-    private static func deliver(_ command: String, askForTrust: Bool) -> Outcome {
+    private static func deliver(_ command: String, askForTrust: Bool, keepDraft: Bool = false) -> Outcome {
         guard let app = NSWorkspace.shared.frontmostApplication,
               app.bundleIdentifier == bundleID else {
             log.notice("composer: Claude Desktop is not in front")
@@ -123,11 +123,17 @@ enum ClaudeDesktopComposer {
             log.notice("composer: nothing focused")
             return .noComposer
         }
-        let current = (string(focused, kAXValueAttribute) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-        guard current.isEmpty else {
-            log.notice("composer: the composer is not empty")
-            return .draft
+        // A draft in the box: for a reply, set aside and put back once the
+        // reply is sent (or not); anything else waits for an empty box.
+        var draft: String?
+        if !value(of: focused).isEmpty {
+            guard keepDraft, let taken = takeDraft(from: focused) else {
+                log.notice("composer: the composer is not empty")
+                return .draft
+            }
+            draft = taken
         }
+        defer { if let draft { putBack(draft, into: focused) } }
 
         // Put the command in, then read it back: Return is pressed only on
         // the exact command. Keystrokes are not used for the text — an input
@@ -259,10 +265,63 @@ enum ClaudeDesktopComposer {
     }
 
     /// Deletes what is in the box only when it is (part of) our command —
-    /// never a draft of the person's.
+    /// never a draft of the person's. Through Accessibility; by keystrokes
+    /// only when the Claude app is in front with that very box focused, as
+    /// a key posted otherwise goes to whatever app has the keyboard.
     private static func clear(_ element: AXUIElement, ifItHolds command: String) {
         guard isOurs(value(of: element), command) else { return }
+        if clearByAccessibility(element) { return }
+        guard NSWorkspace.shared.frontmostApplication?.bundleIdentifier == bundleID,
+              let app = runningApp,
+              let focused = self.element(AXUIElementCreateApplication(app.processIdentifier), kAXFocusedUIElementAttribute),
+              CFEqual(focused, element) else {
+            log.notice("composer: left our text in the box rather than type into another app")
+            return
+        }
         deleteAll(element)
+    }
+
+    /// Empties the box without a keystroke.
+    private static func clearByAccessibility(_ element: AXUIElement) -> Bool {
+        AXUIElementSetAttributeValue(element, kAXValueAttribute as CFString, "" as CFString)
+        for _ in 0..<Self.readBackTries {
+            if value(of: element).isEmpty { return true }
+            usleep(Self.readBackWait)
+        }
+        return value(of: element).isEmpty
+    }
+
+    /// The person's draft, taken out of the box to be put back after a
+    /// reply; nil, and the box as it was, when it won't come out.
+    private static func takeDraft(from element: AXUIElement) -> String? {
+        let draft = string(element, kAXValueAttribute) ?? ""
+        guard !draft.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
+        if clearByAccessibility(element) {
+            log.notice("composer: draft of \(draft.count, privacy: .public) chars set aside")
+            return draft
+        }
+        AXUIElementSetAttributeValue(element, kAXValueAttribute as CFString, draft as CFString)
+        return nil
+    }
+
+    /// The draft back in the box, after the reply. Should the box not take
+    /// it, it goes on the clipboard: a draft is never lost.
+    private static func putBack(_ draft: String, into element: AXUIElement) {
+        let wanted = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        // A reply still in the box (not sent) comes out first.
+        if !value(of: element).isEmpty, value(of: element) != wanted { _ = clearByAccessibility(element) }
+        AXUIElementSetAttributeValue(element, kAXValueAttribute as CFString, draft as CFString)
+        for _ in 0..<Self.readBackTries {
+            if value(of: element) == wanted {
+                log.notice("composer: draft put back")
+                return
+            }
+            usleep(Self.readBackWait)
+        }
+        let board = NSPasteboard.general
+        board.clearContents()
+        board.setString(draft, forType: .string)
+        log.notice("composer: the draft wouldn't go back in; it is on the clipboard")
     }
 
     private static func deleteAll(_ element: AXUIElement) {
@@ -379,10 +438,15 @@ enum ClaudeDesktopComposer {
             log.notice("composer (background): no message box")
             return .noComposer
         }
-        guard value(of: composer).isEmpty else {
-            log.notice("composer (background): the box has a draft")
-            return .draft
+        var draft: String?
+        if !value(of: composer).isEmpty {
+            guard let taken = takeDraft(from: composer) else {
+                log.notice("composer (background): the box has a draft that wouldn't move")
+                return .draft
+            }
+            draft = taken
         }
+        defer { if let draft { putBack(draft, into: composer) } }
         AXUIElementSetAttributeValue(composer, kAXValueAttribute as CFString, line as CFString)
         guard waitUntil(composer, holds: line) else {
             log.notice("composer (background): \(Self.describe(value(of: composer), line), privacy: .public)")

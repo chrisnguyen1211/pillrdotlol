@@ -108,12 +108,12 @@ enum SessionCommander {
             guard EffortInjector.itermAllowed else {
                 return .failed(L10n.t("iTerm2 hasn't allowed pillr yet. Allow it in Settings → General → Run Setup Again… → Terminals"))
             }
-            return outcome(ITermWriter.write(line, tty: tty), host: "iTerm2")
+            return outcome(ITermWriter.write(line, tty: tty, stashKey: stashKey(for: session)), host: "iTerm2")
         case .terminal(let tty):
             guard EffortInjector.terminalAllowed else {
                 return .failed(L10n.t("Terminal hasn't allowed pillr yet. Allow it in Settings → General → Run Setup Again… → Terminals"))
             }
-            return outcome(EffortInjector.typeMessage(line, tty: tty), host: "Terminal")
+            return outcome(EffortInjector.typeMessage(line, tty: tty, stashKey: stashKey(for: session)), host: "Terminal")
         case .superset:
             guard let place = Superset.place(of: pid) else { return .failed(L10n.t("Superset no longer has this pane")) }
             return await Superset.send(line, to: place) == .sent ? .sent : .failed(L10n.t("Superset refused the message"))
@@ -175,6 +175,13 @@ enum SessionCommander {
         case .none:
             return .failed(L10n.t("This session can't be written to from here"))
         }
+    }
+
+    /// The key that sets a draft aside in the session's agent and gives it
+    /// back once the next message is sent: Claude Code's Ctrl+S (stash).
+    /// Agents without one keep a draft from being written over.
+    nonisolated static func stashKey(for session: AgentSession) -> Character? {
+        ProviderGlyph.forSession(session) == .claude ? "\u{13}" : nil
     }
 
     /// Says where to turn it on — and opens the way there, so the next try
@@ -304,7 +311,7 @@ enum SessionCommander {
 enum ITermWriter {
     /// `run` answers nil when the script itself failed — no permission, or
     /// iTerm2 gone — which is a refusal, not a missing tab.
-    static func write(_ line: String, tty: String,
+    static func write(_ line: String, tty: String, stashKey: Character? = nil,
                       run: (String) -> String? = ITermWriter.run) -> EffortInjector.Outcome {
         guard tty.range(of: #"^ttys?[0-9]+$"#, options: .regularExpression) != nil else { return .noTTY }
         let device = "/dev/" + tty
@@ -322,14 +329,21 @@ enum ITermWriter {
         """
         guard let screen = run(read) else { return .appleScriptError("read") }
         guard screen != "\u{3}" else { return .tabNotFound }
-        guard PromptIdleDetector.isIdle(screenText: screen) else { return .promptNotIdle }
+        let prefix: String
+        switch PromptIdleDetector.state(screenText: screen) {
+        case .idle: prefix = ""
+        case .draft:
+            guard let stashKey else { return .promptNotIdle }
+            prefix = "(ASCII character \(stashKey.asciiValue ?? 19)) & "
+        case .busy: return .promptNotIdle
+        }
         let write = """
         tell application "iTerm2"
             repeat with w in windows
                 repeat with t in tabs of w
                     repeat with s in sessions of t
                         if tty of s is "\(device)" then
-                            tell s to write text \(SessionCommander.appleScriptLiteral(line))
+                            tell s to write text \(prefix)\(SessionCommander.appleScriptLiteral(line))
                             return "sent"
                         end if
                     end repeat
