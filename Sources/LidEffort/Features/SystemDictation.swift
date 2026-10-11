@@ -148,7 +148,7 @@ final class SystemDictation: ObservableObject {
 
     /// The languages and mode set for the keyboard's dictation, else the
     /// Mac's own languages, on Apple's servers.
-    static func dictationSettings(defaults: UserDefaults? = UserDefaults(suiteName: "com.apple.speech.recognition.AppleSpeechRecognition.prefs"),
+    nonisolated static func dictationSettings(defaults: UserDefaults? = UserDefaults(suiteName: "com.apple.speech.recognition.AppleSpeechRecognition.prefs"),
                                   preferred: [String] = Locale.preferredLanguages) -> DictationSettings {
         let chosen = (defaults?.array(forKey: "DictationIMPreferredLanguageIdentifiers") as? [String]) ?? []
         let languages = chosen.isEmpty ? preferred : chosen + preferred.filter { lang in !chosen.contains { $0.hasPrefix(String(lang.prefix(2))) } }
@@ -158,7 +158,7 @@ final class SystemDictation: ObservableObject {
 
     /// Words a reply to a coding agent is full of, so they come out as
     /// written rather than as the nearest words of the language spoken.
-    static let tradeWords = [
+    nonisolated static let tradeWords = [
         "test", "tests", "commit", "push", "pull", "merge", "deploy", "build", "release", "bug", "fix", "refactor",
         "README", "API", "dashboard", "notch", "pillr", "Claude", "Claude Code", "Codex", "Cursor", "Grok", "Gemini",
         "Kimi", "Copilot", "Antigravity", "landing page", "branch", "main", "pull request", "PR", "log", "terminal",
