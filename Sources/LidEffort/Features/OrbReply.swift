@@ -77,7 +77,8 @@ struct OrbReplyView: View {
             voice.stop()
         }
         .onChange(of: voice.heard) { _, heard in
-            guard voice.isListening else { return }
+            // The last words still come in a moment after fn is let go.
+            guard voice.transcribing else { return }
             text = VoiceDictation.merge(typed: typedBeforeVoice, heard: heard)
         }
         .onExitCommand(perform: onClose)
@@ -104,6 +105,9 @@ struct OrbReplyView: View {
     @ViewBuilder private var voiceHint: some View {
         Group {
             switch voice.state {
+            case .preparing:
+                Label(L10n.t("Getting dictation ready…"), systemImage: "waveform")
+                    .foregroundStyle(.secondary)
             case .listening:
                 Label(L10n.t("Listening… let go of fn to stop"), systemImage: "waveform")
                     .foregroundStyle(.primary)
