@@ -187,7 +187,7 @@ final class DashboardModel: ObservableObject {
                 return Loaded(keys: rows,
                               commitTimes: figures?.commitTimes ?? [],
                               busyDays: figures?.busy ?? [:],
-                              bestStreak: figures.map { Achievements.longestStreak($0.busy) } ?? 0,
+                              bestStreak: activity?.bestStreak() ?? 0,
                               activity: activity?.summary(from: interval.start, to: interval.end) ?? .init(),
                               streak: activity?.streak() ?? 0,
                               commits: figures?.commits.mapValues { Int($0) } ?? [:],

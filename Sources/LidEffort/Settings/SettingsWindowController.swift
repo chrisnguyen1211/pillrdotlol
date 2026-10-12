@@ -85,10 +85,18 @@ final class SettingsWindowController: NSObject, NSWindowDelegate {
         NSApp.activate(ignoringOtherApps: true)
         window.makeKeyAndOrderFront(nil)
         window.orderFrontRegardless()
+        SettingsPresence.shared.isShowing = true
     }
 
     func windowWillClose(_ notification: Notification) {
         NSApp.setActivationPolicy(preferences.appPresence.activationPolicy)
+        SettingsPresence.shared.isShowing = false
+    }
+
+    /// Covered, minimised or on another Space: nothing of it can be seen.
+    func windowDidChangeOcclusionState(_ notification: Notification) {
+        guard let window = notification.object as? NSWindow else { return }
+        SettingsPresence.shared.isShowing = SettingsPresence.canBeSeen(window)
     }
 
     /// Sit the traffic lights in the middle of the panel's header band.
@@ -247,5 +255,31 @@ struct WindowDragHandle: NSViewRepresentable {
     final class Handle: NSView {
         override var mouseDownCanMoveWindow: Bool { false }
         override func mouseDown(with event: NSEvent) { window?.performDrag(with: event) }
+    }
+}
+
+/// Whether Settings can be seen at all: the dashboard's sky, its fire and
+/// its minute-by-minute reload run only then. The window is kept when
+/// closed, and so is everything in it: left to run, they kept drawing and
+/// asking git every minute until pillr quit.
+@MainActor
+final class SettingsPresence: ObservableObject {
+    static let shared = SettingsPresence()
+    @Published var isShowing = false
+
+    static func canBeSeen(_ window: NSWindow) -> Bool {
+        window.isVisible && !window.isMiniaturized && window.occlusionState.contains(.visible)
+    }
+}
+
+private struct DashboardAnimatesKey: EnvironmentKey {
+    static let defaultValue = true
+}
+
+extension EnvironmentValues {
+    /// False while the dashboard can't be seen: its sky and fire hold still.
+    var dashboardAnimates: Bool {
+        get { self[DashboardAnimatesKey.self] }
+        set { self[DashboardAnimatesKey.self] = newValue }
     }
 }

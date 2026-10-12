@@ -137,15 +137,26 @@ enum ClaudeHookInstaller {
 /// Which running session a hook's `session_id` belongs to, from Claude
 /// Code's own registry — the same files the session monitor reads.
 enum ClaudeSessionLookup {
-    static func pid(forSessionID id: String) -> pid_t? {
-        let dir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".claude/sessions")
-        guard let files = try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil) else { return nil }
+    /// A session resumed after a crash has its old record still there,
+    /// under the same id: the live one is the answer, the newest of them
+    /// if more than one is. A dead pid made the notch take its prompts for
+    /// answered and withdraw them while they were still being asked.
+    static func pid(forSessionID id: String,
+                    directory: URL = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".claude/sessions"),
+                    isAlive: (pid_t, Date?) -> Bool = { ProcessLiveness.isAlive(pid: $0, startedAt: $1) }) -> pid_t? {
+        guard let files = try? FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil) else { return nil }
+        var found: [(pid: pid_t, started: Date?)] = []
         for file in files where file.pathExtension == "json" {
             guard let data = try? Data(contentsOf: file),
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  json["sessionId"] as? String == id else { continue }
-            return (json["pid"] as? NSNumber)?.int32Value ?? Int32(file.deletingPathExtension().lastPathComponent)
+                  json["sessionId"] as? String == id,
+                  let pid = (json["pid"] as? NSNumber)?.int32Value ?? Int32(file.deletingPathExtension().lastPathComponent)
+            else { continue }
+            let started = (json["startedAt"] as? NSNumber).map { Date(timeIntervalSince1970: $0.doubleValue / 1000) }
+            found.append((pid, started))
         }
-        return nil
+        let live = found.filter { isAlive($0.pid, $0.started) }
+        let pick = (live.isEmpty ? found : live).max { ($0.started ?? .distantPast) < ($1.started ?? .distantPast) }
+        return pick?.pid
     }
 }

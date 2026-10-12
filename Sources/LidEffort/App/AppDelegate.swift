@@ -1348,6 +1348,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     static let coachEnabledKey = "coach.enabled"
     private var coachTimer: Timer?
+    private var aliveTimer: Timer?
     private var coachSoon: Task<Void, Never>?
 
     /// Every hour, and a minute after each finish: a record broken, or a
@@ -1359,6 +1360,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         RunLoop.main.add(timer, forMode: .common)
         coachTimer = timer
+        // The activity ledger told pillr is still here, and of the Mac
+        // going to sleep: a run open at a quit or over a night's sleep
+        // otherwise counted as work.
+        ActivityLedger.shared?.heartbeat()
+        let alive = Timer(timeInterval: 60, repeats: true) { _ in ActivityLedger.shared?.heartbeat() }
+        RunLoop.main.add(alive, forMode: .common)
+        aliveTimer = alive
+        NSWorkspace.shared.notificationCenter.addObserver(forName: NSWorkspace.willSleepNotification, object: nil,
+                                                          queue: .main) { _ in ActivityLedger.shared?.pause() }
         previewBadgeCardIfAsked()
         previewDoneCardIfAsked()
         // Once soon after launch, so badges already reached are given.

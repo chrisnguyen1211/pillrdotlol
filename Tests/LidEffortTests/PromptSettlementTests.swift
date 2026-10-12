@@ -208,3 +208,39 @@ final class PromptReleaseTests: XCTestCase {
         broker.answer(prompt.id, with: .allow)
     }
 }
+
+
+/// Only answers someone gave are counted as theirs.
+final class PromptAnswerCountTests: XCTestCase {
+    func testAPassThroughIsNotAnAnswer() {
+        XCTAssertFalse(PromptBroker.isPersonsAnswer(.passThrough))
+        XCTAssertTrue(PromptBroker.isPersonsAnswer(.allow))
+        XCTAssertTrue(PromptBroker.isPersonsAnswer(.allowAlways))
+        XCTAssertTrue(PromptBroker.isPersonsAnswer(.deny))
+        XCTAssertTrue(PromptBroker.isPersonsAnswer(.answers(["q": ["a"]])))
+    }
+}
+
+
+/// A session resumed after a crash: the dead record under the same id is
+/// not the one the hook belongs to.
+final class SessionLookupTests: XCTestCase {
+    func testTheLiveRecordWins() throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("sessions-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        func record(_ pid: Int, startedAt: Double) throws {
+            let json = #"{"pid":\#(pid),"sessionId":"s-1","startedAt":\#(startedAt)}"#
+            try json.write(to: dir.appendingPathComponent("\(pid).json"), atomically: true, encoding: .utf8)
+        }
+        try record(111, startedAt: 1_000_000)   // crashed, left behind
+        try record(222, startedAt: 2_000_000)   // the resumed one, running
+        try record(333, startedAt: 3_000_000)   // another id would not count
+        try #"{"pid":333,"sessionId":"other","startedAt":3000000}"#.write(to: dir.appendingPathComponent("333.json"), atomically: true, encoding: .utf8)
+        let alive: (pid_t, Date?) -> Bool = { pid, _ in pid == 222 }
+        XCTAssertEqual(ClaudeSessionLookup.pid(forSessionID: "s-1", directory: dir, isAlive: alive), 222)
+        XCTAssertEqual(ClaudeSessionLookup.pid(forSessionID: "s-1", directory: dir, isAlive: { _, _ in false }), 222,
+                       "none alive: the newest")
+        XCTAssertNil(ClaudeSessionLookup.pid(forSessionID: "nope", directory: dir, isAlive: alive))
+    }
+}

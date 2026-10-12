@@ -89,6 +89,11 @@ final class PromptBroker: @unchecked Sendable {
         for entry in all.values { entry.source.cancel(); close(entry.fd) }
     }
 
+    static func isPersonsAnswer(_ answer: PromptAnswer) -> Bool {
+        if case .passThrough = answer { return false }
+        return true
+    }
+
     /// Answer a held prompt. Unknown or already-answered ids are ignored.
     func answer(_ id: UUID, with answer: PromptAnswer) {
         lock.lock(); let entry = held.removeValue(forKey: id); lock.unlock()
@@ -99,7 +104,13 @@ final class PromptBroker: @unchecked Sendable {
         reply.withUnsafeBytes { _ = write(entry.fd, $0.baseAddress, $0.count) }
         close(entry.fd)
         log.notice("prompt \(entry.prompt.toolName, privacy: .public) answered: \(String(describing: answer), privacy: .public)")
-        ActivityLedger.shared?.answered(agent: "claude", question: entry.prompt.isQuestion, asked: entry.prompt.receivedAt)
+        // Only an answer someone gave counts: one pillr passed through on
+        // its own (the session was in view, the tour, patience run out)
+        // was yours to give elsewhere, and logged as an instant answer it
+        // earned the fast-answer badges for nothing.
+        if Self.isPersonsAnswer(answer) {
+            ActivityLedger.shared?.answered(agent: "claude", question: entry.prompt.isQuestion, asked: entry.prompt.receivedAt)
+        }
         let gone = onGone
         Task { @MainActor in gone?(id) }
     }

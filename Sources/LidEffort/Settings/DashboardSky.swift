@@ -11,11 +11,15 @@ struct DashboardSky: View {
     /// A fixed moment, for renders; nil follows the clock.
     var date: Date? = nil
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dashboardAnimates) private var animates
 
     var body: some View {
         Group {
             if let date {
                 scene(at: date, moving: false)
+            } else if !animates {
+                // Not seen: one still frame, no clock running.
+                scene(at: Date(), moving: false)
             } else if reduceMotion {
                 TimelineView(.periodic(from: .now, by: 60)) { scene(at: $0.date, moving: false) }
             } else {

@@ -43,9 +43,67 @@ final class ActivityLedger {
                 CREATE TABLE IF NOT EXISTS prompt_wait(
                   asked INTEGER NOT NULL, answered INTEGER NOT NULL, agent TEXT NOT NULL, kind TEXT NOT NULL);
                 CREATE INDEX IF NOT EXISTS ix_wait ON prompt_wait(answered);
+                CREATE TABLE IF NOT EXISTS alive(id INTEGER PRIMARY KEY CHECK (id = 1), ts INTEGER NOT NULL);
                 """)
         }
         guard ok else { sqlite3_close(handle); return nil }
+        // Whatever was busy or waiting when pillr last stopped (quit,
+        // crash, power gone) ended then, as far as anything here can know:
+        // otherwise it counted as busy up to every "now" after.
+        queue.sync {
+            let last = lastAlive() ?? lastChange()
+            if let last { closeOpenRuns(at: last) }
+        }
+    }
+
+    /// pillr is still here: noted now and then, so a run left open by a
+    /// quit ends where pillr last was rather than never.
+    func heartbeat(at date: Date = Date()) {
+        queue.async { [self] in
+            run("INSERT INTO alive(id, ts) VALUES (1, ?1) ON CONFLICT(id) DO UPDATE SET ts = excluded.ts",
+                [.int(Int(date.timeIntervalSince1970))])
+        }
+    }
+
+    /// The Mac going to sleep: every run open now ends now, and starts
+    /// again from what the notch sees on waking. Sleep is not work.
+    func pause(at date: Date = Date()) {
+        queue.async { [self] in
+            closeOpenRuns(at: date)
+            run("INSERT INTO alive(id, ts) VALUES (1, ?1) ON CONFLICT(id) DO UPDATE SET ts = excluded.ts",
+                [.int(Int(date.timeIntervalSince1970))])
+        }
+    }
+
+    /// Writes `gone` for every session whose last state is busy or waiting,
+    /// no earlier than its own last change, and forgets what was known.
+    private func closeOpenRuns(at date: Date) {
+        guard let st = prepare("""
+            SELECT agent, session, ts FROM state_change s WHERE state IN ('busy', 'waiting')
+              AND rowid = (SELECT max(rowid) FROM state_change t WHERE t.session = s.session AND t.agent = s.agent)
+            """) else { return }
+        var open: [(String, String, Int)] = []
+        while sqlite3_step(st) == SQLITE_ROW { open.append((column(st, 0), column(st, 1), Int(sqlite3_column_int64(st, 2)))) }
+        sqlite3_finalize(st)
+        for (agent, session, ts) in open {
+            run("INSERT INTO state_change(ts, agent, session, state) VALUES (?1, ?2, ?3, 'gone')",
+                [.int(max(ts, Int(date.timeIntervalSince1970))), .text(agent), .text(session)])
+        }
+        known.removeAll()
+    }
+
+    private func lastAlive() -> Date? {
+        guard let st = prepare("SELECT ts FROM alive WHERE id = 1") else { return nil }
+        defer { sqlite3_finalize(st) }
+        guard sqlite3_step(st) == SQLITE_ROW else { return nil }
+        return Date(timeIntervalSince1970: TimeInterval(sqlite3_column_int64(st, 0)))
+    }
+
+    private func lastChange() -> Date? {
+        guard let st = prepare("SELECT max(ts) FROM state_change") else { return nil }
+        defer { sqlite3_finalize(st) }
+        guard sqlite3_step(st) == SQLITE_ROW, sqlite3_column_type(st, 0) != SQLITE_NULL else { return nil }
+        return Date(timeIntervalSince1970: TimeInterval(sqlite3_column_int64(st, 0)))
     }
 
     deinit { if let db { sqlite3_close(db) } }
@@ -191,9 +249,24 @@ final class ActivityLedger {
     }
 
     /// Days in a row, up to and including today, with any agent at work.
+    /// The days with a minute or more of agent work, over everything the
+    /// ledger holds: a streak or a best run is not cut at some window.
+    func workingDays(now: Date = Date(), calendar: Calendar = .current) -> Set<Date> {
+        let first = queue.sync { firstRecord() } ?? now
+        let start = calendar.startOfDay(for: min(first, now))
+        return Set(summary(from: start, to: now, now: now, calendar: calendar).busyByDay.filter { $0.value >= 60 }.keys)
+    }
+
+    /// The longest run of working days ever.
+    func bestStreak(now: Date = Date(), calendar: Calendar = .current) -> Int {
+        Achievements.longestStreak(Dictionary(uniqueKeysWithValues: workingDays(now: now, calendar: calendar).map { ($0, 60.0) }),
+                                   calendar: calendar)
+    }
+
     func streak(now: Date = Date(), calendar: Calendar = .current) -> Int {
-        let start = calendar.date(byAdding: .day, value: -60, to: calendar.startOfDay(for: now))!
-        let days = summary(from: start, to: now, now: now, calendar: calendar).busyByDay.filter { $0.value >= 60 }.keys
+        // Was 60 days back: a 200-day streak read as 61, and the fire's
+        // 100, 150 and 365-day flames could never come.
+        let days = workingDays(now: now, calendar: calendar)
         var count = 0
         var day = calendar.startOfDay(for: now)
         if !days.contains(day) { day = calendar.date(byAdding: .day, value: -1, to: day)! }

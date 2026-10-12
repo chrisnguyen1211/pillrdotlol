@@ -10,7 +10,11 @@ enum CommitLog {
     /// How long a count is reused: git is not asked on every redraw.
     static let reuse: TimeInterval = 10 * 60
     private static let lock = NSLock()
-    private static var held: (key: String, at: Date, times: [Date])?
+    /// The last count, over the longest window asked for: a shorter one is
+    /// cut from it. Records ask for 120 days and badges for a year, one
+    /// after the other; kept by window, each pushed the other out and git
+    /// ran every time.
+    private static var held: (roots: String, since: Date, at: Date, times: [Date])?
 
     /// The repositories the folders are in, each once.
     static func roots(of folders: [String], limit: Int = 60) -> [String] {
@@ -29,8 +33,10 @@ enum CommitLog {
     /// When each commit was made since a moment, by each repository's own
     /// user, each commit once, oldest first.
     static func times(roots: [String], since: Date, now: Date = Date()) -> [Date] {
-        let key = roots.joined(separator: "|") + "@\(Int(since.timeIntervalSince1970) / 3600)"
-        if let held = lock.withLock({ held }), held.key == key, now.timeIntervalSince(held.at) < reuse { return held.times }
+        let key = roots.joined(separator: "|")
+        if let held = lock.withLock({ held }), held.roots == key, held.since <= since, now.timeIntervalSince(held.at) < reuse {
+            return held.times.filter { $0 >= since }
+        }
         var seen: Set<String> = []
         var times: [Date] = []
         for root in roots {
@@ -46,7 +52,7 @@ enum CommitLog {
             }
         }
         times.sort()
-        lock.withLock { held = (key, now, times) }
+        lock.withLock { held = (key, since, now, times) }
         return times
     }
 

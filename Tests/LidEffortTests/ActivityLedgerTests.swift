@@ -97,4 +97,57 @@ final class ActivityLedgerTests: XCTestCase {
         ledger.flush()
         XCTAssertEqual(ledger.streak(now: day.addingTimeInterval(20 * 3600), calendar: calendar), 3)
     }
+
+    /// A streak and a best run read the whole ledger, not the last 60 or 120 days.
+    func testAStreakIsNotCutAtAWindow() {
+        // 200 days in a row up to today, and an older run of 130 days before a gap.
+        for back in 0..<200 { work(daysBack: back) }
+        for back in 210..<340 { work(daysBack: back) }
+        ledger.flush()
+        let now = day.addingTimeInterval(20 * 3600)
+        XCTAssertEqual(ledger.streak(now: now, calendar: calendar), 200)
+        XCTAssertEqual(ledger.bestStreak(now: now, calendar: calendar), 200)
+    }
+
+    func testTheBestStreakCanBeAnOldOne() {
+        for back in 0..<5 { work(daysBack: back) }
+        for back in 10..<140 { work(daysBack: back) }
+        ledger.flush()
+        let now = day.addingTimeInterval(20 * 3600)
+        XCTAssertEqual(ledger.streak(now: now, calendar: calendar), 5)
+        XCTAssertEqual(ledger.bestStreak(now: now, calendar: calendar), 130)
+    }
+
+    private func work(daysBack back: Int) {
+        let start = day.addingTimeInterval(Double(-back) * 86_400 + 3600)
+        ledger.observe(agent: "claude", sessions: [session("s\(back)", .busy, since: start)], at: start)
+        ledger.observe(agent: "claude", sessions: [], at: start.addingTimeInterval(600))
+    }
+
+    /// A session busy when pillr quit ended when pillr was last there, not
+    /// at every "now" after.
+    func testABusyRunLeftOpenByAQuitEndsWherePillrLastWas() throws {
+        observe("claude", [("a", .busy)], 0)
+        ledger.heartbeat(at: at(30))
+        ledger.flush()
+        ledger = nil
+        // pillr starts again a day later; the session is gone.
+        let reopened = try XCTUnwrap(ActivityLedger(url: url))
+        reopened.observe(agent: "claude", sessions: [], at: at(24 * 60))
+        reopened.flush()
+        let summary = reopened.summary(from: day, to: day.addingTimeInterval(2 * 86_400), now: at(48 * 60), calendar: calendar)
+        XCTAssertEqual(summary.busy, 30 * 60, "busy until pillr's last sign of life, not for two days")
+    }
+
+    /// Sleep is not work: a run open when the Mac sleeps ends then.
+    func testSleepEndsTheRunsOpenThen() {
+        observe("claude", [("a", .busy)], 0)
+        ledger.pause(at: at(20))
+        // Waking eight hours on, still busy: a new run from then.
+        observe("claude", [("a", .busy)], 8 * 60)
+        observe("claude", [("a", .idle)], 8 * 60 + 10)
+        ledger.flush()
+        let summary = ledger.summary(from: day, to: day.addingTimeInterval(86_400), now: at(9 * 60), calendar: calendar)
+        XCTAssertEqual(summary.busy, 30 * 60, "20 minutes before sleep, 10 after waking")
+    }
 }

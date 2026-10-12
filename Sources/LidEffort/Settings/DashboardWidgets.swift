@@ -21,6 +21,7 @@ struct DashboardPanel: View {
     @ObservedObject var preferences: Preferences
     @Binding var mode: DashboardMode
     @StateObject private var model: DashboardModel
+    @ObservedObject private var presence = SettingsPresence.shared
     /// What the arrow under the pointer will do, said beside it.
     @State private var hint: String?
     /// A fixed hour for the sky, for renders.
@@ -86,12 +87,20 @@ struct DashboardPanel: View {
         }
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).strokeBorder(Color.white.opacity(0.12), lineWidth: 1))
-        .task {
-            // While Settings is up, kept as fresh as the ledgers are.
-            while !Task.isCancelled {
-                model.load()
-                try? await Task.sleep(nanoseconds: 60_000_000_000)
-            }
+        .environment(\.dashboardAnimates, presence.isShowing || skyDate != nil)
+        .task(id: presence.isShowing) {
+            await Self.keepFresh(while: presence.isShowing) { model.load() }
+        }
+    }
+
+    /// While Settings can be seen, kept as fresh as the ledgers are; not
+    /// at all while it can't. Ends when the task is cancelled, as it is
+    /// each time Settings is shown or hidden.
+    static func keepFresh(while showing: Bool, every interval: TimeInterval = 60, load: () -> Void) async {
+        guard showing else { return }
+        while !Task.isCancelled {
+            load()
+            try? await Task.sleep(nanoseconds: UInt64(interval * 1_000_000_000))
         }
     }
 

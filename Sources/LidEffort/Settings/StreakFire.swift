@@ -8,6 +8,7 @@ struct StreakFire: View {
     /// A fixed moment, for renders; nil follows the clock.
     var date: Date? = nil
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dashboardAnimates) private var animates
 
     /// Days a streak must reach for each bigger flame.
     static let milestones = [10, 50, 100, 150, 365]
@@ -28,7 +29,7 @@ struct StreakFire: View {
             ZStack {
                 if let date {
                     flames(at: date.timeIntervalSinceReferenceDate)
-                } else if reduceMotion {
+                } else if reduceMotion || !animates {
                     flames(at: 0)
                 } else {
                     TimelineView(.animation(minimumInterval: 1.0 / 20)) { flames(at: $0.date.timeIntervalSinceReferenceDate) }
