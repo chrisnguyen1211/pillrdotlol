@@ -32,6 +32,36 @@ enum ReleaseNotes {
     static var all: [ReleaseNote] {
         [
             ReleaseNote(
+                version: "1.2.2",
+                headline: L10n.t("Speak your reply, and reach every session."),
+                changes: [
+                    ReleaseNote.Change(
+                        title: L10n.t("Hold fn to speak"),
+                        detail: L10n.t("In the reply field, or over a done card, hold fn and say your reply. It listens in the language of the keyboard you are using.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("Replies reach sessions that are not on screen"),
+                        detail: L10n.t("A Claude app or Codex app session that is not open is opened by its own link first. Anything already typed in its box is set aside and put back after.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("More terminals"),
+                        detail: L10n.t("Replies and focus work in tmux, Zellij, kitty and WezTerm, and a done card brings the right Ghostty tab or editor window forward.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("Fewer false cards"),
+                        detail: L10n.t("A permission Antigravity runs on its own no longer flashes a card, a session is said to wait only once it still waits, asks show without their tags, and a session file left by a crash no longer takes a card off the notch.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("A truer dashboard"),
+                        detail: L10n.t("A session left busy when pillr quit or the Mac slept no longer counts as work, a prompt pillr let through is not counted as your answer, and the streak counts past 61 days.")
+                    ),
+                    ReleaseNote.Change(
+                        title: L10n.t("Lighter when Settings is closed"),
+                        detail: L10n.t("The dashboard stops drawing and reading git once Settings is closed or hidden.")
+                    )
+                ]
+            ),
+            ReleaseNote(
                 version: "1.2.1",
                 headline: L10n.t("The intro tour shows what's new."),
                 changes: [

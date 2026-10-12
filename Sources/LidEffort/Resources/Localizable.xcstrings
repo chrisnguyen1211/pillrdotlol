@@ -63478,6 +63478,414 @@
           }
         }
       }
+    },
+    "Speak your reply, and reach every session." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dites votre réponse, et atteignez chaque session."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "返信は声で、どのセッションにも届きます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fale sua resposta e alcance qualquer sessão."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Отвечайте голосом и в любую сессию."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用语音回复，送达每个会话。"
+          }
+        }
+      }
+    },
+    "In the reply field, or over a done card, hold fn and say your reply. It listens in the language of the keyboard you are using." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dans le champ de réponse, ou sur une carte terminée, maintenez fn et dites votre réponse. L'écoute se fait dans la langue du clavier utilisé."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "返信欄や完了カードの上で fn を押し続け、返信を話してください。使用中のキーボードの言語で聞き取ります。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No campo de resposta, ou sobre um cartão concluído, segure fn e diga sua resposta. Ele ouve no idioma do teclado em uso."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "В поле ответа или над карточкой о завершении удерживайте fn и произнесите ответ. Распознаётся язык текущей раскладки клавиатуры."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在回复框中，或在完成卡片上，按住 fn 说出回复。识别语言跟随当前使用的键盘。"
+          }
+        }
+      }
+    },
+    "Replies reach sessions that are not on screen" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les réponses atteignent les sessions hors écran"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画面にないセッションにも返信が届く"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Respostas chegam a sessões fora da tela"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ответы доходят до сессий, которых нет на экране"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回复可送达不在屏幕上的会话"
+          }
+        }
+      }
+    },
+    "A Claude app or Codex app session that is not open is opened by its own link first. Anything already typed in its box is set aside and put back after." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une session de l'app Claude ou de l'app Codex qui n'est pas ouverte est d'abord ouverte par son propre lien. Ce qui était déjà saisi dans sa zone est mis de côté puis remis."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開いていない Claude アプリや Codex アプリのセッションは、まず専用リンクで開きます。入力欄に書きかけの内容があれば、いったん退避して送信後に戻します。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma sessão do app Claude ou do app Codex que não está aberta é aberta primeiro pelo próprio link. O que já estava digitado na caixa é guardado e devolvido depois."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сессия в приложении Claude или Codex, которая не открыта, сначала открывается по своей ссылке. Уже набранный в поле текст откладывается и потом возвращается."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未打开的 Claude 应用或 Codex 应用会话，会先通过其自身链接打开。输入框中已有的内容会先暂存，发送后再放回。"
+          }
+        }
+      }
+    },
+    "More terminals" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus de terminaux"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "対応ターミナルを拡大"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mais terminais"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Больше терминалов"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "支持更多终端"
+          }
+        }
+      }
+    },
+    "Replies and focus work in tmux, Zellij, kitty and WezTerm, and a done card brings the right Ghostty tab or editor window forward." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les réponses et la mise au premier plan fonctionnent dans tmux, Zellij, kitty et WezTerm, et une carte terminée ramène le bon onglet Ghostty ou la bonne fenêtre d'éditeur."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "tmux、Zellij、kitty、WezTerm で返信と前面表示が使えます。完了カードからは Ghostty の該当タブやエディタのウインドウを前面に出せます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Respostas e foco funcionam no tmux, Zellij, kitty e WezTerm, e um cartão concluído traz para frente a aba certa do Ghostty ou a janela do editor."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ответы и переход к сессии работают в tmux, Zellij, kitty и WezTerm, а карточка о завершении выводит нужную вкладку Ghostty или окно редактора."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "回复与聚焦可在 tmux、Zellij、kitty 和 WezTerm 中使用，完成卡片会把对应的 Ghostty 标签页或编辑器窗口带到前面。"
+          }
+        }
+      }
+    },
+    "Fewer false cards" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moins de fausses cartes"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "誤ったカードを削減"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Menos cartões falsos"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Меньше ложных карточек"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "减少误报卡片"
+          }
+        }
+      }
+    },
+    "A permission Antigravity runs on its own no longer flashes a card, a session is said to wait only once it still waits, asks show without their tags, and a session file left by a crash no longer takes a card off the notch." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une autorisation qu'Antigravity exécute seul ne fait plus clignoter de carte, une session n'est signalée en attente que si elle attend toujours, les demandes s'affichent sans leurs balises, et un fichier de session laissé par un plantage ne retire plus une carte de l'encoche."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antigravity が自動で通す許可でカードが一瞬出ることはなくなりました。セッションの待機はまだ待っている場合だけ知らせ、質問はタグなしで表示します。クラッシュで残ったセッションファイルがノッチのカードを消すこともなくなりました。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma permissão que o Antigravity executa sozinho não pisca mais um cartão, uma sessão só é dada como esperando se ainda espera, os pedidos aparecem sem suas tags, e um arquivo de sessão deixado por uma falha não tira mais um cartão do notch."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Разрешение, которое Antigravity выполняет сам, больше не мигает карточкой; об ожидании сессии сообщается, только если она всё ещё ждёт; вопросы показываются без тегов; файл сессии, оставшийся после сбоя, больше не убирает карточку с выреза."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Antigravity 自行执行的权限不再闪出卡片；会话仅在仍在等待时才提示等待；请求显示时不带标签；崩溃遗留的会话文件也不会再把卡片从刘海撤下。"
+          }
+        }
+      }
+    },
+    "A truer dashboard" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un tableau de bord plus juste"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "より正確なダッシュボード"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um painel mais fiel"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Более точная панель"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更准确的仪表盘"
+          }
+        }
+      }
+    },
+    "A session left busy when pillr quit or the Mac slept no longer counts as work, a prompt pillr let through is not counted as your answer, and the streak counts past 61 days." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Une session restée occupée quand pillr a quitté ou que le Mac s'est mis en veille ne compte plus comme du travail, une demande que pillr a laissée passer n'est plus comptée comme votre réponse, et la série compte au-delà de 61 jours."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pillr の終了時や Mac のスリープ時に作業中だったセッションが作業時間に数え続けられることはなくなりました。pillr が通過させた確認はあなたの回答として数えず、連続記録は 61 日を超えて数えます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uma sessão que ficou ocupada quando o pillr fechou ou o Mac dormiu não conta mais como trabalho, um pedido que o pillr deixou passar não conta como sua resposta, e a sequência conta além de 61 dias."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Сессия, остававшаяся занятой, когда pillr закрылся или Mac уснул, больше не считается работой; запрос, который pillr пропустил сам, не считается вашим ответом; серия считается дальше 61 дня."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pillr 退出或 Mac 睡眠时仍在忙的会话不再一直计入工作时间；pillr 自动放行的请求不再算作你的回答；连续天数可以超过 61 天。"
+          }
+        }
+      }
+    },
+    "Lighter when Settings is closed" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus léger quand les Réglages sont fermés"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定を閉じているときは軽く"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mais leve com os Ajustes fechados"
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Легче, когда настройки закрыты"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭设置时更轻量"
+          }
+        }
+      }
+    },
+    "The dashboard stops drawing and reading git once Settings is closed or hidden." : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le tableau de bord cesse de dessiner et de lire git dès que les Réglages sont fermés ou masqués."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "設定を閉じるか隠すと、ダッシュボードは描画と git の読み取りを止めます。"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O painel para de desenhar e de ler o git assim que os Ajustes são fechados ou ocultados."
+          }
+        },
+        "ru" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Панель перестаёт отрисовываться и читать git, как только настройки закрыты или скрыты."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "设置关闭或隐藏后，仪表盘会停止绘制和读取 git。"
+          }
+        }
+      }
     }
   },
   "version" : "1.0"
