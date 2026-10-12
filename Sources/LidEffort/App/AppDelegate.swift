@@ -1360,6 +1360,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         RunLoop.main.add(timer, forMode: .common)
         coachTimer = timer
         previewBadgeCardIfAsked()
+        previewDoneCardIfAsked()
         // Once soon after launch, so badges already reached are given.
         coachSoon = Task { @MainActor [weak self] in
             try? await Task.sleep(nanoseconds: 120_000_000_000)
@@ -1397,6 +1398,29 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// For trying the badge card out, from the shell only:
     /// `defaults write lol.pillr.app debug.previewBadgeCard "streak.3,commits.2"`
     /// shows those badges' card a few seconds after launch, once.
+    /// For trying a done card out on a real session, from the shell only:
+    /// `defaults write lol.pillr.app debug.previewDoneCard -bool YES` shows,
+    /// a few seconds after launch and once, a done card for the newest live
+    /// session a reply can reach, up for a minute: hold fn over it.
+    @MainActor
+    private func previewDoneCardIfAsked() {
+        let key = "debug.previewDoneCard"
+        guard UserDefaults.standard.bool(forKey: key) else { return }
+        UserDefaults.standard.removeObject(forKey: key)
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(nanoseconds: 6_000_000_000)
+            guard let fleet = self?.notchFleet else { return }
+            let candidates = fleet.sessions.flatMap { provider, list in list.map { (provider, $0) } }
+                .filter { SessionCommander.reach($0.1) != .none }
+                .sorted { $0.1.since > $1.1.since }
+            guard let (provider, session) = candidates.first else {
+                Log.usage.notice("done card preview: no session a reply can reach")
+                return
+            }
+            fleet.showDoneToast(.init(session: session, reason: .finished, providerID: provider), duration: 60)
+        }
+    }
+
     @MainActor
     private func previewBadgeCardIfAsked() {
         let key = "debug.previewBadgeCard"
