@@ -489,6 +489,17 @@ final class NotchFleet {
         for controller in controllers.values { controller.dismissDoneToast() }
     }
 
+    /// The session of a done card on screen that a reply can reach, if one
+    /// is up: holding fn answers it by voice.
+    var replyableDoneSession: AgentSession? {
+        for controller in controllers.values {
+            guard !controller.model.isExpanded, controller.model.currentPrompt == nil,
+                  let toast = controller.model.activeDoneToast, DoneToastView.canReply(toast) else { continue }
+            return toast.session
+        }
+        return nil
+    }
+
     func resolveWaiting(waitingPIDs: Set<pid_t>) {
         for controller in controllers.values {
             controller.resolveWaiting(waitingPIDs: waitingPIDs)

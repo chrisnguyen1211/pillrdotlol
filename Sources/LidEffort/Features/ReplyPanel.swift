@@ -30,10 +30,13 @@ final class ReplyPanelController {
     /// A reply is being written: the notch it hangs from stays put.
     var isOpen: Bool { panel?.isVisible ?? false }
 
-    func open(for session: AgentSession, demoText: String? = nil) {
+    /// - Parameter listening: fn is held: the field opens already
+    ///   listening, until fn is let go.
+    func open(for session: AgentSession, demoText: String? = nil, listening: Bool = false) {
         present(AnyView(OrbReplyView(session: session,
                                      reach: demoText == nil ? SessionCommander.reach(session) : .terminal(tty: "ttys000"),
                                      demoText: demoText,
+                                     listenOnOpen: listening,
                                      onStepAside: { [weak self] in self?.stepAside() },
                                      onReturn: { [weak self] key in self?.comeBack(takingKeyboard: key) },
                                      onClose: { [weak self] in self?.close() })),

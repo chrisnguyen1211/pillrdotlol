@@ -11,6 +11,8 @@ struct OrbReplyView: View {
     let session: AgentSession
     let reach: SessionCommander.Reach
     var demoText: String? = nil
+    /// Opened by holding fn: listening from the start.
+    var listenOnOpen = false
     var onStepAside: () -> Void = {}
     var onReturn: (Bool) -> Void = { _ in }
     let onClose: () -> Void
@@ -71,11 +73,25 @@ struct OrbReplyView: View {
             focused = true
             if let demoText { Task { await demo(demoText) } }
             watchFn()
+            // Opened by holding fn over a done card: already listening, as
+            // long as fn is still down.
+            if listenOnOpen, canSpeak, NSEvent.modifierFlags.contains(.function) {
+                typedBeforeVoice = text
+                voice.start(expecting: expectedWords)
+            }
         }
         .onDisappear {
             if let fnWatch { NSEvent.removeMonitor(fnWatch) }
             fnWatch = nil
             voice.stop()
+        }
+        // fn let go where the field can't hear it (before it had the
+        // keyboard): listening still stops, read off the keyboard itself.
+        .task(id: voice.isListening) {
+            while voice.isListening, !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 150_000_000)
+                if !NSEvent.modifierFlags.contains(.function) { voice.stop() }
+            }
         }
         .onChange(of: voice.heard) { _, heard in
             // The last words still come in a moment after fn is let go.

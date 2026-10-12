@@ -381,6 +381,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 }
             }
             Handoff.warmUp()
+            watchFnOverDoneCards()
             let recap = DailyRecapScheduler { [weak fleet] recap in
                 let top = recap.agents.max { ($0.toolCalls, $0.sessions) < ($1.toolCalls, $1.sessions) }
                 let glyph: ProviderGlyph = ["Claude Code": .claude, "Codex": .openai, "Grok": .grok][top?.name ?? ""] ?? .third
@@ -1175,6 +1176,63 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             blockedSettling[blocked.session.id] = work
             DispatchQueue.main.asyncAfter(deadline: .now() + Self.blockedSettle, execute: work)
         }
+    }
+
+    private var fnWatchers: [Any] = []
+    private var fnHold: DispatchWorkItem?
+    /// How long fn must be held on its own: a tap, or fn as part of a
+    /// shortcut (fn ← in an editor), is not a reply.
+    static let fnHoldToSpeak: TimeInterval = 0.35
+
+    /// Holding fn while a done card is up answers it by voice: the card
+    /// folds, the reply field opens for its session already listening, and
+    /// letting go leaves the words there to be read over and sent. Watched
+    /// everywhere (the card is up whatever app is in front), which needs
+    /// Accessibility; without it, the card's Reply button still works.
+    @MainActor
+    private func watchFnOverDoneCards() {
+        guard fnWatchers.isEmpty else { return }
+        let flags: (NSEvent) -> Void = { [weak self] event in
+            guard let change = SystemDictation.fnChange(keyCode: event.keyCode, flags: event.modifierFlags) else {
+                MainActor.assumeIsolated { self?.fnHold?.cancel() }
+                return
+            }
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                self.fnHold?.cancel()
+                self.fnHold = nil
+                guard change, self.notchFleet?.replyableDoneSession != nil, !ReplyPanelController.shared.isOpen else { return }
+                let work = DispatchWorkItem { [weak self] in
+                    MainActor.assumeIsolated { self?.replyByVoiceToDoneCard() }
+                }
+                self.fnHold = work
+                DispatchQueue.main.asyncAfter(deadline: .now() + Self.fnHoldToSpeak, execute: work)
+            }
+        }
+        // Any key with fn down makes it a shortcut, not a hold.
+        let key: (NSEvent) -> Void = { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.fnHold?.cancel()
+                self?.fnHold = nil
+            }
+        }
+        for monitor in [NSEvent.addGlobalMonitorForEvents(matching: .flagsChanged, handler: flags),
+                        NSEvent.addGlobalMonitorForEvents(matching: .keyDown, handler: key),
+                        NSEvent.addLocalMonitorForEvents(matching: .flagsChanged, handler: { flags($0); return $0 }),
+                        NSEvent.addLocalMonitorForEvents(matching: .keyDown, handler: { key($0); return $0 })] {
+            if let monitor { fnWatchers.append(monitor) }
+        }
+    }
+
+    @MainActor
+    private func replyByVoiceToDoneCard() {
+        fnHold = nil
+        guard NSEvent.modifierFlags.contains(.function), let fleet = notchFleet, !fleet.isTouring,
+              !ReplyPanelController.shared.isOpen, let session = fleet.replyableDoneSession else { return }
+        Log.usage.notice("fn held over a done card: replying by voice")
+        ReplyPanelController.shared.anchor = fleet.foldForReply()
+        fleet.dismissDoneToast()
+        ReplyPanelController.shared.open(for: session, listening: true)
     }
 
     /// An agent's own hook said its turn finished. Claude Code and Grok
