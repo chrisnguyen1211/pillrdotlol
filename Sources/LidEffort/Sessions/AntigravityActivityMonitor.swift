@@ -22,6 +22,14 @@ final class AntigravityActivityMonitor: AgentActivityMonitor {
     /// Generous, because a model can think for a while between two lines.
     private let staleAfter: TimeInterval
     private var timer: Timer?
+    /// When each conversation was first seen waiting on a permission.
+    private var permissionSince: [String: Date] = [:]
+
+    /// How long a step must sit waiting on a permission before it is said
+    /// to be: one Antigravity runs on its own, because the person already
+    /// allowed it, passes through that status for an instant, and the card
+    /// came up and went at once.
+    static let permissionHold: TimeInterval = 4
 
     init(roots: [URL] = AntigravityActivity.transcriptRoots,
          interval: TimeInterval = 2,
@@ -47,9 +55,29 @@ final class AntigravityActivityMonitor: AgentActivityMonitor {
     }
 
     private func poll() {
-        let found = Self.read(roots: roots, staleAfter: staleAfter)
+        let found = Self.settle(Self.read(roots: roots, staleAfter: staleAfter), since: &permissionSince)
         guard found != sessions else { return }
         sessions = found
+    }
+
+    /// A wait on a permission counts only once it has lasted
+    /// `permissionHold`; until then the session reads as working.
+    static func settle(_ found: [AgentSession], since: inout [String: Date], now: Date = Date(),
+                       hold: TimeInterval = permissionHold) -> [AgentSession] {
+        let permission = L10n.t("Permission")
+        let waiting = Set(found.filter { $0.state == .waiting && $0.waitingFor == permission }.map(\.id))
+        since = since.filter { waiting.contains($0.key) }
+        return found.map { session in
+            guard waiting.contains(session.id) else { return session }
+            let first = since[session.id] ?? now
+            since[session.id] = first
+            guard now.timeIntervalSince(first) < hold else { return session }
+            var working = AgentSession(id: session.id, name: session.name, detail: L10n.t("Working"), state: .busy,
+                                       waitingFor: nil, since: session.since, processID: session.processID,
+                                       doing: session.doing, tokens: session.tokens).keepingModel(of: session)
+            working.appThreadID = session.appThreadID
+            return working
+        }
     }
 
     /// The most recent turn across every install — the same reasoning as

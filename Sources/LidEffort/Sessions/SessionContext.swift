@@ -353,7 +353,7 @@ enum SessionContext {
         for line in lines.reversed() {
             switch line["type"] as? String {
             case "USER_INPUT" where (line["source"] as? String).map { $0 == "USER_EXPLICIT" } ?? true:
-                if let text = words(line) { messages.append(Message(fromYou: true, text: text)) }
+                if let text = words(line).map(antigravityAsk), !text.isEmpty { messages.append(Message(fromYou: true, text: text)) }
             case "PLANNER_RESPONSE":
                 if let text = words(line) { messages.append(Message(fromYou: false, text: text)) }
             default:
@@ -361,6 +361,20 @@ enum SessionContext {
             }
         }
         return fold(newestFirst: messages)
+    }
+
+    /// What you wrote, out of the wrapping Antigravity puts round it: the
+    /// `<USER_REQUEST>` block's inside, without `<ADDITIONAL_METADATA>` and
+    /// the like.
+    static func antigravityAsk(_ text: String) -> String {
+        if let open = text.range(of: "<USER_REQUEST>") {
+            let rest = text[open.upperBound...]
+            let inside = rest.range(of: "</USER_REQUEST>").map { rest[..<$0.lowerBound] } ?? rest
+            return inside.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        let blocks = #"<([A-Z][A-Z_]*)>[\s\S]*?</\1>"#
+        return text.replacingOccurrences(of: blocks, with: "", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     // MARK: - Gemini CLI
