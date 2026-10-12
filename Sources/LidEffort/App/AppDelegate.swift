@@ -48,6 +48,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     /// was not done, and its card is never shown.
     private var settling: [String: DispatchWorkItem] = [:]
     static let finishSettle: TimeInterval = 20
+    /// A session waiting on you is said once it has waited this long. Many
+    /// agents are read by polling their files, where a step the person
+    /// already allowed passes through "waiting" for an instant: said at
+    /// once, its card came up and went.
+    static let blockedSettle: TimeInterval = 2.5
+    private var blockedSettling: [String: DispatchWorkItem] = [:]
     /// Finishes said the moment Claude Code's Stop hook ran, by session id:
     /// the status file's own finish, a beat later, is the same one.
     private var saidByHook: [String: Date] = [:]
@@ -1147,10 +1153,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             settling[event.session.id] = work
             DispatchQueue.main.asyncAfter(deadline: .now() + Self.finishSettle, execute: work)
         }
-        // A session waiting on you is said at once.
         let waiting: Set<pid_t> = Set(all.filter { $0.state == .waiting }.compactMap { $0.processID })
         notchFleet?.resolveWaiting(waitingPIDs: waiting)
-        if let blocked = events.first(where: { $0.reason == .blocked }) { announce(blocked) }
+        // A session waiting on you is said once it is still waiting a moment
+        // later; one that moved on in the meantime is not said at all.
+        let stillWaiting = Set(all.filter { $0.state == .waiting }.map(\.id))
+        for id in blockedSettling.keys where !stillWaiting.contains(id) {
+            blockedSettling.removeValue(forKey: id)?.cancel()
+        }
+        if let blocked = events.first(where: { $0.reason == .blocked }) {
+            blockedSettling[blocked.session.id]?.cancel()
+            let work = DispatchWorkItem { [weak self] in
+                MainActor.assumeIsolated {
+                    guard let self else { return }
+                    self.blockedSettling[blocked.session.id] = nil
+                    let now = self.notchFleet?.sessions.values.flatMap { $0 }.first { $0.id == blocked.session.id }
+                    guard now?.state == .waiting else { return }
+                    self.announce(blocked)
+                }
+            }
+            blockedSettling[blocked.session.id] = work
+            DispatchQueue.main.asyncAfter(deadline: .now() + Self.blockedSettle, execute: work)
+        }
     }
 
     /// An agent's own hook said its turn finished. Claude Code and Grok
