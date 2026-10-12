@@ -56,4 +56,15 @@ final class AntigravityPermissionTests: XCTestCase {
         let context = SessionContext.antigravity(lines: [["type": "USER_INPUT", "source": "USER_EXPLICIT", "content": wrapped]])
         XCTAssertFalse((context.title ?? context.ask ?? "").contains("<USER_REQUEST>"))
     }
+
+    /// Every agent's wrapping comes off the same way.
+    func testNoAgentsWrappingReachesTheCard() {
+        XCTAssertEqual(PromptContext.clean("<user_query>\nfix the login\n</user_query>"), "fix the login", "Cursor")
+        XCTAssertEqual(PromptContext.clean("<environment_context>\n<cwd>/x</cwd>\n</environment_context>\nrun the tests"),
+                       "run the tests", "Codex")
+        XCTAssertEqual(PromptContext.clean("check this <system-reminder>be brief</system-reminder>"), "check this", "Claude Code")
+        XCTAssertNil(PromptContext.clean("<local-command-stdout>ok</local-command-stdout>"), "nothing of yours: no ask")
+        XCTAssertEqual(PromptContext.clean("make the <div>wider</div> please"), "make the <div>wider</div> please",
+                       "a tag someone wrote stays")
+    }
 }

@@ -81,12 +81,32 @@ struct PromptContext: Equatable {
     /// One line of plain words: markdown marks and runs of space gone, cut
     /// to a length a card line can carry.
     static func clean(_ text: String?) -> String? {
-        guard var text else { return nil }
+        guard var text = text.map(withoutWrapping) else { return nil }
         for mark in ["**", "__", "`", "#"] { text = text.replacingOccurrences(of: mark, with: "") }
         text = text.split(whereSeparator: \.isWhitespace).joined(separator: " ")
         text = text.trimmingCharacters(in: CharacterSet(charactersIn: "*-• ").union(.whitespaces))
         guard !text.isEmpty else { return nil }
         return text.count > 160 ? String(text.prefix(159)) + "…" : text
+    }
+
+    /// What a person wrote, out of the wrapping agents put round it, for
+    /// every agent alike: the inside of a request tag (Antigravity's
+    /// `<USER_REQUEST>`, Cursor's `<user_query>`), and none of the blocks
+    /// agents add for themselves (`<system-reminder>`,
+    /// `<environment_context>`, `<command-name>`, `<ADDITIONAL_METADATA>`…).
+    /// A machine's tag is all capitals or has `_` or `-` in it; a plain
+    /// `<div>` someone wrote stays.
+    static func withoutWrapping(_ text: String) -> String {
+        for tag in ["USER_REQUEST", "user_request", "user_query", "user-query"] {
+            if let open = text.range(of: "<\(tag)>") {
+                let rest = text[open.upperBound...]
+                let inside = rest.range(of: "</\(tag)>").map { rest[..<$0.lowerBound] } ?? rest
+                return String(inside).trimmingCharacters(in: .whitespacesAndNewlines)
+            }
+        }
+        let machine = #"<([A-Za-z][A-Za-z0-9]*(?:[_-][A-Za-z0-9]+)+|[A-Z][A-Z0-9]+)(?:\s[^>]*)?>[\s\S]*?</\1>"#
+        return text.replacingOccurrences(of: machine, with: " ", options: .regularExpression)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     private static func readTail(of path: String, bytes: Int) -> String? {
